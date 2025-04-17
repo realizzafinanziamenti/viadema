@@ -1,0 +1,19 @@
+@php $attributes = $unescapedForwardedAttributes ?? $attributes; @endphp
+
+@props([
+	'variant' => 'outline',
+])
+
+@php
+$classes = Flux::classes('shrink-0')
+->add(match($variant) {
+	'outline' => '[:where(&)]:size-6',
+	'solid' => '[:where(&)]:size-6',
+	'mini' => '[:where(&)]:size-5',
+	'micro' => '[:where(&)]:size-4',
+});
+@endphp
+
+<svg xmlns="http://www.w3.org/2000/svg" width="17.814" height="16.469" viewBox="0 0 17.814 16.469" {{ $attributes->class($classes) }} data-flux-icon aria-hidden="true">
+<g id="icona_note" data-name="icona note" transform="translate(0.551 0.551)"><g id="Icon_akar-chat-bubble" data-name="Icon akar-chat-bubble" transform="translate(-3 -4.5)"><path id="Tracciato_100" data-name="Tracciato 100" d="M13.028,17.871c3.151,0,4.728,0,5.706-.979s.979-2.555.979-5.706,0-4.728-.979-5.706S16.18,4.5,13.028,4.5H9.686c-3.151,0-4.728,0-5.706.979S3,8.034,3,11.186s0,4.728.979,5.706a3.606,3.606,0,0,0,2.363.894" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.1"/><path id="Tracciato_101" data-name="Tracciato 101" d="M15.89,27.5a7.351,7.351,0,0,0-3.21.957c-1.67.867-2.5,1.3-2.916,1.024s-.333-1.132-.177-2.845l.035-.389" transform="translate(-2.861 -9.632)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.1"/></g></g>
+</svg>
