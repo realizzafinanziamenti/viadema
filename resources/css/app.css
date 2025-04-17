@@ -11,6 +11,10 @@
 @theme {
     --font-sans: 'Manrope', 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    --color-black-custom: #272727;
+    --color-blue-custom: #004CA4;
+    --color-azure-custom: #019EB1;
+
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
     --color-zinc-200: #e5e5e5;

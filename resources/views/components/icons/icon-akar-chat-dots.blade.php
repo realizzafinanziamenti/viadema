@@ -1,5 +1,12 @@
-@props(['name' => null, 'default' => 'size-4'])
+@props(['name' => null, 'default' => ''])
 
-<svg xmlns="http://www.w3.org/2000/svg" width="20.627" height="18.754" viewBox="0 0 20.627 18.754" {{ $attributes->merge(['class' => $default]) }}>
-<g id="Icon_akar-chat-dots" data-name="Icon akar-chat-dots" transform="translate(0.65 0.65)"><path id="Tracciato_28" data-name="Tracciato 28" d="M14.6,19.161c3.644,0,5.466,0,6.6-1.074s1.133-2.8,1.133-6.257,0-5.184-1.133-6.257S18.24,4.5,14.6,4.5H10.73c-3.644,0-5.466,0-6.6,1.074S3,8.375,3,11.83s0,5.184,1.133,6.257a4.3,4.3,0,0,0,2.733.98" transform="translate(-3 -4.5)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3"/><path id="Tracciato_29" data-name="Tracciato 29" d="M16.1,18.808h0m-4.665,0h0m9.33,0h0M18.433,25.83a10.259,10.259,0,0,0-4.48,1.335c-2.33,1.209-3.5,1.815-4.069,1.429s-.512-.879-.294-3.269l-.143.726" transform="translate(-6.109 -11.17)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.3"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" {{ $attributes->merge(['class' => $default]) }}>
+    <path
+        d="M14 19c3.771 0 5.657 0 6.828-1.172C22 16.657 22 14.771 22 11c0-3.771 0-5.657-1.172-6.828C19.657 3 17.771 3 14 3h-4C6.229 3 4.343 3 3.172 4.172 2 5.343 2 7.229 2 11c0 3.771 0 5.657 1.172 6.828.653.654 1.528.943 2.828 1.07" />
+    <path d="M12 11v.01" />
+    <path d="M8 11v.01" />
+    <path d="M16 11v.01" />
+    <path
+        d="M14 19c-1.236 0-2.598.5-3.841 1.145-1.998 1.037-2.997 1.556-3.489 1.225-.492-.33-.399-1.355-.212-3.404L6.5 17.5" />
 </svg>
