@@ -1,19 +1,5 @@
-@php $attributes = $unescapedForwardedAttributes ?? $attributes; @endphp
+@props(['name' => null, 'default' => 'size-4'])
 
-@props([
-	'variant' => 'outline',
-])
-
-@php
-$classes = Flux::classes('shrink-0')
-->add(match($variant) {
-	'outline' => '[:where(&)]:size-6',
-	'solid' => '[:where(&)]:size-6',
-	'mini' => '[:where(&)]:size-5',
-	'micro' => '[:where(&)]:size-4',
-});
-@endphp
-
-<svg xmlns="http://www.w3.org/2000/svg" width="18.365" height="17.309" viewBox="0 0 18.365 17.309" {{ $attributes->class($classes) }} data-flux-icon aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" width="18.365" height="17.309" viewBox="0 0 18.365 17.309" {{ $attributes->merge(['class' => $default]) }}>
 <g id="Icon_akar-people-group" data-name="Icon akar-people-group" transform="translate(0.453 0.449)"><path id="Tracciato_142" data-name="Tracciato 142" d="M18.654,24.36l-.525-4.2A2.461,2.461,0,0,0,15.686,18H13.877a2.461,2.461,0,0,0-2.442,2.156l-.526,4.2A1.641,1.641,0,0,0,12.539,26.2h4.486a1.641,1.641,0,0,0,1.629-1.844Z" transform="translate(-6.053 -9.795)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.9"/><path id="Tracciato_143" data-name="Tracciato 143" d="M18.423,5.461A2.461,2.461,0,1,1,15.961,3a2.461,2.461,0,0,1,2.461,2.461Z" transform="translate(-7.232 -3)" fill="none" stroke="currentColor" stroke-width="0.9"/><path id="Tracciato_144" data-name="Tracciato 144" d="M6.282,12.141A1.641,1.641,0,1,1,4.641,10.5a1.641,1.641,0,0,1,1.641,1.641Z" transform="translate(-2.475 -6.398)" fill="none" stroke="currentColor" stroke-width="0.9"/><path id="Tracciato_145" data-name="Tracciato 145" d="M30.282,12.141A1.641,1.641,0,1,1,28.641,10.5a1.641,1.641,0,0,1,1.641,1.641Z" transform="translate(-13.348 -6.398)" fill="none" stroke="currentColor" stroke-width="0.9"/><path id="Tracciato_146" data-name="Tracciato 146" d="M4.207,21H3.956a1.641,1.641,0,0,0-1.619,1.371l-.273,1.641a1.641,1.641,0,0,0,1.619,1.911H6.668M17.334,21h.251A1.641,1.641,0,0,1,19.2,22.371l.273,1.641a1.641,1.641,0,0,1-1.619,1.911H14.873" transform="translate(-2.041 -11.154)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.9"/></g>
 </svg>
