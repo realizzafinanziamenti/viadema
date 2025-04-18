@@ -74,40 +74,37 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 <div class="flex flex-col gap-6">
-
+    {{-- Logo --}}
+    <div class="flex items-end justify-center py-9">
+        <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[136px] w-auto">
+    </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="text-center" :status="session('status')" />
 
-    <form wire:submit="login" class="flex flex-col gap-6">
+    <form wire:submit="login" class="flex flex-col px-24 pb-9 gap-4">
         <!-- Email Address -->
-        <flux:input wire:model="email" :label="__('Email address')" type="email" required autofocus autocomplete="email"
-            placeholder="email@example.com" />
+        <flux:input wire:model="email" type="email" required autofocus autocomplete="email" placeholder="Email" />
 
         <!-- Password -->
         <div class="relative">
-            <flux:input wire:model="password" :label="__('Password')" type="password" required
-                autocomplete="current-password" :placeholder="__('Password')" />
+            <flux:input type="password" placeholder="Password" wire:model="password" required
+                autocomplete="current-password" viewable />
 
             @if (Route::has('password.request'))
-                <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </flux:link>
+                <div class="flex items-center justify-end mt-1 pe-1">
+                    <a class="text-xs hover:font-bold" :href="route('password.request')" wire:navigate>
+                        Password dimenticata?
+                    </a>
+                </div>
             @endif
         </div>
 
         <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
+        <flux:checkbox wire:model="remember" label="Ricordami" />
 
-        <div class="flex items-center justify-end">
-            <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
+        <div class="flex items-center justify-center">
+            <flux:button variant="primary" type="submit" class="uppercase px-16 bg-blue-custom">Accedi</flux:button>
         </div>
     </form>
-
-    @if (Route::has('register'))
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-            {{ __('Don\'t have an account?') }}
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
-        </div>
-    @endif
 </div>

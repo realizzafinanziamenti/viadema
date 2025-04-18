@@ -17,7 +17,7 @@
             </video>
         </div>
 
-        <div class="flex w-full max-w-md flex-col gap-6 z-10">
+        <div class="flex w-full max-w-[544px] flex-col gap-6 z-10">
             <div class="flex flex-col gap-6">
                 <div class="rounded-4xl border bg-white text-stone-800 shadow-xs">
                     <div class="px-10 py-8">{{ $slot }}</div>

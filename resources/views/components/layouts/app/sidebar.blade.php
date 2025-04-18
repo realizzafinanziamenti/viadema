@@ -11,7 +11,7 @@
 
         {{-- Sidebar Logo --}}
         <div class="flex items-end justify-center py-2">
-            <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px]">
+            <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px] w-auto">
         </div>
 
         <flux:navlist class="overflow-y-auto ps-6 pe-4 scrollbar-none hover:scrollbar-thin pb-6">
