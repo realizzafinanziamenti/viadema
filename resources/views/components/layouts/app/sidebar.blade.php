@@ -6,7 +6,7 @@
 </head>
 
 <body class="min-h-screen bg-white">
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[260px] gap-3.5!">
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] gap-3.5! ps-6">
         {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
         {{-- Sidebar Logo --}}
