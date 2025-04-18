@@ -11,7 +11,7 @@
 
         {{-- Sidebar Logo --}}
         <div class="flex items-end justify-center py-2">
-            <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px]">
+            <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px] w-auto">
         </div>
 
         <flux:navlist class="overflow-y-auto ps-6 pe-4 scrollbar-none hover:scrollbar-thin pb-6">
@@ -96,9 +96,8 @@
     </flux:sidebar>
 
     <flux:header class="flex justify-end px-4 text-white bg-azure-custom h-[78px] sm:px-6 lg:px-10 xl:px-20">
-        {{-- Settings and notify buttons --}}
         <div class="flex">
-            {{-- Chat Button --}}
+            {{-- Circle Plus Button --}}
             <button class="p-1 mx-2.5">
                 <x-icons.icon-akar-circle-plus />
             </button>
@@ -123,8 +122,15 @@
                 </div>
 
                 <div class="flex flex-col items-start gap-1">
-                    <div x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name">
-                    </div>
+                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                        @csrf
+                        <button type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
+                            {{ __('Log Out') }}
+                        </button>
+                    </form>
+
+                    {{-- <div x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name">
+                    </div> --}}
 
                     {{-- <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role" x-on:profile-updated.window="role = $event.detail.role"
                         class="text-xs font-extralight"></div> --}}
