@@ -5,21 +5,93 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-white dark:bg-zinc-800">
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white">
-        <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+<body class="min-h-screen bg-white">
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[260px] gap-3.5!">
+        {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
+        {{-- Sidebar Logo --}}
         <div class="flex items-end justify-center py-2">
             <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px]">
         </div>
 
         <flux:navlist>
-            <flux:navlist.group heading="Dashboard" class="grid">
+            {{-- HOME --}}
+            <flux:navlist.group heading="Home" class="grid">
                 <x-sidebar-item route="dashboard" routeIs="dashboard" label="Dashboard">
                     <x-icons.icon-akar-home />
                 </x-sidebar-item>
             </flux:navlist.group>
+
+            {{-- CRM --}}
+            <flux:navlist.group heading="Crm" class="grid">
+                {{-- Products --}}
+                <flux:navlist.group heading="Prodotti" class="grid mb-0!" expandable customIcon="icon-akar-folder">
+                    <x-sidebar-item route="dashboard" routeIs="#" label="Cessione del Quinto" bullet />
+
+                    <x-sidebar-item route="dashboard" routeIs="#" label="Delegazione di Pagamento" bullet />
+
+                    <x-sidebar-item route="dashboard" routeIs="#" label="Mutui" bullet />
+
+                    <x-sidebar-item route="dashboard" routeIs="#" label="Prestiti" bullet />
+                </flux:navlist.group>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Simulatore">
+                    <x-icons.icon-akar-star />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Gestione Pratiche">
+                    <x-icons.icon-akar-paper />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Archivio Pratiche">
+                    <x-icons.icon-akar-inbox />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Anagrafica Clienti">
+                    <x-icons.icon-akar-people-group />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Leads">
+                    <x-icons.icon-akar-draft />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Modulistica">
+                    <x-icons.icon-akar-clipboard />
+                </x-sidebar-item>
+            </flux:navlist.group>
+
+            {{-- CALENDAR --}}
+            <flux:navlist.group heading="Calendario" class="grid">
+                <x-sidebar-item route="dashboard" routeIs="#" label="Calendario">
+                    <x-icons.icon-akar-calendar />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Elenco Eventi">
+                    <x-icons.icon-akar-grid />
+                </x-sidebar-item>
+            </flux:navlist.group>
+
+            {{-- MANAGEMENT --}}
+            <flux:navlist.group heading="Gestione" class="grid">
+                <x-sidebar-item route="dashboard" routeIs="#" label="Gestione Collaboratori">
+                    <x-icons.icon-akar-people-multiple />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Obiettivi & Report">
+                    <x-icons.icon-akar-statistic-up />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Impostazioni">
+                    <x-icons.icon-akar-settings-horizontal />
+                </x-sidebar-item>
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Chat Assistenza">
+                    <x-icons.icon-akar-settings-horizontal />
+                </x-sidebar-item>
+            </flux:navlist.group>
         </flux:navlist>
+
+        <div class="py-3"></div>
     </flux:sidebar>
 
     <flux:header class="flex justify-end px-4 text-white bg-azure-custom h-[78px] sm:px-6 lg:px-10 xl:px-20">
