@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin 'tailwind-scrollbar';  /* tailwind scrollbar */
 @import '../../vendor/livewire/flux/dist/flux.css';
 
 @source '../views';

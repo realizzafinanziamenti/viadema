@@ -6,7 +6,7 @@
 </head>
 
 <body class="min-h-screen bg-white">
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] gap-3.5! ps-6">
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] gap-3.5! px-0">
         {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
         {{-- Sidebar Logo --}}
@@ -14,7 +14,8 @@
             <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px]">
         </div>
 
-        <flux:navlist>
+        <flux:navlist class="overflow-y-auto ps-6 pe-4 scrollbar-none hover:scrollbar-thin pb-6">
+            {{-- Sidebar Search --}}
             {{-- HOME --}}
             <flux:navlist.group heading="Home" class="grid">
                 <x-sidebar-item route="dashboard" routeIs="dashboard" label="Dashboard">
@@ -91,7 +92,7 @@
             </flux:navlist.group>
         </flux:navlist>
 
-        <div class="py-3"></div>
+        {{-- <div class="py-3"></div> --}}
     </flux:sidebar>
 
     <flux:header class="flex justify-end px-4 text-white bg-azure-custom h-[78px] sm:px-6 lg:px-10 xl:px-20">
