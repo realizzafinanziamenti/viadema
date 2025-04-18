@@ -105,7 +105,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <flux:checkbox wire:model="remember" label="Ricordami" />
 
         <div class="flex items-center justify-center">
-            <flux:button variant="primary" type="submit" class="uppercase px-16 bg-blue-custom">Accedi</flux:button>
+            <flux:button variant="primary" type="submit"
+                class="uppercase px-16 bg-blue-custom hover:bg-blue-custom-dark">
+                Accedi
+            </flux:button>
         </div>
     </form>
 </div>
