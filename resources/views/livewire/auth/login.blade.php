@@ -84,12 +84,13 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form wire:submit="login" class="flex flex-col px-24 pb-9 gap-4">
         <!-- Email Address -->
-        <flux:input wire:model="email" type="email" required autofocus autocomplete="email" placeholder="Email" />
+        <flux:input wire:model="email" type="email" required autofocus autocomplete="email" placeholder="Email"
+            size="lg" />
 
         <!-- Password -->
         <div class="relative">
             <flux:input type="password" placeholder="Password" wire:model="password" required
-                autocomplete="current-password" viewable />
+                autocomplete="current-password" viewable size="lg" />
 
             @if (Route::has('password.request'))
                 <div class="flex items-center justify-end mt-1 pe-1">
