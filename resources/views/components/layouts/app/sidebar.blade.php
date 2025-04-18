@@ -133,7 +133,7 @@
 
 
                     <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role" x-on:profile-updated.window="role = $event.detail.role"
-                        class="text-xs font-extralight"></div>
+                        class="font-extralight"></div>
                 </div>
             </a>
         </div>
