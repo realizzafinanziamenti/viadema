@@ -139,4 +139,14 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
     // END RELATIONSHIPS
+
+    // SCOPES
+    /**
+     * Scope a query to only include users with team member role.
+     */
+    public function scopeTeamMembers($query)
+    {
+        return $query->role('team_member');
+    }
+    // END SCOPES
 }
