@@ -17,11 +17,7 @@ return new class extends Migration
             $table->string('phone', 24)->nullable();
             $table->string('tax_id', 16)->unique()->nullable();
             $table->date('date_of_birth')->nullable();
-            $table->string('address')->nullable();
             $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->string('country')->nullable();
-            $table->string('postal_code')->nullable();
             $table->timestamps();
         });
     }
