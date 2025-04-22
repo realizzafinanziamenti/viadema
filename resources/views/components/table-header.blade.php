@@ -1,6 +1,7 @@
 @props(['label' => '', 'clickable' => false, 'icon' => null, 'iconClass' => ''])
 
-<th scope="col" {{ $attributes->merge(['class' => 'h-10 px-2 truncate font-medium']) }} title="{{ $label }}">
+<th scope="col" {{ $attributes->merge(['class' => 'h-12 px-2 truncate font-medium text-[13px]']) }}
+    title="{{ $label }}">
     @if ($icon)
         <div class="flex items-center gap-1">
     @endif
