@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -13,6 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
+#[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
