@@ -74,9 +74,11 @@
 
             {{-- MANAGEMENT --}}
             <flux:navlist.group heading="Gestione" class="grid">
-                <x-sidebar-item route="dashboard" routeIs="#" label="Gestione Collaboratori">
-                    <x-icons.icon-akar-people-multiple />
-                </x-sidebar-item>
+                @can('access team members')
+                    <x-sidebar-item route="team.index" routeIs="team" label="Gestione Collaboratori">
+                        <x-icons.icon-akar-people-multiple />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Obiettivi & Report">
                     <x-icons.icon-akar-statistic-up />

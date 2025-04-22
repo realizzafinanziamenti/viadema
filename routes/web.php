@@ -1,13 +1,18 @@
 <?php
 
+use App\Livewire\Admin\Team\TeamIndex;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::permanentRedirect('/', 'login');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+    // Dasboard Route
+    Route::view('/dashboard', 'dashboard')->name('dashboard');
+
+    // Team Member Routes
+    Route::get('/team', TeamIndex::class)->name('team.index')->middleware('can:access team members');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
