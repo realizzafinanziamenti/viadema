@@ -1,3 +1,54 @@
 <div>
-    {{-- Because she competes with no one, no one can compete with her. --}}
+    <x-page-title label="Gestione Collaboratori" />
+
+    <x-card>
+        <div class="flex items-center justify-between mb-5">
+            <div>ciao</div>
+
+            @can('create team members')
+                <flux:button icon="plus" class="bg-blue-custom! text-white! px-10">Crea nuova pratica</flux:button>
+            @endcan
+        </div>
+
+        {{-- Team Table --}}
+        <x-table>
+            <x-slot name="header" class="border-b">
+                <x-table-header label="Id collaboratore" />
+                <x-table-header label="Nome collaboratore" />
+                <x-table-header label="Personale" />
+                <x-table-header label="Cellulare" />
+                <x-table-header label="Codice fiscale" />
+                <x-table-header label="Email" />
+                <x-table-header label="Città" />
+                <x-table-header>
+                    {{-- Actions --}}
+                </x-table-header>
+            </x-slot>
+
+            {{-- Table body --}}
+            @foreach ($teamMembers as $teamMember)
+                <tr wire:key='{{ $teamMember->id }}' class="border-y border-collapse">
+                    <x-table-data label="{{ $teamMember->id }}" />
+                    <x-table-data truncate label="{{ $teamMember->full_name }}" />
+                    <x-table-data truncate label="Per ora niente" />
+                    <x-table-data truncate label="{{ $teamMember->profile->phone }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile->tax_id }}" />
+                    <x-table-data truncate label="{{ $teamMember->email }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile->city }}" />
+
+                    {{-- Actions --}}
+                    <x-table-data class="inline-flex items-center justify-end w-full gap-3">
+                        <x-table-action-button-view />
+
+                        <x-table-action-button-edit />
+
+                        <x-table-action-button-delete />
+                    </x-table-data>
+                </tr>
+            @endforeach
+        </x-table>
+
+        {{-- Pagination buttons --}}
+        {{ $teamMembers->links() }}
+    </x-card>
 </div>
