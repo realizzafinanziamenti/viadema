@@ -7,7 +7,7 @@
             <flux:input class="w-sm! xl:w-lg!" icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
 
             @can('create team members')
-                <a href="{{ route('team.create') }}" wire:navigate>
+                <a href="{{ route('user.team.create') }}" wire:navigate>
                     <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea
                         nuova
                         pratica</flux:button>
@@ -43,11 +43,19 @@
 
                     {{-- Actions --}}
                     <x-table-data class="inline-flex items-center justify-end w-full gap-3">
-                        <x-table-action-button-view />
+                        @can('view team members')
+                            <x-table-action-button-view />
+                        @endcan
 
-                        <x-table-action-button-edit />
+                        @can('update team members')
+                            <a href="{{ route('user.team.edit', $teamMember->id) }}" wire:navigate>
+                                <x-table-action-button-edit />
+                            </a>
+                        @endcan
 
-                        <x-table-action-button-delete />
+                        @can('delete team members')
+                            <x-table-action-button-delete />
+                        @endcan
                     </x-table-data>
                 </tr>
             @endforeach
