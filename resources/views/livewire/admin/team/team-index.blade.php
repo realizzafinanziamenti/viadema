@@ -2,8 +2,9 @@
     <x-page-title label="Gestione Collaboratori" />
 
     <x-card>
+        {{-- Filters and Create Button --}}
         <div class="flex items-center justify-between mb-5">
-            <div>ciao</div>
+            <flux:input class="w-sm! xl:w-lg!" icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
 
             @can('create team members')
                 <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea nuova
