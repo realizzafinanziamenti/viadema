@@ -7,8 +7,11 @@
             <flux:input class="w-sm! xl:w-lg!" icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
 
             @can('create team members')
-                <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea nuova
-                    pratica</flux:button>
+                <a href="{{ route('team.create') }}" wire:navigate>
+                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea
+                        nuova
+                        pratica</flux:button>
+                </a>
             @endcan
         </div>
 

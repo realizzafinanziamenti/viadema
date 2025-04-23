@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -12,6 +13,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Team Member Routes
     Route::get('/team', TeamIndex::class)->name('team.index')->middleware('can:access team members');
+    Route::get('/team/create', TeamCreate::class)->name('team.create')->middleware('can:create team members');
 });
 
 Route::middleware(['auth'])->group(function () {
