@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
+use App\Livewire\Admin\Team\TeamUpdate;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -14,6 +15,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     // Team Member Routes
     Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');
     Route::get('users/team/create', TeamCreate::class)->name('user.team.create')->middleware('can:create team members');
+    Route::get('users/team/{id}/edit', TeamUpdate::class)->name('user.team.edit')->middleware('can:update team members');
 });
 
 Route::middleware(['auth'])->group(function () {
