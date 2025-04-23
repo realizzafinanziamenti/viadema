@@ -6,21 +6,22 @@
             <div>ciao</div>
 
             @can('create team members')
-                <flux:button icon="plus" class="bg-blue-custom! text-white! px-10">Crea nuova pratica</flux:button>
+                <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea nuova
+                    pratica</flux:button>
             @endcan
         </div>
 
         {{-- Team Table --}}
         <x-table>
             <x-slot name="header" class="border-b">
-                <x-table-header label="Id collaboratore" />
-                <x-table-header label="Nome collaboratore" />
-                <x-table-header label="Personale" />
-                <x-table-header label="Cellulare" />
-                <x-table-header label="Codice fiscale" />
-                <x-table-header label="Email" />
-                <x-table-header label="Città" />
-                <x-table-header>
+                <x-table-header label="Id collaboratore" class="w-1/12" />
+                <x-table-header label="Nome collaboratore" class="w-2/12" />
+                <x-table-header label="Personale" class="w-1/12" />
+                <x-table-header label="Cellulare" class="w-[160px]" />
+                <x-table-header label="Codice fiscale" class="w-[170px]" />
+                <x-table-header label="Email" class="w-2/12" />
+                <x-table-header label="Città" class="w-2/12" />
+                <x-table-header class="w-[150px]">
                     {{-- Actions --}}
                 </x-table-header>
             </x-slot>
