@@ -12,8 +12,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::view('/dashboard', 'dashboard')->name('dashboard');
 
     // Team Member Routes
-    Route::get('/team', TeamIndex::class)->name('team.index')->middleware('can:access team members');
-    Route::get('/team/create', TeamCreate::class)->name('team.create')->middleware('can:create team members');
+    Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');
+    Route::get('users/team/create', TeamCreate::class)->name('user.team.create')->middleware('can:create team members');
 });
 
 Route::middleware(['auth'])->group(function () {
