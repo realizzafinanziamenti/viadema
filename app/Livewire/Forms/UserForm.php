@@ -14,7 +14,7 @@ use Livewire\Form;
 
 class UserForm extends Form
 {
-    public ?User $user;
+    public ?User $user = null;
 
     public $role = null;
     public $firstName = null;
