@@ -19,7 +19,6 @@ class UserProfileFactory extends Factory
         return [
             'phone' => fake()->phoneNumber(),
             'tax_id' => fake()->taxId(),
-            'date_of_birth' => fake()->date(),
             'city' => fake()->city(),
         ];
     }

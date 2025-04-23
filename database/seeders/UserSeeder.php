@@ -31,7 +31,6 @@ class UserSeeder extends Seeder
             'user_id' => $teamMemberTest->id,
             'phone' => '1234567890',
             'tax_id' => 'TMMTST12X34Y123Z',
-            'date_of_birth' => '1990-01-01',
             'city' => 'Roma',
         ]);
 

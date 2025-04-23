@@ -20,21 +20,8 @@ class UserProfile extends Model
         'user_id',
         'phone',
         'tax_id',
-        'date_of_birth',
         'city',
     ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'date_of_birth' => 'datetime',
-        ];
-    }
 
     // RELATIONSHIPS
     public function user(): BelongsTo
