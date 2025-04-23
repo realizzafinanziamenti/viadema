@@ -12,7 +12,7 @@
         </div>
 
         {{-- Team Table --}}
-        <x-table>
+        <x-table class="mb-5">
             <x-slot name="header" class="border-b">
                 <x-table-header label="Id collaboratore" class="w-1/12" />
                 <x-table-header label="Nome collaboratore" class="w-2/12" />
