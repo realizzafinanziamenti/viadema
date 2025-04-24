@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
+use Masmerise\Toaster\Toaster;
 
 class UserForm extends Form
 {
@@ -105,11 +106,11 @@ class UserForm extends Form
                 ]);
             });
 
-            session()->flash('success', 'Utente creato con successo.');
+            Toaster::success('Utente creato con successo.');
             return $user;
         } catch (Exception $e) {
             Log::error('Errore durante la creazione dell\'utente: ' . $e->getMessage());
-            session()->flash('error', 'Errore durante la creazione dell\'utente: ' . $e->getMessage());
+            Toaster::error('Errore durante la creazione dell\'utente: ' . $e->getMessage());
         }
     }
 
@@ -149,11 +150,11 @@ class UserForm extends Form
                 ]);
             });
 
-            session()->flash('success', 'Utente aggiornato con successo.');
+            Toaster::success('Utente aggiornato con successo.');
             return $this->user;
         } catch (Exception $e) {
             Log::error('Errore durante l\'aggiornamento dell\'utente: ' . $e->getMessage());
-            session()->flash('error', 'Errore durante l\'aggiornamento dell\'utente: ' . $e->getMessage());
+            Toaster::error('Errore durante l\'aggiornamento dell\'utente: ' . $e->getMessage());
         }
     }
 }

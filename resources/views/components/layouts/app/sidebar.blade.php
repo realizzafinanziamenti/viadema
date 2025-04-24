@@ -144,6 +144,11 @@
     {{ $slot }}
 
     @fluxScripts
+
+    {{-- Needed to livewire toaster library --}}
+    {{-- @persist('toaster') --}}
+    <x-toaster-hub />
+    {{-- @endpersist --}}
 </body>
 
 </html>
