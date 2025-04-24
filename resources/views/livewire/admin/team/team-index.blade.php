@@ -1,5 +1,5 @@
 <div>
-    <x-page-title label="Gestione Collaboratori" />
+    <x-page-title label="Gestione Collaboratori" class="mt-1" />
 
     <x-card>
         {{-- Filters and Create Button --}}
@@ -44,11 +44,13 @@
                     {{-- Actions --}}
                     <x-table-data class="inline-flex items-center justify-end w-full gap-3">
                         @can('view team members')
-                            <x-table-action-button-view />
+                            <a href="{{ route('user.team.show', ['id' => $teamMember->id]) }}" wire:navigate>
+                                <x-table-action-button-view />
+                            </a>
                         @endcan
 
                         @can('update team members')
-                            <a href="{{ route('user.team.edit', $teamMember->id) }}" wire:navigate>
+                            <a href="{{ route('user.team.edit', ['id' => $teamMember->id]) }}" wire:navigate>
                                 <x-table-action-button-edit />
                             </a>
                         @endcan
