@@ -5,7 +5,7 @@
 
 <a wire:navigate
     {{ $attributes->merge([
-        'href' => url()->previous() !== url()->current() ? url()->previous() : route($route),
+        'href' => route($route),
         'class' => 'text-sm text-gray-custom-4 flex items-center gap-x-0.5 hover:text-gray-custom-3',
     ]) }}>
 

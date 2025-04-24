@@ -72,8 +72,7 @@
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
-                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('user.team.index') }}"
-                    wire:navigate>
+                <a href="{{ route('user.team.index') }}" wire:navigate>
                     <flux:button variant="primary" type="button" size="sm"
                         class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
                         Annulla
