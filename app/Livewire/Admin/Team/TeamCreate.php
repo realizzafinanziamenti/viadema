@@ -19,7 +19,7 @@ class TeamCreate extends Component
         // Gate::authorize('create', Assignment::class);
         $user = $this->form->store();
 
-        // $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
+        $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
     }
 
     public function mount()

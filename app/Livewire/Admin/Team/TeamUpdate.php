@@ -21,7 +21,7 @@ class TeamUpdate extends Component
         // Gate::authorize('update', $this->assignment);
         $user = $this->form->update();
 
-        // $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
+        $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
     }
 
     public function mount($id)
