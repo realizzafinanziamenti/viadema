@@ -79,7 +79,7 @@ class UserForm extends Form
     {
         // add password validation
         $this->validate(array_merge($this->rules(), [
-            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password' => ['required', 'string', 'confirmed:passwordConfirmation', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
         ]));
 
         try {
@@ -104,6 +104,8 @@ class UserForm extends Form
                     'tax_id' => $this->taxId,
                     'city' => $this->city,
                 ]);
+
+                return $user;
             });
 
             Toaster::success('Utente creato con successo.');
@@ -120,7 +122,7 @@ class UserForm extends Form
     public function update()
     {
         $this->validate(array_merge($this->rules(), [
-            'password' => ['nullable', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password' => ['nullable', 'string', 'confirmed:passwordConfirmation', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
         ]));
 
         try {
