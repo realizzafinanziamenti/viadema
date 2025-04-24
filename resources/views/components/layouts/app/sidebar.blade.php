@@ -145,10 +145,19 @@
 
     @fluxScripts
 
+    {{-- TOASTER --}}
     {{-- Needed to livewire toaster library --}}
-    {{-- @persist('toaster') --}}
-    <x-toaster-hub />
-    {{-- @endpersist --}}
+    @persist('toaster')
+        <x-toaster-hub />
+    @endpersist
+
+    {{-- Necessary for persisting the toaster --}}
+    <style>
+        div[x-persist="toaster"] {
+            position: fixed;
+        }
+    </style>
+    {{-- END TOASTER --}}
 </body>
 
 </html>
