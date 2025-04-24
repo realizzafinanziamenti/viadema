@@ -72,13 +72,16 @@
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-10">
-                <flux:button variant="primary" type="button" size="sm"
-                    class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-blue-custom-dark">
-                    Annulla
-                </flux:button>
+                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('user.team.index') }}"
+                    wire:navigate>
+                    <flux:button variant="primary" type="button" size="sm"
+                        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3 hover:border-gray-custom-3 hover:text-white">
+                        Annulla
+                    </flux:button>
+                </a>
 
                 <flux:button variant="primary" type="submit" size="sm"
-                    class="px-10 bg-azure-custom border-azure-custom hover:bg-blue-custom-dark">
+                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-dark hover:border-azure-custom-dark">
                     Crea
                 </flux:button>
             </div>
