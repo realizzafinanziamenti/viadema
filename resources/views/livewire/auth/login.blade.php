@@ -106,7 +106,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         <div class="flex items-center justify-center">
             <flux:button variant="primary" type="submit"
-                class="uppercase px-16 bg-blue-custom hover:bg-blue-custom-dark">
+                class="uppercase px-16 bg-blue-custom hover:bg-blue-custom-hover">
                 Accedi
             </flux:button>
         </div>

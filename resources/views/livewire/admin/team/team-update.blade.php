@@ -2,7 +2,7 @@
     <x-card class="w-3xl mx-auto">
         <x-card-header label="Modifica collaboratore" />
 
-        <form wire:submit.prevent='save' class="w-2xl mx-auto my-10">
+        <form wire:submit.prevent='save' class="w-2xl mx-auto mt-10 mb-5">
             <div class="grid grid-cols-2 gap-6">
                 {{-- First Name --}}
                 <div class="flex flex-col gap-1.5">
@@ -74,13 +74,13 @@
                 <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('user.team.index') }}"
                     wire:navigate>
                     <flux:button variant="primary" type="button" size="sm"
-                        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3 hover:border-gray-custom-3 hover:text-white">
+                        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
                         Annulla
                     </flux:button>
                 </a>
 
                 <flux:button variant="primary" type="submit" size="sm"
-                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-dark hover:border-azure-custom-dark">
+                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
                     Modifica
                 </flux:button>
             </div>

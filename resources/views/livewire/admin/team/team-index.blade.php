@@ -8,7 +8,7 @@
 
             @can('create team members')
                 <a href="{{ route('user.team.create') }}" wire:navigate>
-                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-dark!  text-white! px-10">Crea
+                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
                         nuova
                         pratica</flux:button>
                 </a>
@@ -56,7 +56,9 @@
                         @endcan
 
                         @can('delete team members')
-                            <x-table-action-button-delete />
+                            <flux:modal.trigger name="delete-user">
+                                <x-table-action-button-delete />
+                            </flux:modal.trigger>
                         @endcan
                     </x-table-data>
                 </tr>
@@ -66,4 +68,9 @@
         {{-- Pagination buttons --}}
         {{ $teamMembers->links() }}
     </x-card>
+
+    {{-- Delete User Modal --}}
+    <flux:modal name="delete-user" class="md:w-96">
+        cisoa
+    </flux:modal>
 </div>
