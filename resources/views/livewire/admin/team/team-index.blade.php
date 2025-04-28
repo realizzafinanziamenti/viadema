@@ -44,19 +44,19 @@
 
                     {{-- Actions --}}
                     <x-table-data class="inline-flex items-center justify-end w-full gap-3">
-                        @can('view team members')
+                        @can('view', $teamMember)
                             <a href="{{ route('user.team.show', ['id' => $teamMember->id]) }}" wire:navigate>
                                 <x-table-action-button-view />
                             </a>
                         @endcan
 
-                        @can('update team members')
+                        @can('update', $teamMember)
                             <a href="{{ route('user.team.edit', ['id' => $teamMember->id]) }}" wire:navigate>
                                 <x-table-action-button-edit />
                             </a>
                         @endcan
 
-                        @can('delete team members')
+                        @can('delete', $teamMember)
                             <x-table-action-button-delete wire:click='selectUserForDelete({{ $teamMember->id }})' />
                         @endcan
                     </x-table-data>
