@@ -30,7 +30,7 @@ class TeamIndex extends Component
             return;
         }
 
-        $this->modal('delete-user')->show();
+        $this->dispatch('open-modal', 'delete-user');
     }
 
     /**
@@ -43,7 +43,7 @@ class TeamIndex extends Component
             $this->selectedUser->delete();
             $this->selectedUser = null;
 
-            $this->modal('delete-user')->close();
+            $this->dispatch('close-modal', 'delete-user');
             Toaster::success('Collaboratore eliminato con successo');
         }
     }
