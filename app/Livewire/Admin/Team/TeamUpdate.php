@@ -28,6 +28,16 @@ class TeamUpdate extends Component
         $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
     }
 
+    /**
+     * remove profile photo
+     */
+    public function removeProfilePhoto(): void
+    {
+        Gate::authorize('update', User::class);
+        $this->form->profilePhotoRemoved = true;
+        $this->form->profilePhotoUrl = null;
+    }
+
     public function mount($id)
     {
         Gate::authorize('update', User::class);

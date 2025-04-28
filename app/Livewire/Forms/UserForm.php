@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Validate;
@@ -27,6 +28,8 @@ class UserForm extends Form
     public $taxId = null;
     public $city = null;
     public $profilePhoto = null;
+    public $profilePhotoUrl = null;
+    public $profilePhotoRemoved = false;
 
     protected function rules()
     {
@@ -69,7 +72,7 @@ class UserForm extends Form
         $this->phone = $user->profile?->phone;
         $this->taxId = $user->profile?->tax_id;
         $this->city = $user->profile?->city;
-        $this->profilePhoto = $user->profile_photo_path;
+        $this->profilePhotoUrl = $user->profile_photo_path;
     }
 
     /**
@@ -85,7 +88,7 @@ class UserForm extends Form
         try {
             $user = DB::transaction(function () {
                 // check the profile photo
-                $profilePhotoPath = $this->profilePhoto
+                $this->profilePhotoUrl = $this->profilePhoto
                     ? $this->profilePhoto->store('profile-photo', 'public')
                     : null;
 
@@ -94,7 +97,7 @@ class UserForm extends Form
                     'last_name' => $this->lastName,
                     'email' => $this->email,
                     'password' => Hash::make($this->password),
-                    'profile_photo_path' => $profilePhotoPath ?: null,
+                    'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
                 $user->assignRole($this->role);
@@ -132,8 +135,18 @@ class UserForm extends Form
                     ? Hash::make($this->password)
                     : $this->user->password;
 
+                // check the profile photo removed
+                // if the profile photo is removed, delete it from storage
+                if ($this->profilePhotoRemoved && $this->user->profile_photo_path) {
+                    if (Storage::exists($this->user->profile_photo_path)) {
+                        Storage::delete($this->user->profile_photo_path);
+                    }
+
+                    $this->user->profile_photo_path = null;
+                }
+
                 // check the profile photo
-                $profilePhotoPath = $this->profilePhoto
+                $this->profilePhotoUrl = $this->profilePhoto
                     ? $this->profilePhoto->store('profile-photo', 'public')
                     : $this->user->profile_photo_path;
 
@@ -142,7 +155,7 @@ class UserForm extends Form
                     'last_name' => $this->lastName,
                     'email' => $this->email,
                     'password' => $password,
-                    'profile_photo_path' => $profilePhotoPath ?: null,
+                    'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
                 $this->user->profile()->update([

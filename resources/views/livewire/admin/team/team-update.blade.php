@@ -71,8 +71,19 @@
                 {{-- Profile Photo --}}
                 <div class="flex flex-col gap-1.5 col-span-2">
                     <flux:label>Immagine Profilo</flux:label>
-                    <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
-                        accepted-file-types="image/jpeg,image/png" />
+
+                    @if ($user->profile_photo_path && !$form->profilePhotoRemoved)
+                        <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
+                            class="rounded w-profile-photo h-40 w-40" />
+
+                        <x-button size="sm" variant="danger" wire:click="removeProfilePhoto">
+                            Rimuovi Foto
+                        </x-button>
+                    @else
+                        <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
+                            accepted-file-types="image/jpeg,image/png" />
+                    @endif
+
                 </div>
             </div>
 
