@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Team;
 
 use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
@@ -40,6 +41,8 @@ class TeamIndex extends Component
     public function deleteUser()
     {
         if ($this->selectedUser) {
+            Gate::authorize('delete', $this->selectedUser);
+
             $this->selectedUser->delete();
             $this->selectedUser = null;
 
@@ -54,6 +57,11 @@ class TeamIndex extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function mount()
+    {
+        Gate::authorize('viewAny', User::class);
     }
 
     #[Layout('components.layouts.app')]

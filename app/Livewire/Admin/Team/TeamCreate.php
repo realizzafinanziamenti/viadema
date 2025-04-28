@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Team;
 
 use App\Livewire\Forms\UserForm;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -16,7 +18,7 @@ class TeamCreate extends Component
      */
     public function save(): void
     {
-        // Gate::authorize('create', Assignment::class);
+        Gate::authorize('create', User::class);
         $user = $this->form->store();
 
         $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
@@ -24,6 +26,7 @@ class TeamCreate extends Component
 
     public function mount()
     {
+        Gate::authorize('create', User::class);
         // set user rule to team member
         $this->form->role = 'team_member';
     }
