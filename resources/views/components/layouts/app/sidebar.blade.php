@@ -145,6 +145,9 @@
 
     @fluxScripts
 
+    {{-- scripts for filepond library --}}
+    @filepondScripts
+
     {{-- TOASTER --}}
     {{-- Needed to livewire toaster library --}}
     @persist('toaster')
