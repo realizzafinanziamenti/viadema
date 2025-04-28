@@ -38,6 +38,15 @@ class TeamUpdate extends Component
         $this->form->profilePhotoUrl = null;
     }
 
+    /**
+     * restore removed profile photo
+     */
+    public function restoreProfilePhoto(): void
+    {
+        $this->form->profilePhotoRemoved = false;
+        $this->form->profilePhotoUrl = $this->user->profile_photo_path;
+    }
+
     public function mount($id)
     {
         Gate::authorize('update', User::class);

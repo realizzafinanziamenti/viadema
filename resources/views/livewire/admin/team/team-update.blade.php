@@ -73,21 +73,27 @@
                     <flux:label>Immagine Profilo</flux:label>
 
                     @if ($user->profile_photo_path && !$form->profilePhotoRemoved)
-                        <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
-                            class="rounded w-profile-photo h-40 w-40" />
+                        <x-upload-image-container wire:key="photo-preview" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+                            <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
+                                class="rounded w-profile-photo h-40 w-40" />
 
-                        <x-button size="sm" variant="danger" wire:click="removeProfilePhoto">
-                            Rimuovi Foto
-                        </x-button>
+                            <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
+                        </x-upload-image-container>
                     @else
-                        <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
-                            accepted-file-types="image/jpeg,image/png" />
+                        <div wire:key="filepond-upload" wire:transition wire:transition.duration.500ms
+                            wire:transition.scale.95 wire:transition.opacity class="relative">
+                            <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
+                                accepted-file-types="image/jpeg,image/png" />
+
+                            <x-button-restore-image wire:click="restoreProfilePhoto" class="absolute top-2 right-2" />
+                        </div>
                     @endif
 
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-x-3 mt-10">
+            <div class="flex items-center justify-end gap-x-3 {{ !$form->profilePhotoRemoved ? 'mt-18' : 'mt-16' }}">
                 <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('user.team.index') }}"
                     wire:navigate>
                     <flux:button variant="primary" type="button" size="sm"
