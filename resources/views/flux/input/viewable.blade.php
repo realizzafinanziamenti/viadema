@@ -21,6 +21,6 @@
     });
     
     observer.observe(input, { attributes: true, attributeFilter: ['type'] });">
-    <x-icons.icon-akar-eye-slashed class="hidden [[data-viewable-open]>&]:block" />
-    <x-icons.icon-akar-eye class="block [[data-viewable-open]>&]:hidden" />
+    <x-icons.icon-akar-eye-slashed :width="$size === 'sm' || 'xs' ? '18' : '24' " :height="$size === 'sm' || 'xs' ? '18' : '24'" class="hidden [[data-viewable-open]>&]:block" />
+    <x-icons.icon-akar-eye :width="$size === 'sm' || 'xs' ? '18' : '24'" :height="$size === 'sm' || 'xs' ? '18' : '24'" class="block [[data-viewable-open]>&]:hidden" />
 </flux:button>

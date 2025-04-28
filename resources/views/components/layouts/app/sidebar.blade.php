@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-white">
+<body class="min-h-screen bg-gray-custom-1">
     <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] gap-3.5! px-0">
         {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
@@ -74,9 +74,11 @@
 
             {{-- MANAGEMENT --}}
             <flux:navlist.group heading="Gestione" class="grid">
-                <x-sidebar-item route="dashboard" routeIs="#" label="Gestione Collaboratori">
-                    <x-icons.icon-akar-people-multiple />
-                </x-sidebar-item>
+                @can('access team members')
+                    <x-sidebar-item route="user.team.index" routeIs="user.team" label="Gestione Collaboratori">
+                        <x-icons.icon-akar-people-multiple />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Obiettivi & Report">
                     <x-icons.icon-akar-statistic-up />
@@ -114,26 +116,26 @@
         </div>
 
         <!-- Profile button -->
-        <div class="ms-4">
+        <div class="ms-3.5">
             <a href="#" wire:navigate
                 class="flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full">
                 <div class="flex items-center">
-                    <img class="object-cover w-10 h-10 bg-white rounded-full" src="" alt="Profile Photo">
+                    <img class="object-cover w-10 h-10 bg-white rounded-full"
+                        src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
                 </div>
 
                 <div class="flex flex-col items-start gap-1">
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
-                        <button type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
-                        </button>
+
+                        <div x-data="{{ json_encode(['name' => auth()->user()->full_name]) }}" x-text="name" class="font-semibold"
+                            x-on:profile-updated.window="name = $event.detail.name">
+                        </div>
                     </form>
 
-                    {{-- <div x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name">
-                    </div> --}}
 
-                    {{-- <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role" x-on:profile-updated.window="role = $event.detail.role"
-                        class="text-xs font-extralight"></div> --}}
+                    <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role" x-on:profile-updated.window="role = $event.detail.role"
+                        class="font-extralight"></div>
                 </div>
             </a>
         </div>
@@ -142,6 +144,20 @@
     {{ $slot }}
 
     @fluxScripts
+
+    {{-- TOASTER --}}
+    {{-- Needed to livewire toaster library --}}
+    @persist('toaster')
+        <x-toaster-hub />
+    @endpersist
+
+    {{-- Necessary for persisting the toaster --}}
+    <style>
+        div[x-persist="toaster"] {
+            position: fixed;
+        }
+    </style>
+    {{-- END TOASTER --}}
 </body>
 
 </html>

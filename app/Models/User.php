@@ -3,16 +3,24 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
+#[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -20,9 +28,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'profile_photo_path',
+        'notifications_enabled',
     ];
 
     /**
@@ -45,6 +56,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notifications_enabled' => 'boolean',
         ];
     }
 
@@ -53,9 +65,103 @@ class User extends Authenticatable
      */
     public function initials(): string
     {
-        return Str::of($this->name)
+        return Str::of($this->full_name)
             ->explode(' ')
             ->map(fn(string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
+
+    /**
+     * Description roles
+     */
+    protected array $roleDescriptions = [
+        'superadmin' => 'SuperAdmin',
+        'team_member' => 'Collaboratore',
+        'observer' => 'Osservatore',
+    ];
+
+    /**
+     * Check if the user role is superamin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('superadmin');
+    }
+
+    /**
+     * Check if the user role is team_member
+     */
+    public function isTeamMember(): bool
+    {
+        return $this->hasRole('team_member');
+    }
+
+    /**
+     * Check if the user role is observer
+     */
+    public function isObserver(): bool
+    {
+        return $this->hasRole('observer');
+    }
+
+    /**
+     * Get role description
+     */
+    public function getRoleDescription(): string
+    {
+        $role = $this->getRoleNames()->first();
+        return $this->roleDescriptions[$role] ?? 'Ruolo non definito';
+    }
+
+    /**
+     * Get the profile photo path.
+     */
+    public function getProfilePhotoUrl(): string
+    {
+        return $this->profile_photo_path
+            ? asset("storage/{$this->profile_photo_path}")
+            : asset('images/placeholder-user.jpg');
+    }
+
+    /**
+     * Accessor to obtain full name.
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
+    }
+
+    // RELATIONSHIPS
+    /**
+     * Get the user's profile.
+     */
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+    // END RELATIONSHIPS
+
+    // SCOPES
+    /**
+     * Scope a query to only include users with team member role.
+     */
+    public function scopeTeamMembers(Builder $query)
+    {
+        return $query->role('team_member');
+    }
+
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->where('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
+        });
+    }
+    // END SCOPES
 }

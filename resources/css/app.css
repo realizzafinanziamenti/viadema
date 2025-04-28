@@ -13,8 +13,17 @@
     --font-sans: 'Manrope', 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-black-custom: #272727;
+    --color-gray-custom-1: #F1F1F1;
+    --color-gray-custom-2: #EAEAEA;
+    --color-gray-custom-3: #A7A6A6;
+    --color-gray-custom-3-hover: #CCCCCC;
+    --color-gray-custom-4: #666565;
+    --color-gray-custom-5: #707070;
     --color-blue-custom: #004CA4;
+    --color-blue-custom-hover: #012F65;
     --color-azure-custom: #019EB1;
+    --color-azure-custom-hover: #037886;
+    --color-pink-custom: #E56399;
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;

@@ -1,7 +1,8 @@
-@props(['name' => null, 'default' => ''])
+@props(['name' => null, 'default' => '', 'width' => '24', 'height' => '24'])
 
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" {{ $attributes->merge(['class' => $default]) }}>
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ $width }}" height="{{ $height }}" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"
+    {{ $attributes->merge(['class' => $default]) }}>
     <path
         d="M6.873 17.129c-1.845-1.31-3.305-3.014-4.13-4.09a1.693 1.693 0 0 1 0-2.077C4.236 9.013 7.818 5 12 5c1.876 0 3.63.807 5.13 1.874" />
     <path d="M14.13 9.887a3 3 0 1 0-4.243 4.242" />
