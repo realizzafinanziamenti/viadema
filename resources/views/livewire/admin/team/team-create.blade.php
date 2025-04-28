@@ -68,10 +68,16 @@
                         <flux:error name="form.passwordConfirmation" />
                     </div>
                 </div>
+                {{-- Profile Photo --}}
+                <div class="flex flex-col gap-1.5 col-span-2">
+                    <flux:label>Immagine Profilo</flux:label>
+                    <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
+                        accepted-file-types="image/jpeg,image/png" />
+                </div>
             </div>
 
             {{-- Submit Buttons --}}
-            <div class="flex items-center justify-end gap-x-3 mt-18">
+            <div class="flex items-center justify-end gap-x-3 mt-16">
                 <a href="{{ route('user.team.index') }}" wire:navigate>
                     <flux:button variant="primary" type="button" size="sm"
                         class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">

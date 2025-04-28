@@ -7,9 +7,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Spatie\LivewireFilepond\WithFilePond;
 
 class TeamCreate extends Component
 {
+    use WithFilePond;
+
     // user form component
     public UserForm $form;
 

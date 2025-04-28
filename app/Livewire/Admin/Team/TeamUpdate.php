@@ -4,11 +4,15 @@ namespace App\Livewire\Admin\Team;
 
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Spatie\LivewireFilepond\WithFilePond;
 
 class TeamUpdate extends Component
 {
+    use WithFilePond;
+
     public User $user;
     // user form component
     public UserForm $form;
