@@ -4,7 +4,8 @@
     <x-card>
         {{-- Filters and Create Button --}}
         <div class="flex items-center justify-between mb-5">
-            <flux:input class="w-sm! xl:w-lg!" icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
+            <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
+                placeholder="Cerca per nome, cognome..." />
 
             @can('create team members')
                 <a href="{{ route('user.team.create') }}" wire:navigate>

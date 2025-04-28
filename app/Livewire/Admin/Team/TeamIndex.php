@@ -15,6 +15,7 @@ class TeamIndex extends Component
     use WithPagination, WithoutUrlPagination;
 
     public $selectedUser = null;
+    public $search = '';
 
     /**
      * This method is called when the user clicks the delete button.
@@ -47,11 +48,21 @@ class TeamIndex extends Component
         }
     }
 
+    /**
+     * Updated search bar callback function
+     */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     #[Layout('components.layouts.app')]
     public function render()
     {
         $query = User::teamMembers()
             ->orderByDesc('updated_at');
+
+        $query = $query->filterBySearch($this->search);
         $teamMembers = $query->paginate(15);
 
         return view('livewire.admin.team.team-index', [
