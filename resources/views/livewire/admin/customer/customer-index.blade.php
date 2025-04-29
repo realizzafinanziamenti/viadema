@@ -8,11 +8,11 @@
                 placeholder="Cerca per nome, cognome..." />
 
             @can('create customers')
-                {{-- <a href="{{ route('customer.create') }}" wire:navigate> --}}
-                <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
-                    nuova
-                    anagrafica</flux:button>
-                {{-- </a> --}}
+                <a href="{{ route('customer.create') }}" wire:navigate>
+                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
+                        nuova
+                        anagrafica</flux:button>
+                </a>
             @endcan
         </div>
 
@@ -60,9 +60,9 @@
                             @endcan
 
                             @can('update', $customer)
-                                {{-- <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-edit />
-                                {{-- </a> --}}
+                                <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate>
+                                    <x-table-action-button-edit />
+                                </a>
                             @endcan
 
                             @can('delete', $customer)
