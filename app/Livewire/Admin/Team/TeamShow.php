@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Team;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,6 +14,7 @@ class TeamShow extends Component
     public function mount($id)
     {
         $this->user = User::with('profile')->findOrFail($id);
+        Gate::authorize('view', $this->user);
     }
 
     #[Layout('components.layouts.app')]

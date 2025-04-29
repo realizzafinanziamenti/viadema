@@ -16,18 +16,17 @@
         </div>
 
         <div class="text-sm mb-2.5">
-            <span class="text-gray-custom-4" class="text-gray-custom-4" class="text-gray-custom-4"
-                class="text-gray-custom-4">Email: </span>
+            <span class="text-gray-custom-4">Email: </span>
             <span>{{ $user->email }}</span>
         </div>
 
         <div class="text-sm mb-2.5">
-            <span class="text-gray-custom-4" class="text-gray-custom-4" class="text-gray-custom-4">Cellulare: </span>
+            <span class="text-gray-custom-4">Cellulare: </span>
             <span>{{ $user->profile->phone }}</span>
         </div>
 
         <div class="text-sm mb-2.5">
-            <span class="text-gray-custom-4" class="text-gray-custom-4">Codice Fiscale: </span>
+            <span class="text-gray-custom-4">Codice Fiscale: </span>
             <span>{{ $user->profile->tax_id }}</span>
         </div>
 

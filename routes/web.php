@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Customer\CustomerIndex;
+use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
 use App\Livewire\Admin\Team\TeamShow;
@@ -22,6 +23,8 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
 
     // Customer Routes
     Route::get('customers', CustomerIndex::class)->name('customer.index')->middleware('can:access customers');
+    // Route::get('customers/create', \App\Livewire\Admin\Customer\CustomerCreate::class)->name('customer.create')->middleware('can:create customers');
+    Route::get('customers/{id}', CustomerShow::class)->name('customer.show')->middleware('can:view customers');
 });
 
 Route::middleware(['auth'])->group(function () {

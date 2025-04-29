@@ -66,6 +66,14 @@ class Customer extends Model
         return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
     }
 
+    /**
+     * Accessor to obtain formatted date of birth.
+     */
+    protected function formattedDateOfBirth(): Attribute
+    {
+        return Attribute::get(fn() => $this->date_of_birth?->format('d-m-Y'));
+    }
+
     // END ACCESSORS
 
     // SCOPES
