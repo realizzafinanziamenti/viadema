@@ -36,6 +36,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view team members',
             'update team members',
             'delete team members',
+            // customers permissions
+            'access customers',
+            'create customers',
+            'view customers',
+            'update customers',
+            'delete customers',
         ];
 
         foreach ($permissions as $permission) {
@@ -49,13 +55,24 @@ class RolesAndPermissionsSeeder extends Seeder
          * Assign permissions to roles
          */
         $teamMember->givePermissionTo([
+            // assign team members permissions
             'access team members',
             'view team members',
+            // assign customers permissions
+            'access customers',
+            'create customers',
+            'view customers',
+            'update customers',
+            'delete customers',
         ]);
 
         $observer->givePermissionTo([
+            // assign team members permissions
             'access team members',
             'view team members',
+            // assign customers permissions
+            'access customers',
+            'view customers',
         ]);
     }
 }
