@@ -54,9 +54,9 @@
                     <x-table-data>
                         <div class="flex items-center justify-end w-full gap-3">
                             @can('view', $customer)
-                                {{-- <a href="{{ route('customer.show', ['id' => $customer->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-view />
-                                {{-- </a> --}}
+                                <a href="{{ route('customer.show', ['id' => $customer->id]) }}" wire:navigate>
+                                    <x-table-action-button-view />
+                                </a>
                             @endcan
 
                             @can('update', $customer)
