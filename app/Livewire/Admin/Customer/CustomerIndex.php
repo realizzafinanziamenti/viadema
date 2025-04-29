@@ -51,6 +51,14 @@ class CustomerIndex extends Component
         }
     }
 
+    /**
+     * Updated search bar callback function
+     */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function mount()
     {
         Gate::authorize('viewAny', Customer::class);
@@ -62,6 +70,7 @@ class CustomerIndex extends Component
         $query = Customer::with('user')
             ->orderByDesc('updated_at');
 
+        $query = $query->filterBySearch($this->search);
         $customers = $query->paginate(15);
 
         return view('livewire.admin.customer.customer-index', [
