@@ -68,6 +68,12 @@
                         <flux:error name="form.passwordConfirmation" />
                     </div>
                 </div>
+                {{-- Profile Photo --}}
+                <div class="flex flex-col gap-1.5 col-span-2">
+                    <flux:label>Immagine Profilo</flux:label>
+                    <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
+                        accepted-file-types="image/jpeg,image/png" />
+                </div>
             </div>
 
             {{-- Submit Buttons --}}

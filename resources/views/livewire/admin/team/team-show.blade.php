@@ -7,7 +7,7 @@
 
         <div class="mb-2.5">
             <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
-                class="w-40 h-40 rounded-lg border bg-white" />
+                class="w-auto h-50 rounded-lg border bg-white" />
         </div>
 
         <div class="text-sm mb-2.5">
