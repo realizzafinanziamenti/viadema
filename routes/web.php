@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
 use App\Livewire\Admin\Team\TeamShow;
@@ -9,15 +10,18 @@ use Livewire\Volt\Volt;
 
 Route::permanentRedirect('/', 'login');
 
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     // Dasboard Route
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    Route::view('dashboard', 'dashboard')->name('dashboard');
 
     // Team Member Routes
     Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');
     Route::get('users/team/create', TeamCreate::class)->name('user.team.create')->middleware('can:create team members');
     Route::get('users/team/{id}', TeamShow::class)->name('user.team.show')->middleware('can:view team members');
     Route::get('users/team/{id}/edit', TeamUpdate::class)->name('user.team.edit')->middleware('can:update team members');
+
+    // Customer Routes
+    Route::get('customers', CustomerIndex::class)->name('customer.index')->middleware('can:access customers');
 });
 
 Route::middleware(['auth'])->group(function () {
