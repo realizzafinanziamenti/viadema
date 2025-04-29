@@ -22,7 +22,7 @@ class TeamUpdate extends Component
      */
     public function save(): void
     {
-        Gate::authorize('update', User::class);
+        Gate::authorize('update', $this->user);
         $user = $this->form->update();
 
         $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
@@ -49,8 +49,8 @@ class TeamUpdate extends Component
 
     public function mount($id)
     {
-        Gate::authorize('update', User::class);
         $this->user = User::findOrFail($id);
+        Gate::authorize('update', $this->user);
 
         $this->form->setUser($this->user);
     }
