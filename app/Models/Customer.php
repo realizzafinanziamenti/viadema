@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,4 +55,34 @@ class Customer extends Model
     }
 
     // END RELATIONSHIPS
+
+    // ACCESSORS
+
+    /**
+     * Accessor to obtain full name.
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
+    }
+
+    // END ACCESSORS
+
+    // SCOPES
+
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->where('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
+        });
+    }
+
+    // END SCOPES
 }

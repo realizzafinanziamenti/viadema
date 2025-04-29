@@ -48,9 +48,11 @@
                     <x-icons.icon-akar-inbox />
                 </x-sidebar-item>
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Anagrafica Clienti">
-                    <x-icons.icon-akar-people-group />
-                </x-sidebar-item>
+                @can('access customers')
+                    <x-sidebar-item route="customer.index" routeIs="customer" label="Anagrafica Clienti">
+                        <x-icons.icon-akar-people-group />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Leads">
                     <x-icons.icon-akar-draft />
