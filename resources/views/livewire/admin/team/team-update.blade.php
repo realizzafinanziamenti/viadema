@@ -76,7 +76,7 @@
                         <x-upload-image-container wire:key="photo-preview" wire:transition
                             wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
                             <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
-                                class="rounded w-profile-photo h-40 w-40" />
+                                class="rounded w-profile-photo h-50 w-auto" />
 
                             <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
                         </x-upload-image-container>
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-x-3 {{ !$form->profilePhotoRemoved ? 'mt-18' : 'mt-16' }}">
+            <div class="flex items-center justify-end gap-x-3 mt-18 }}">
                 <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('user.team.index') }}"
                     wire:navigate>
                     <flux:button variant="primary" type="button" size="sm"
