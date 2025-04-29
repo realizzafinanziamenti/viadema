@@ -77,4 +77,8 @@
         {{-- Pagination buttons --}}
         {{ $customers->links() }}
     </x-card>
+
+    {{-- Delete User Modal --}}
+    <x-delete-modal name="delete-customer" header="Conferma Eliminazione Cliente" function="deleteCustomer"
+        message="Sei sicuro di voler eliminare il cliente <strong>{{ $selectedCustomer?->full_name }}</strong>?" />
 </div>
