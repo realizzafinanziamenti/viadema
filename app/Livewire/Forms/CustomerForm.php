@@ -69,7 +69,7 @@ class CustomerForm extends Form
         $this->lastName = $customer->last_name;
         $this->email = $customer->email;
         $this->phone = $customer->phone;
-        $this->dateOfBirth = $customer->date_of_birth;
+        $this->dateOfBirth = $customer->date_of_birth->format('Y-m-d');
         $this->address = $customer->address;
         $this->postalCode = $customer->postal_code;
         $this->city = $customer->city;
@@ -119,6 +119,7 @@ class CustomerForm extends Form
     private function customerData(): array
     {
         return [
+            'user_id' => auth()->user()->id,
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'email' => $this->email ?: null,
