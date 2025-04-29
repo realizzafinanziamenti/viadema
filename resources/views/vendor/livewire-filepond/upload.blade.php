@@ -99,6 +99,17 @@
     <input type="file" x-ref="input">
 
     <style>
+        .filepond--root {
+            margin-bottom: 0 !important;
+        }
+
+        .filepond--drop-label {
+            border: 1px !important;
+            border-style: dashed !important;
+            border-color: var(--color-gray-custom-3) !important;
+            border-radius: 0.5rem !important;
+        }
+
         /* remove filepond credits */
         .filepond--credits {
             display: none !important;
