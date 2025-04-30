@@ -42,6 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view customers',
             'update customers',
             'delete customers',
+            'assign customer to user',
         ];
 
         foreach ($permissions as $permission) {
