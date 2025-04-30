@@ -93,8 +93,8 @@
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Collaboratore *</flux:label>
 
-                        <x-dropdown-select model="form.userId" :selectable-items="$teamMembers" :has-error="$errors->has('form.userId')" searchable
-                            search-model="search" placeholder="Seleziona collaboratore" />
+                        <x-dropdown-select align="top" model="form.userId" :selectable-items="$teamMembers" :has-error="$errors->has('form.userId')"
+                            searchable search-model="search" placeholder="Seleziona collaboratore" />
 
                         <flux:error name="form.userId" />
                     </div>

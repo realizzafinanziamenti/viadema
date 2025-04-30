@@ -164,7 +164,8 @@
             @isset($name) name="{{ $name }}" @endisset
             @if ($mask) x-mask="{{ $mask }}" @endif
             @if ($invalid) aria-invalid="true" data-invalid @endif
-            @if (is_numeric($size)) size="{{ $size }}" @endif data-flux-control data-flux-group-target
+            @if (is_numeric($size)) size="{{ $size }}" @endif data-flux-group-target
+            {{-- data-flux-control removed --}}
             @if ($loading) wire:loading.class="{{ $inputLoadingClasses }}" @endif
             @if ($loading && $wireTarget) wire:target="{{ $wireTarget }}" @endif>
 

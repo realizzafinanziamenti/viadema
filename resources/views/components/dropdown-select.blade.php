@@ -7,6 +7,7 @@
     'searchable' => false,
     'searchModel' => '', // wire:model for search
     'hasError' => false,
+    'align' => 'right',
 ])
 
 <input type="hidden" wire:model="{{ $model }}" x-model="value" />
@@ -20,7 +21,7 @@
 @endphp
 
 <div x-data="{ value: '{{ $selectedValue }}', label: '{{ $initialLabel ?? $placeholder }}' }">
-    <x-dropdown align="right" width="{{ $width }}">
+    <x-dropdown align="{{ $align }}" width="{{ $width }}">
         <x-slot name="trigger">
             <x-dropdown-trigger-button
                 class="{{ $width }} {{ $hasError ? 'border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
@@ -39,8 +40,9 @@
 
         <x-slot name="content">
             @if ($searchable)
-                <flux:input class="{{ $width }}!" wire:model.live.debounce.500ms="{{ $searchModel }}"
-                    icon:trailing="magnifying-glass" x-on:click.stop />
+                <flux:input size="sm" placeholder="{{ $placeholder }}"
+                    wire:model.live.debounce.500ms="{{ $searchModel }}" icon:trailing="magnifying-glass"
+                    x-on:click.stop />
             @endif
 
             <div class="overflow-y-auto max-h-56">
