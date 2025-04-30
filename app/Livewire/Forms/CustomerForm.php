@@ -15,6 +15,7 @@ class CustomerForm extends Form
 {
     public ?Customer $customer = null;
 
+    public $userId = null;
     public $firstName = null;
     public $lastName = null;
     public $email = null;
@@ -28,23 +29,44 @@ class CustomerForm extends Form
 
     protected function rules()
     {
+        return array_merge(
+            [
+                'firstName' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->ignore($this->customer?->id)],
+                'phone' => 'required|string|min:10|max:24',
+                'dateOfBirth' => 'nullable|date',
+                'address' => 'nullable|string|max:255',
+                'postalCode' => 'nullable|string|max:10',
+                'city' => 'nullable|string|max:255',
+                'state' => 'nullable|string|max:255',
+                'taxId' => 'nullable|string|size:16',
+            ],
+            $this->userIdRules()
+        );
+    }
+
+    /**
+     * userId rules
+     * if user is not allowed to assign customer to user, assign customer to current user
+     */
+    protected function userIdRules(): array
+    {
+        if (auth()->user()->can('assign customer to user')) {
+            return [
+                'userId' => ['required', 'exists:users,id'],
+            ];
+        }
+
         return [
-            'firstName' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->ignore($this->customer?->id)],
-            'phone' => 'required|string|min:10|max:24',
-            'dateOfBirth' => 'nullable|date',
-            'address' => 'nullable|string|max:255',
-            'postalCode' => 'nullable|string|max:10',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'taxId' => 'nullable|string|size:16',
+            'userId' => ['nullable'],
         ];
     }
 
     protected function validationAttributes()
     {
         return [
+            'userId' => 'collaboratore',
             'firstName' => 'nome',
             'lastName' => 'cognome',
             'email' => 'email',
@@ -65,11 +87,12 @@ class CustomerForm extends Form
     {
         $this->customer = $customer;
 
+        $this->userId = $customer->user_id;
         $this->firstName = $customer->first_name;
         $this->lastName = $customer->last_name;
         $this->email = $customer->email;
         $this->phone = $customer->phone;
-        $this->dateOfBirth = $customer->date_of_birth->format('Y-m-d');
+        $this->dateOfBirth = $customer->date_of_birth?->format('Y-m-d');
         $this->address = $customer->address;
         $this->postalCode = $customer->postal_code;
         $this->city = $customer->city;
@@ -119,7 +142,8 @@ class CustomerForm extends Form
     private function customerData(): array
     {
         return [
-            'user_id' => auth()->user()->id,
+            // if user is not allowed to assign customer to user, assign customer to current user
+            'user_id' => auth()->user()->can('assign customer to user') ? $this->userId : auth()->id(),
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'email' => $this->email ?: null,
