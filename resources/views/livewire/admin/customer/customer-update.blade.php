@@ -93,14 +93,8 @@
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Collaboratore</flux:label>
 
-                        <select placeholder="Seleziona" wire:model='form.userId'>
-                            <option value="">Seleziona un collaboratore</option>
-                            @foreach ($teamMembers as $teamMember)
-                                <option wire:key='{{ $teamMember->id }}' value="{{ $teamMember->id }}">
-                                    {{ $teamMember->full_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <x-dropdown-select model="form.userId" :selectable-items="$teamMembers" :has-error="$errors->has('form.userId')" searchable
+                            search-model="search" placeholder="Seleziona collaboratore" />
 
                         <flux:error name="form.userId" />
                     </div>

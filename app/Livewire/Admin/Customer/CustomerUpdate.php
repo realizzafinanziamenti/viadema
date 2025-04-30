@@ -14,6 +14,7 @@ class CustomerUpdate extends Component
     public Customer $customer;
     // customer form component
     public CustomerForm $form;
+    public string $search = '';
 
     /**
      * edit assignment
@@ -38,9 +39,12 @@ class CustomerUpdate extends Component
     public function render()
     {
         $teamMembers = User::teamMembers()
+            ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')
-            ->get();
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
 
         return view('livewire.admin.customer.customer-update', [
             'teamMembers' => $teamMembers,

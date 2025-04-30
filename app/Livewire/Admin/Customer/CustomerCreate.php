@@ -13,6 +13,7 @@ class CustomerCreate extends Component
 {
     // customer form component
     public CustomerForm $form;
+    public string $search = '';
 
     /**
      * Save customer
@@ -34,9 +35,12 @@ class CustomerCreate extends Component
     public function render()
     {
         $teamMembers = User::teamMembers()
+            ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')
-            ->get();
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
 
         return view('livewire.admin.customer.customer-create', [
             'teamMembers' => $teamMembers,
