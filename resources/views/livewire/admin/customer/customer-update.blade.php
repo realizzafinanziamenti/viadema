@@ -60,14 +60,26 @@
                         <flux:error name="form.address" />
                     </div>
                 </div>
-                {{-- Postal Code --}}
-                <div class="flex flex-col gap-1.5">
-                    <flux:label>Cap</flux:label>
-                    <div class="flex flex-col gap-0.5">
-                        <flux:input size="sm" wire:model='form.postalCode' />
-                        <flux:error name="form.postalCode" />
+
+                <div class="grid grid-cols-3 gap-6">
+                    {{-- Postal Code --}}
+                    <div class="flex flex-col gap-1.5 col-span-1">
+                        <flux:label>Cap</flux:label>
+                        <div class="flex flex-col gap-0.5">
+                            <flux:input size="sm" wire:model='form.postalCode' />
+                            <flux:error name="form.postalCode" />
+                        </div>
+                    </div>
+                    {{-- Province --}}
+                    <div class="flex flex-col gap-1.5 col-span-2">
+                        <flux:label>Provincia</flux:label>
+                        <div class="flex flex-col gap-0.5">
+                            <flux:input size="sm" wire:model='form.state' />
+                            <flux:error name="form.state" />
+                        </div>
                     </div>
                 </div>
+
                 {{-- City --}}
                 <div class="flex flex-col gap-1.5">
                     <flux:label>Città</flux:label>
@@ -76,14 +88,23 @@
                         <flux:error name="form.city" />
                     </div>
                 </div>
-                {{-- Province --}}
-                <div class="flex flex-col gap-1.5">
-                    <flux:label>Provincia</flux:label>
-                    <div class="flex flex-col gap-0.5">
-                        <flux:input size="sm" wire:model='form.state' />
-                        <flux:error name="form.state" />
+                {{-- Team Member Select --}}
+                @if (auth()->user()->can('assign customer to user'))
+                    <div class="flex flex-col gap-1.5">
+                        <flux:label>Collaboratore</flux:label>
+
+                        <select placeholder="Seleziona" wire:model='form.userId'>
+                            <option value="">Seleziona un collaboratore</option>
+                            @foreach ($teamMembers as $teamMember)
+                                <option wire:key='{{ $teamMember->id }}' value="{{ $teamMember->id }}">
+                                    {{ $teamMember->full_name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <flux:error name="form.userId" />
                     </div>
-                </div>
+                @endif
             </div>
 
             {{-- Submit Buttons --}}

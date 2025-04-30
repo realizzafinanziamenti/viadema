@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Customer;
 
 use App\Livewire\Forms\CustomerForm;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -32,6 +33,13 @@ class CustomerCreate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        return view('livewire.admin.customer.customer-create');
+        $teamMembers = User::teamMembers()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+
+        return view('livewire.admin.customer.customer-create', [
+            'teamMembers' => $teamMembers,
+        ]);
     }
 }
