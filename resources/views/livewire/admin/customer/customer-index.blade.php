@@ -8,24 +8,24 @@
                 placeholder="Cerca per nome, cognome..." />
 
             @can('create customers')
-                {{-- <a href="{{ route('customer.create') }}" wire:navigate> --}}
-                <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
-                    nuova
-                    anagrafica</flux:button>
-                {{-- </a> --}}
+                <a href="{{ route('customer.create') }}" wire:navigate>
+                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
+                        nuova
+                        anagrafica</flux:button>
+                </a>
             @endcan
         </div>
 
         <x-table class="mb-5">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Id cliente" class="w-1/12" />
-                <x-table-header label="Nome cliente" class="w-2/12" />
-                <x-table-header label="Cellulare" class="w-[160px]" />
-                <x-table-header label="Codice fiscale" class="w-[160px]" />
-                <x-table-header label="Città" class="w-[160px]" />
-                <x-table-header label="Email" class="w-2/12" />
-                <x-table-header label="Collaboratore" class="w-2/12" />
+                <x-table-header label="Id cliente" class="w-2/20" />
+                <x-table-header label="Nome cliente" class="w-4/20" />
+                <x-table-header label="Cellulare" class="w-3/20" />
+                <x-table-header label="Codice fiscale" class="w-3/20" />
+                <x-table-header label="Città" class="w-3/20" />
+                <x-table-header label="Email" class="w-3/20" />
+                <x-table-header label="Collaboratore" class="w-4/20" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
                 </x-table-header>
@@ -60,9 +60,9 @@
                             @endcan
 
                             @can('update', $customer)
-                                {{-- <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-edit />
-                                {{-- </a> --}}
+                                <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate>
+                                    <x-table-action-button-edit />
+                                </a>
                             @endcan
 
                             @can('delete', $customer)
