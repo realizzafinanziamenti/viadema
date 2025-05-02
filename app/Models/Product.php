@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use App\ProductStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes, HasFactory;
+
     protected $fillable = [
         'product_type_id',  // tipo prodotto
         'product_subtype_id',  // sottotipo prodotto
