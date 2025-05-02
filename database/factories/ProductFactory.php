@@ -19,15 +19,17 @@ class ProductFactory extends Factory
     {
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
         $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
-        $productStatus = fake()->randomElement([ProductStatus::class]);
+        $productStatus = fake()->randomElement(ProductStatus::class);
         $paidAt = $productStatus === ProductStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
+        $extinguishedAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
+        $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
 
         return [
             'inserted_at' => $insertedAt,
             'started_at' => $startedAt,
             'paid_at' => $paidAt,
-            'extinguished_at' => fake()->dateTimeBetween($paidAt, '+1 year'),
-            'renewable_at' => fake()->dateTimeBetween($paidAt, '+1 year'),
+            'extinguished_at' => $extinguishedAt,
+            'renewable_at' => $renewableAt,
             'product_status' => $productStatus,
             'rate_amount' => fake()->randomFloat(2, 100, 10000),
             'practice_code' => '#' . fake()->unique()->numerify('AB###'),
