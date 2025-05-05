@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\ProductStatus;
+use App\PracticeStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class Practice extends Model
 {
     use SoftDeletes, HasFactory;
 
@@ -26,7 +26,7 @@ class Product extends Model
         'paid_at',  // data liquidazione
         'extinguished_at',  // data di estinzione
         'renewable_at',  // data di rinnovo
-        'product_status',  // stato prodotto
+        'practice_status',  // stato prodotto
         'rate_amount',  // importo rata
         'tan',  // TAN
         'teg',  // TEG
@@ -36,7 +36,7 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'product_status' => ProductStatus::class,
+        'practice_status' => PracticeStatus::class,
         'inserted_at' => 'datetime',
         'started_at' => 'datetime',
         'paid_at' => 'datetime',

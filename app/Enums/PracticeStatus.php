@@ -1,8 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Enums;
 
-enum ProductStatus: int
+enum PracticeStatus: int
 {
     case UNDER_REVIEW = 1;
     case REJECTED = 2;
@@ -14,7 +14,7 @@ enum ProductStatus: int
     /**
      * Check if the current status is the same as the given status
      */
-    public function isStatus(ProductStatus $status): bool
+    public function isStatus(PracticeStatus $status): bool
     {
         return $this === $status;
     }

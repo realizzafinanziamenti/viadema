@@ -12,8 +12,8 @@ class FinancialTable extends Model
         'percentage' => 'decimal:2',
     ];
 
-    // public function products()
+    // public function Practices()
     // {
-    //     return $this->hasMany(Product::class);
+    //     return $this->hasMany(Practice::class);
     // }
 }

@@ -25,7 +25,7 @@
 
             {{-- CRM --}}
             <flux:navlist.group heading="Crm" class="grid">
-                {{-- Products --}}
+                {{-- Practices --}}
                 <flux:navlist.group heading="Prodotti" class="grid mb-0!" expandable customIcon="icon-akar-folder">
                     <x-sidebar-item route="dashboard" routeIs="#" label="Cessione del Quinto" bullet />
 

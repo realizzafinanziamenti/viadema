@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\ProductStatus;
+use App\PracticeStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Practice>
  */
-class ProductFactory extends Factory
+class PracticeFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,8 +19,8 @@ class ProductFactory extends Factory
     {
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
         $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
-        $productStatus = fake()->randomElement(ProductStatus::class);
-        $paidAt = $productStatus === ProductStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
+        $practiceStatus = fake()->randomElement(PracticeStatus::class);
+        $paidAt = $practiceStatus === PracticeStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
         $extinguishedAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
         $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
         $tan = fake()->randomFloat(3, 1.000, 12.000);
@@ -33,7 +33,7 @@ class ProductFactory extends Factory
             'paid_at' => $paidAt,
             'extinguished_at' => $extinguishedAt,
             'renewable_at' => $renewableAt,
-            'product_status' => $productStatus,
+            'practice_status' => $practiceStatus,
             'rate_amount' => fake()->randomFloat(2, 100, 10000),
             'tan' => $tan,
             'teg' => $teg,

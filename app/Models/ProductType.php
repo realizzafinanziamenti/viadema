@@ -8,8 +8,8 @@ class ProductType extends Model
 {
     protected $fillable = ['name'];
 
-    // public function products()
+    // public function Practices()
     // {
-    //     return $this->hasMany(Product::class);
+    //     return $this->hasMany(Practice::class);
     // }
 }

@@ -12,8 +12,8 @@ class Installment extends Model
         'value' => 'integer',
     ];
 
-    // public function products()
+    // public function Practices()
     // {
-    //     return $this->hasMany(Product::class);
+    //     return $this->hasMany(Practice::class);
     // }
 }

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('practices', function (Blueprint $table) {
             $table->id();
 
             // Relazioni
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->date('paid_at')->nullable();  // data liquidazione
             $table->date('extinguished_at')->nullable();  // data di estinzione
             $table->date('renewable_at')->nullable();  // data di rinnovo
-            $table->tinyInteger('product_status');  // stato prodotto
+            $table->tinyInteger('practice_status');  // stato prodotto
             $table->decimal('rate_amount', 10, 2)->nullable();  // importo rata
             $table->decimal('tan', 5, 3)->nullable();               // TAN
             $table->decimal('teg', 5, 2)->nullable();               // TEG
@@ -51,6 +51,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('practices');
     }
 };
