@@ -4,6 +4,7 @@ use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
+use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
 use App\Livewire\Admin\Team\TeamShow;
@@ -28,6 +29,9 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('customers/create', CustomerCreate::class)->name('customer.create')->middleware('can:create customers');
     Route::get('customers/{id}', CustomerShow::class)->name('customer.show')->middleware('can:view customers');
     Route::get('customers/{id}/edit', CustomerUpdate::class)->name('customer.edit')->middleware('can:update customers');
+
+    // Practice Routes
+    Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
 });
 
 Route::middleware(['auth'])->group(function () {
