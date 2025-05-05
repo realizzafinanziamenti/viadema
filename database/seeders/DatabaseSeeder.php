@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             InsuranceSeeder::class,
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
