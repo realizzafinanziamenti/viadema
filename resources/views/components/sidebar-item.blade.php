@@ -3,9 +3,14 @@
     'routeIs' => null,
     'label' => null,
     'bullet' => false,
+    'activeWhenSlug' => null,
 ])
 
 @php
+    $currentSlug = request()->route('type');
+
+    $isActive = $activeWhenSlug === $currentSlug || ($activeWhenSlug === null && $currentSlug === null);
+
     $isActive = request()->routeIs($routeIs . '.*') || request()->routeIs($routeIs);
 
     $activeClass =
@@ -16,7 +21,8 @@
         ($bullet ? 'gap-x-1' : 'px-1 gap-x-2');
 @endphp
 
-<a href="{{ route($route) }}" wire:navigate class="{{ $isActive ? $activeClass : $inactiveClass }}">
+<a href="{{ is_array($route) ? route($route[0], $route[1]) : route($route) }}" wire:navigate
+    class="{{ $isActive ? $activeClass : $inactiveClass }}">
 
     @if ($bullet)
         <span>•</span>
