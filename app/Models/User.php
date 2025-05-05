@@ -150,6 +150,14 @@ class User extends Authenticatable
         return $this->hasMany(Customer::class);
     }
 
+    /**
+     * Get the user's practices.
+     */
+    public function practices(): HasMany
+    {
+        return $this->hasMany(Practice::class);
+    }
+
     // END RELATIONSHIPS
 
     // SCOPES

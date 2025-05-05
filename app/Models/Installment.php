@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Installment extends Model
 {
@@ -12,8 +13,11 @@ class Installment extends Model
         'value' => 'integer',
     ];
 
-    // public function Practices()
-    // {
-    //     return $this->hasMany(Practice::class);
-    // }
+    /**
+     * Get the practices associated with the installment.
+     */
+    public function practices(): HasMany
+    {
+        return $this->hasMany(Practice::class);
+    }
 }

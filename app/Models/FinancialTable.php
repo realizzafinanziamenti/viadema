@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FinancialTable extends Model
 {
@@ -12,8 +13,11 @@ class FinancialTable extends Model
         'percentage' => 'decimal:2',
     ];
 
-    // public function Practices()
-    // {
-    //     return $this->hasMany(Practice::class);
-    // }
+    /**
+     * Get the practices associated with the financial table.
+     */
+    public function practices(): HasMany
+    {
+        return $this->hasMany(Practice::class);
+    }
 }
