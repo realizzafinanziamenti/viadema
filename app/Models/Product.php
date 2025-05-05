@@ -28,7 +28,10 @@ class Product extends Model
         'renewable_at',  // data di rinnovo
         'product_status',  // stato prodotto
         'rate_amount',  // importo rata
-        'notes',
+        'tan',  // TAN
+        'teg',  // TEG
+        'taeg',  // TAEG
+        'notes', // note
         'practice_code',  // id univoco pratica
     ];
 
