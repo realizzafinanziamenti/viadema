@@ -23,6 +23,9 @@ class ProductFactory extends Factory
         $paidAt = $productStatus === ProductStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
         $extinguishedAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
         $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
+        $tan = fake()->randomFloat(3, 1.000, 12.000);
+        $teg = fake()->randomFloat(2, $tan + 0.2, $tan + 5.0);
+        $taeg = fake()->randomFloat(2, $tan + 0.4, $tan + 6.0);
 
         return [
             'inserted_at' => $insertedAt,
@@ -32,6 +35,9 @@ class ProductFactory extends Factory
             'renewable_at' => $renewableAt,
             'product_status' => $productStatus,
             'rate_amount' => fake()->randomFloat(2, 100, 10000),
+            'tan' => $tan,
+            'teg' => $teg,
+            'taeg' => $taeg,
             'practice_code' => '#' . fake()->unique()->numerify('AB###'),
         ];
     }
