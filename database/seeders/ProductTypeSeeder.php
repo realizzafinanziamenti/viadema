@@ -14,10 +14,10 @@ class ProductTypeSeeder extends Seeder
     public function run(): void
     {
         $productTypes = [
-            ['name' => 'Cessione del Quinto'],
-            ['name' => 'Delegazione di Pagamento'],
-            ['name' => 'Mutui'],
-            ['name' => 'Prestiti'],
+            ['name' => 'Cessione del Quinto', 'slug' => 'cessione-del-quinto'],
+            ['name' => 'Delegazione di Pagamento', 'slug' => 'delegazione-di-pagamento'],
+            ['name' => 'Mutui', 'slug' => 'mutui'],
+            ['name' => 'Prestiti', 'slug' => 'prestiti'],
         ];
 
         foreach ($productTypes as $type) {
