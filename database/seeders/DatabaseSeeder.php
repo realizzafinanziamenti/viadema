@@ -18,6 +18,13 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,
+            CustomerTypeSeeder::class,
+            FinancialTableSeeder::class,
+            InstallmentSeeder::class,
+            InsuranceSeeder::class,
+            ProductTypeSeeder::class,
+            ProductSubtypeSeeder::class,
+            PracticeSeeder::class,
         ]);
     }
 }
