@@ -123,11 +123,51 @@ class Practice extends Model
     // ACCESSORS
 
     /**
-     * Accessor to obtain formatted date of birth.
+     * Accessor to obtain formatted started at date.
      */
     protected function formattedStartedAt(): Attribute
     {
         return Attribute::get(fn() => $this->started_at?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted paid at date.
+     */
+    protected function formattedPaidAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->paid_at?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted extinguished at date.
+     */
+    protected function formattedExtinguishedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->extinguished_at?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted taeg.
+     */
+    protected function formattedTaeg(): Attribute
+    {
+        return Attribute::get(fn() => number_format($this->taeg, 2, ',', '.') . '%');
+    }
+
+    /**
+     * Accessor to obtain formatted tan.
+     */
+    protected function formattedTan(): Attribute
+    {
+        return Attribute::get(fn() => number_format($this->tan, 2, ',', '.') . '%');
+    }
+
+    /**
+     * Accessor to obtain formatted rate amount.
+     */
+    protected function formattedRateAmount(): Attribute
+    {
+        return Attribute::get(fn() => number_format($this->rate_amount, 2, ',', '.') . '€');
     }
 
     // END ACCESSORS

@@ -65,17 +65,17 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Rata mensile: </span>
-                    <span>{{ $practice->rate_amount }}</span>
+                    <span>{{ $practice->formatted_rate_amount }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Taeg fisso: </span>
-                    <span>{{ $practice->taeg }}</span>
+                    <span>{{ $practice->formatted_taeg }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Tan fisso: </span>
-                    <span>{{ $practice->tan }}</span>
+                    <span>{{ $practice->formatted_tan }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
