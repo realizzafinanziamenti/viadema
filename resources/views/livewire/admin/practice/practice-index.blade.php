@@ -58,12 +58,7 @@
                     <x-table-data truncate label="{{ $practice->customer->tax_id }}" />
 
                     <x-table-data truncate>
-                        <div
-                            class="flex items-center justify-between w-full max-w-[105px] py-1 px-2 border rounded-lg text-[13px] gap-x-1 font-bold {{ $practice->practice_status->getLabelColor() }}">
-                            <div class="truncate" title="{{ $practice->practice_status->getLabelText() }}">
-                                {{ $practice->practice_status->getLabelText() }}</div>
-                            <x-icons.icon-akar-chevron-left-small default="size-3" class="shrink-0" />
-                        </div>
+                        <x-practice-status-badge :practice="$practice" />
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
@@ -80,9 +75,9 @@
                     <x-table-data>
                         <div class="flex items-center justify-end w-full gap-3">
                             @can('view', $practice)
-                                {{-- <a href="{{ route('practice.show', ['id' => $practice->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-view />
-                                {{-- </a> --}}
+                                <a href="{{ route('practice.show', ['id' => $practice->id]) }}" wire:navigate>
+                                    <x-table-action-button-view />
+                                </a>
                             @endcan
 
                             @can('update', $practice)
