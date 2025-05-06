@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PracticeStatus;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -126,7 +127,7 @@ class Practice extends Model
      */
     protected function formattedStartedAt(): Attribute
     {
-        return Attribute::get(fn() => $this->started_at?->format('d-m-Y'));
+        return Attribute::get(fn() => $this->started_at?->format('d/m/y'));
     }
 
     // END ACCESSORS
@@ -138,10 +139,31 @@ class Practice extends Model
      */
     public function scopeFilterByProductType($query, $type): Builder
     {
-        if ($type) {
-            return $query->where('product_type_id', $type->id);
-        }
-        return $query;
+        return $query->when($type, fn($q) => $q->where('product_type_id', $type->id));
+    }
+
+    /**
+     * Scope a query to only include expired practices.
+     */
+    public function scopeIsExpired($query, bool $expired): Builder
+    {
+        $now = now();
+
+        return $query
+            ->when(
+                $expired === true,
+                fn($q) => $q
+                    ->whereNotNull('extinguished_at')
+                    ->where('extinguished_at', '<=', $now)
+            )
+            ->when(
+                $expired === false,
+                fn($q) => $q
+                    ->where(function ($q) use ($now) {
+                        $q->whereNull('extinguished_at')
+                            ->orWhere('extinguished_at', '>', $now);
+                    })
+            );
     }
 
     // END SCOPES
