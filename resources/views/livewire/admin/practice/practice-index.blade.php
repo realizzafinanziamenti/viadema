@@ -27,7 +27,7 @@
                 <x-table-header label="Cliente" class="w-3/16" />
 
                 @if (!$productType)
-                    <x-table-header label="Prodotto" class="w-[160px]" />
+                    <x-table-header label="Prodotto" class="w-3/16" />
                 @endif
 
                 <x-table-header label="Data apertura" class="w-2/16" />
