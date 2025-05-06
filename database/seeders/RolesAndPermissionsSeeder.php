@@ -43,6 +43,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'update customers',
             'delete customers',
             'assign customer to user',
+            // practices permissions
+            'access practices',
+            'create practices',
+            'view practices',
+            'update practices',
+            'delete practices',
         ];
 
         foreach ($permissions as $permission) {
@@ -65,6 +71,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view customers',
             'update customers',
             'delete customers',
+            // assign practices permissions
+            'access practices',
+            'view practices',
+            'create practices',
+            'update practices',
+            'delete practices',
         ]);
 
         $observer->givePermissionTo([
@@ -74,6 +86,9 @@ class RolesAndPermissionsSeeder extends Seeder
             // assign customers permissions
             'access customers',
             'view customers',
+            // assign practices permissions
+            'access practices',
+            'view practices',
         ]);
     }
 }
