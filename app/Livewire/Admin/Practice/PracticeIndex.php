@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Models\Practice;
 use App\Models\ProductType;
+use App\Traits\HandlesDeletions;
 use Exception;
 use Illuminate\Http\Request;
 use Livewire\Attributes\Layout;
@@ -14,44 +15,41 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination;
+    use WithPagination, WithoutUrlPagination, HandlesDeletions;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
-    public $selectedPractice = null;
+    public Practice|null $selectedPractice = null;
     public $search = '';
 
     /**
      * This method is called when the user clicks the delete button.
      * It sets the selected practice to be deleted.
      */
-    public function selectPracticeForDelete(int $practiceId)
+    public function selectPracticeForDelete(int $id): void
     {
-        try {
-            $this->selectedPractice = Practice::findOrFail($practiceId);
-        } catch (Exception $e) {
-            Toaster::error('Pratica non trovato');
-            return;
-        }
-
-        $this->dispatch('open-modal', 'delete-practice');
+        $this->selectEntityForDelete(
+            id: $id,
+            modelClass: Practice::class,
+            property: 'selectedPractice',
+            modalName: 'delete-practice',
+            notFoundMessage: 'Pratica non trovata'
+        );
     }
 
     /**
      * This method is called when the user clicks the delete button in the modal.
      * It deletes the selected practice and resets the selected practice to null.
      */
-    public function deletePractice()
+    public function deletePractice(): void
     {
-        if ($this->selectedPractice) {
-            // Gate::authorize('delete', $this->selectedPractice);
+        // Gate::authorize('delete', $this->selectedPractice);
 
-            $this->selectedPractice->delete();
-            $this->selectedPractice = null;
-
-            $this->dispatch('close-modal', 'delete-practice');
-            Toaster::success('Pratica eliminata con successo');
-        }
+        $this->deleteSelectedEntity(
+            property: 'selectedPractice',
+            modalName: 'delete-practice',
+            successMessage: 'Pratica eliminata con successo'
+        );
     }
 
     /**

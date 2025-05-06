@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Customer;
 
 use App\Models\Customer;
+use App\Traits\HandlesDeletions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,25 +14,24 @@ use Masmerise\Toaster\Toaster;
 
 class CustomerIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination;
+    use WithPagination, WithoutUrlPagination, HandlesDeletions;
 
-    public $selectedCustomer = null;
+    public Customer|null $selectedCustomer = null;
     public $search = '';
 
     /**
      * This method is called when the user clicks the delete button.
      * It sets the selected customer to be deleted.
      */
-    public function selectCustomerForDelete(int $customerId)
+    public function selectCustomerForDelete(int $id)
     {
-        try {
-            $this->selectedCustomer = Customer::findOrFail($customerId);
-        } catch (Exception $e) {
-            Toaster::error('Cliente non trovato');
-            return;
-        }
-
-        $this->dispatch('open-modal', 'delete-customer');
+        $this->selectEntityForDelete(
+            id: $id,
+            modelClass: Customer::class,
+            property: 'selectedCustomer',
+            modalName: 'delete-customer',
+            notFoundMessage: 'Cliente non trovato'
+        );
     }
 
     /**
@@ -40,15 +40,13 @@ class CustomerIndex extends Component
      */
     public function deleteCustomer()
     {
-        if ($this->selectedCustomer) {
-            Gate::authorize('delete', $this->selectedCustomer);
+        Gate::authorize('delete', $this->selectedCustomer);
 
-            $this->selectedCustomer->delete();
-            $this->selectedCustomer = null;
-
-            $this->dispatch('close-modal', 'delete-customer');
-            Toaster::success('Cliente eliminato con successo');
-        }
+        $this->deleteSelectedEntity(
+            property: 'selectedCustomer',
+            modalName: 'delete-customer',
+            successMessage: 'Cliente eliminato con successo',
+        );
     }
 
     /**
