@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Customer;
 
 use App\Models\Customer;
+use App\Traits\HandlesDeletions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,7 +14,7 @@ use Masmerise\Toaster\Toaster;
 
 class CustomerIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination;
+    use WithPagination, WithoutUrlPagination, HandlesDeletions;
 
     public Customer|null $selectedCustomer = null;
     public $search = '';
@@ -45,7 +46,6 @@ class CustomerIndex extends Component
             property: 'selectedCustomer',
             modalName: 'delete-customer',
             successMessage: 'Cliente eliminato con successo',
-            authorize: true
         );
     }
 
