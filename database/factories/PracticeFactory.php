@@ -19,10 +19,10 @@ class PracticeFactory extends Factory
     {
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
         $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
-        $practiceStatus = fake()->randomElement(PracticeStatus::class);
-        $paidAt = $practiceStatus === PracticeStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
-        $extinguishedAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
-        $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 year') : null;
+        $practiceStatus = fake()->randomElement(PracticeStatus::cases());
+        $paidAt = $practiceStatus->value === PracticeStatus::DISBURSED->value ? fake()->dateTimeBetween($startedAt, 'now') : null;
+        $extinguishedAt = $paidAt ? fake()->dateTimeBetween($paidAt, 'now') : null;
+        $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, 'now') : null;
         $tan = fake()->randomFloat(3, 1.000, 12.000);
         $teg = fake()->randomFloat(2, $tan + 0.2, $tan + 5.0);
         $taeg = fake()->randomFloat(2, $tan + 0.4, $tan + 6.0);

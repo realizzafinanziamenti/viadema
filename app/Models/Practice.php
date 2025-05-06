@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Enums\PracticeStatus;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -72,7 +75,7 @@ class Practice extends Model
      */
     public function teamMember(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -116,4 +119,52 @@ class Practice extends Model
     }
 
     // END RELATIONSHIPS
+
+    // ACCESSORS
+
+    /**
+     * Accessor to obtain formatted date of birth.
+     */
+    protected function formattedStartedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->started_at?->format('d/m/y'));
+    }
+
+    // END ACCESSORS
+
+    // SCOPES
+
+    /**
+     * Scope a query to only include practices of a given product type.
+     */
+    public function scopeFilterByProductType($query, $type): Builder
+    {
+        return $query->when($type, fn($q) => $q->where('product_type_id', $type->id));
+    }
+
+    /**
+     * Scope a query to only include expired practices.
+     */
+    public function scopeIsExpired($query, bool $expired): Builder
+    {
+        $now = now();
+
+        return $query
+            ->when(
+                $expired === true,
+                fn($q) => $q
+                    ->whereNotNull('extinguished_at')
+                    ->where('extinguished_at', '<=', $now)
+            )
+            ->when(
+                $expired === false,
+                fn($q) => $q
+                    ->where(function ($q) use ($now) {
+                        $q->whereNull('extinguished_at')
+                            ->orWhere('extinguished_at', '>', $now);
+                    })
+            );
+    }
+
+    // END SCOPES
 }

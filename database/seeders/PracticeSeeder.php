@@ -31,7 +31,7 @@ class PracticeSeeder extends Seeder
         $customerTypes = CustomerType::all();
 
         foreach ($productTypes as $productType) {
-            for ($i = 0; $i < 25; $i++) {
+            for ($i = 0; $i < 100; $i++) {
                 Practice::factory()->create([
                     'product_type_id' => $productType->id,
                     'product_subtype_id' => $productSubtypes->random()->id,

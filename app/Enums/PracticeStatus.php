@@ -40,12 +40,12 @@ enum PracticeStatus: int
     public function getLabelColor(): string
     {
         return match ($this) {
-            self::UNDER_REVIEW => 'Istruttoria',
-            self::REJECTED => 'Respinta',
-            self::APPROVED => 'Deliberata',
-            self::SUSPENDED => 'Sospesa',
-            self::PENDING => 'In Attesa',
-            self::DISBURSED => 'Liquidata',
+            self::UNDER_REVIEW => 'under-review',
+            self::REJECTED => 'rejected',
+            self::APPROVED => 'approved',
+            self::SUSPENDED => 'suspended',
+            self::PENDING => 'pending',
+            self::DISBURSED => 'disbursed',
         };
     }
 }
