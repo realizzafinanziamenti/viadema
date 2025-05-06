@@ -4,14 +4,18 @@
     'label' => null,
     'bullet' => false,
     'activeWhenSlug' => null,
+    'activeWhenExpired' => false,
 ])
 
 @php
-    $currentSlug = request()->route('type');
+    $currentSlug = request()->route('slug');
+    $currentExpired = request()->boolean('expired');
 
-    $isActive = $activeWhenSlug === $currentSlug || ($activeWhenSlug === null && $currentSlug === null);
+    $slugFlag = $activeWhenSlug === $currentSlug;
+    $expiredFlag = $activeWhenExpired === $currentExpired;
+    $routeFlag = request()->routeIs($routeIs . '.*') || request()->routeIs($routeIs);
 
-    $isActive = request()->routeIs($routeIs . '.*') || request()->routeIs($routeIs);
+    $isActive = $routeFlag && $slugFlag && $expiredFlag;
 
     $activeClass =
         'flex items-center bg-white text-azure-custom text-sm my-0.5 truncate h-9 rounded-sm ' .
@@ -21,6 +25,7 @@
         ($bullet ? 'gap-x-1' : 'px-1 gap-x-2');
 @endphp
 
+{{-- Sidebar item --}}
 <a href="{{ is_array($route) ? route($route[0], $route[1]) : route($route) }}" wire:navigate
     class="{{ $isActive ? $activeClass : $inactiveClass }}">
 

@@ -32,7 +32,7 @@
                     @endphp
 
                     @foreach ($productTypes as $type)
-                        <x-sidebar-item :route="['practice.index', $type->slug]" :activeWhenSlug="$type->slug" routeIs="practice"
+                        <x-sidebar-item :route="['practice.index', ['slug' => $type->slug]]" :activeWhenSlug="$type->slug" routeIs="practice"
                             label="{{ $type->name }}" bullet />
                     @endforeach
                 </flux:navlist.group>
@@ -45,7 +45,7 @@
                     <x-icons.icon-akar-paper />
                 </x-sidebar-item>
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Archivio Pratiche">
+                <x-sidebar-item :route="['practice.index', ['expired' => 1]]" :activeWhenExpired="true" routeIs="practice" label="Archivio Pratiche">
                     <x-icons.icon-akar-inbox />
                 </x-sidebar-item>
 
