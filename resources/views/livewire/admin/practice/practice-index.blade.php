@@ -103,4 +103,8 @@
         {{-- Pagination buttons --}}
         {{ $practices->links() }}
     </x-card>
+
+    {{-- Delete Practice Modal --}}
+    <x-delete-modal name="delete-practice" header="Conferma Eliminazione Pratica" function="deletePractice"
+        message="Sei sicuro di voler eliminare la pratica di <strong>{{ $selectedPractice?->customer?->full_name }}</strong>?" />
 </div>
