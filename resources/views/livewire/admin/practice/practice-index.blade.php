@@ -13,13 +13,15 @@
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
                 placeholder="Cerca..." />
 
-            @can('create customers')
-                {{-- <a href="{{ route('customer.create') }}" wire:navigate> --}}
-                <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
-                    nuova
-                    pratica</flux:button>
-                {{-- </a> --}}
-            @endcan
+            @if (!$expired)
+                @can('create customers')
+                    {{-- <a href="{{ route('customer.create') }}" wire:navigate> --}}
+                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
+                        nuova
+                        pratica</flux:button>
+                    {{-- </a> --}}
+                @endcan
+            @endif
         </div>
 
         <x-table class="mb-5">
