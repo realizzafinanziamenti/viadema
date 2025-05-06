@@ -1,6 +1,8 @@
 <div>
     @if ($productType)
         <x-page-title label="{{ $productType->name }}" class="mt-1" />
+    @elseif ($expired)
+        <x-page-title label="Archivio pratiche" class="mt-1" />
     @else
         <x-page-title label="Gestione pratiche" class="mt-1" />
     @endif
