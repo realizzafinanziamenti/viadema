@@ -36,7 +36,7 @@
 
                 <x-table-header label="Data apertura" class="w-2/16" />
                 <x-table-header label="Codice fiscale" class="w-3/16" />
-                <x-table-header label="Stato pratica" class="w-2/16" />
+                <x-table-header label="Stato pratica" class="min-w-[130px] w-2/16" />
                 <x-table-header label="Collaboratore" class="w-4/16" />
                 <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
@@ -57,8 +57,13 @@
                     <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
                     <x-table-data truncate label="{{ $practice->customer->tax_id }}" />
 
-                    <x-table-data truncate label="{{ $practice->practice_status->getLabelText() }}">
-
+                    <x-table-data truncate>
+                        <div
+                            class="flex items-center justify-between w-full max-w-[105px] py-1 px-2 border rounded-lg text-[13px] gap-x-1 font-bold {{ $practice->practice_status->getLabelColor() }}">
+                            <div class="truncate" title="{{ $practice->practice_status->getLabelText() }}">
+                                {{ $practice->practice_status->getLabelText() }}</div>
+                            <x-icons.icon-akar-chevron-left-small default="size-3" class="shrink-0" />
+                        </div>
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
