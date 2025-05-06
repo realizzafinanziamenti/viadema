@@ -56,15 +56,13 @@
 
                     <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
                     <x-table-data truncate label="{{ $practice->customer->tax_id }}" />
-                    <x-table-data truncate label="{{ $practice->practice_status->getLabelText() }}" />
 
-                    <x-table-data class="inline-flex items-center gap-2.5">
-                        {{-- Profile photo --}}
-                        <img class="object-cover w-10 h-10 border rounded-full shrink-0"
-                            src="{{ $practice->teamMember?->getProfilePhotoUrl() }}" alt="Immagine Profilo Agenzia">
+                    <x-table-data truncate label="{{ $practice->practice_status->getLabelText() }}">
 
-                        <span class="truncate"
-                            title="{{ $practice->teamMember?->full_name }}">{{ $practice->teamMember?->full_name }}</span>
+                    </x-table-data>
+
+                    <x-table-data class="inline-flex items-center">
+                        <x-user-table-data :user="$practice->teamMember" />
                     </x-table-data>
 
                     <x-table-data>

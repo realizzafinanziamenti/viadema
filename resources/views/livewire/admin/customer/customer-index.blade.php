@@ -41,13 +41,8 @@
                     <x-table-data truncate label="{{ $customer->city }}" />
                     <x-table-data truncate label="{{ $customer->email }}" />
 
-                    <x-table-data class="inline-flex items-center gap-2.5">
-                        {{-- Profile photo --}}
-                        <img class="object-cover w-10 h-10 border rounded-full shrink-0"
-                            src="{{ $customer->user->getProfilePhotoUrl() }}" alt="Immagine Profilo Agenzia">
-
-                        <span class="truncate"
-                            title="{{ $customer->user->full_name }}">{{ $customer->user->full_name }}</span>
+                    <x-table-data class="inline-flex items-center">
+                        <x-user-table-data :user="$customer->user" />
                     </x-table-data>
 
                     {{-- Actions --}}
