@@ -7,6 +7,7 @@ use App\Models\ProductType;
 use App\Traits\HandlesDeletions;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
@@ -43,7 +44,7 @@ class PracticeIndex extends Component
      */
     public function deletePractice(): void
     {
-        // Gate::authorize('delete', $this->selectedPractice);
+        Gate::authorize('delete', $this->selectedPractice);
 
         $this->deleteSelectedEntity(
             property: 'selectedPractice',
@@ -62,6 +63,8 @@ class PracticeIndex extends Component
 
     public function mount(Request $request): void
     {
+        Gate::authorize('viewAny', Practice::class);
+
         $slug = $request->route('slug');
 
         $this->type = $slug

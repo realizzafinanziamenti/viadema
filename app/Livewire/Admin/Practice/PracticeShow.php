@@ -14,7 +14,7 @@ class PracticeShow extends Component
     public function mount($id)
     {
         $this->practice = Practice::findOrFail($id);
-        // Gate::authorize('view', $this->practice);
+        Gate::authorize('view', $this->practice);
     }
 
     #[Layout('components.layouts.app')]
