@@ -4,6 +4,7 @@ use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
+use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Team\TeamCreate;
@@ -32,8 +33,8 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('customers/{id}/edit', CustomerUpdate::class)->name('customer.edit')->middleware('can:update customers');
 
     // Practice Routes
+    Route::get('practices/create', PracticeCreate::class)->name('practice.create')->middleware('can:create practices');
     Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
-    // Route::get('practices/create', PracticeCreate::class)->name('practice.create')->middleware('can:create practices');
     Route::get('practices/details/{id}', PracticeShow::class)->name('practice.show')->middleware('can:view practices');
     // Route::get('practices/{id}/edit', PracticeUpdate::class)->name('practice.edit')->middleware('can:update practices');
 });

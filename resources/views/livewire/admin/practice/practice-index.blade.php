@@ -14,12 +14,13 @@
                 placeholder="Cerca..." />
 
             @if (!$expired)
-                @can('create customers')
-                    {{-- <a href="{{ route('customer.create') }}" wire:navigate> --}}
-                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
-                        nuova
-                        pratica</flux:button>
-                    {{-- </a> --}}
+                @can('create practices')
+                    <a href="{{ route('practice.create') }}" wire:navigate>
+                        <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">
+                            Crea
+                            nuova
+                            pratica</flux:button>
+                    </a>
                 @endcan
             @endif
         </div>
