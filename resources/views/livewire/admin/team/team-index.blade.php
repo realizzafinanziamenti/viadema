@@ -37,10 +37,10 @@
                     <x-table-data label="{{ $teamMember->id }}" />
                     <x-table-data truncate label="{{ $teamMember->full_name }}" />
                     <x-table-data truncate label="Per ora niente" />
-                    <x-table-data truncate label="{{ $teamMember->profile->phone }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile->tax_id }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile?->tax_id }}" />
                     <x-table-data truncate label="{{ $teamMember->email }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile->city }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile?->city }}" />
 
                     {{-- Actions --}}
                     <x-table-data class="inline-flex items-center justify-end w-full gap-3">

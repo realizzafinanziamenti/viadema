@@ -48,21 +48,23 @@
             @foreach ($practices as $practice)
                 <tr wire:key='{{ $practice->id }}' class="border-y border-collapse">
                     <x-table-data label="{{ $practice->practice_code }}" />
-                    <x-table-data truncate label="{{ $practice->customer->full_name }}" />
+                    <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
 
                     @if (!$productType)
-                        <x-table-data truncate class="font-bold!" label="{{ $practice->productType->name }}" />
+                        <x-table-data truncate class="font-bold!" label="{{ $practice->productType?->name }}" />
                     @endif
 
                     <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
-                    <x-table-data truncate label="{{ $practice->customer->tax_id }}" />
+                    <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data truncate>
                         <x-practice-status-badge :practice="$practice" />
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
-                        <x-user-table-data :user="$practice->teamMember" />
+                        @if ($practice->teamMember)
+                            <x-user-table-data :user="$practice->teamMember" />
+                        @endif
                     </x-table-data>
 
                     <x-table-data>

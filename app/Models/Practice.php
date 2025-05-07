@@ -75,7 +75,8 @@ class Practice extends Model
      */
     public function teamMember(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')
+            ->withTrashed();
     }
 
     /**
@@ -83,7 +84,8 @@ class Practice extends Model
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)
+            ->withTrashed();
     }
 
     /**
@@ -151,7 +153,7 @@ class Practice extends Model
      */
     protected function formattedTaeg(): Attribute
     {
-        return Attribute::get(fn() => number_format($this->taeg, 2, ',', '.') . '%');
+        return Attribute::get(fn() => $this->taeg !== null ? number_format($this->taeg, 2, ',', '.') . '%' : '-');
     }
 
     /**
@@ -159,7 +161,7 @@ class Practice extends Model
      */
     protected function formattedTan(): Attribute
     {
-        return Attribute::get(fn() => number_format($this->tan, 2, ',', '.') . '%');
+        return Attribute::get(fn() => $this->tan !== null ? number_format($this->tan, 2, ',', '.') . '%' : '-');
     }
 
     /**
@@ -167,7 +169,7 @@ class Practice extends Model
      */
     protected function formattedRateAmount(): Attribute
     {
-        return Attribute::get(fn() => number_format($this->rate_amount, 2, ',', '.') . '€');
+        return Attribute::get(fn() => $this->rate_amount !== null ? number_format($this->rate_amount, 2, ',', '.') . '€' : '-');
     }
 
     // END ACCESSORS

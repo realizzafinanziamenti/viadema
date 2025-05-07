@@ -22,17 +22,17 @@
 
         <div class="text-sm mb-2.5">
             <span class="text-gray-custom-4">Cellulare: </span>
-            <span>{{ $user->profile->phone }}</span>
+            <span>{{ $user->profile?->phone }}</span>
         </div>
 
         <div class="text-sm mb-2.5">
             <span class="text-gray-custom-4">Codice Fiscale: </span>
-            <span>{{ $user->profile->tax_id }}</span>
+            <span>{{ $user->profile?->tax_id }}</span>
         </div>
 
         <div class="text-sm mb-2.5">
             <span class="text-gray-custom-4">Città: </span>
-            <span>{{ $user->profile->city }}</span>
+            <span>{{ $user->profile?->city }}</span>
         </div>
     </x-card>
 </div>

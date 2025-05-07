@@ -16,7 +16,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Prodotto: </span>
-                    <span>{{ $practice->productType->name }}</span>
+                    <span class="font-bold">{{ $practice->productType?->name }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
@@ -38,7 +38,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>
-                    <span>{{ $practice->teamMember->full_name }}</span>
+                    <span>{{ $practice->teamMember?->full_name }}</span>
                 </div>
 
                 @if ($practice->note)
@@ -60,7 +60,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Rate: </span>
-                    <span>{{ $practice->installment->value }}</span>
+                    <span>{{ $practice->installment?->value }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
@@ -94,42 +94,42 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Nome: </span>
-                    <span>{{ $practice->customer->full_name }}</span>
+                    <span>{{ $practice->customer?->full_name }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Email: </span>
-                    <span>{{ $practice->customer->email }}</span>
+                    <span>{{ $practice->customer?->email }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Cellulare: </span>
-                    <span>{{ $practice->customer->phone }}</span>
+                    <span>{{ $practice->customer?->phone }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Indirizzo: </span>
-                    <span>{{ $practice->customer->address }}</span>
+                    <span>{{ $practice->customer?->address }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Cap: </span>
-                    <span>{{ $practice->customer->postal_code }}</span>
+                    <span>{{ $practice->customer?->postal_code }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Città: </span>
-                    <span>{{ $practice->customer->city }}</span>
+                    <span>{{ $practice->customer?->city }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Provincia: </span>
-                    <span>{{ $practice->customer->state }}</span>
+                    <span>{{ $practice->customer?->state }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Codice fiscale: </span>
-                    <span>{{ $practice->customer->tax_id }}</span>
+                    <span>{{ $practice->customer?->tax_id }}</span>
                 </div>
             </x-card>
 
