@@ -27,63 +27,63 @@
                     {{-- First Name --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Nome</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->first_name" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->first_name }}" />
                     </div>
                     {{-- Last Name --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Cognome</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->last_name" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->last_name }}" />
                     </div>
                     {{-- Phone --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Cellulare</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->phone" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->phone }}" />
                     </div>
                     {{-- Date of Birth --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Data di Nascita</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->formatted_date_of_birth" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->formatted_date_of_birth }}" />
                     </div>
                     {{-- Tax ID --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Codice Fiscale</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->tax_id" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->tax_id }}" />
                     </div>
                     {{-- Email --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Email</flux:label>
-                        <flux:input type="email" size="sm" :value="$selectedCustomer?->email" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->email }}" />
                     </div>
                     {{-- Address --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Indirizzo</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->address" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->address }}" />
                     </div>
 
                     <div class="grid grid-cols-3 gap-6">
                         {{-- Postal Code --}}
                         <div class="flex flex-col gap-1.5 col-span-1">
                             <flux:label>Cap</flux:label>
-                            <flux:input size="sm" :value="$selectedCustomer?->postal_code" disabled />
+                            <x-display-input value="{{ $selectedCustomer?->postal_code }}" />
                         </div>
                         {{-- Province --}}
                         <div class="flex flex-col gap-1.5 col-span-2">
                             <flux:label>Provincia</flux:label>
-                            <flux:input size="sm" :value="$selectedCustomer?->state" disabled />
+                            <x-display-input value="{{ $selectedCustomer?->state }}" />
                         </div>
                     </div>
 
                     {{-- City --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Città</flux:label>
-                        <flux:input size="sm" :value="$selectedCustomer?->city" disabled />
+                        <x-display-input value="{{ $selectedCustomer?->city }}" />
                     </div>
 
                     {{-- Team Member Select --}}
                     @if (auth()->user()->can('assign customer to user'))
                         <div class="flex flex-col gap-1.5">
                             <flux:label>Collaboratore</flux:label>
-                            <flux:input size="sm" :value="$selectedCustomer?->user?->full_name" disabled />
+                            <x-display-input value="{{ $selectedCustomer?->user?->full_name }}" />
                         </div>
                     @endif
                 </div>
