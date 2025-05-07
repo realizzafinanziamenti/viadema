@@ -16,40 +16,63 @@ class Practice extends Model
     use SoftDeletes, HasFactory;
 
     protected $fillable = [
-        'product_type_id',  // tipo prodotto
-        'product_subtype_id',  // sottotipo prodotto
-        'user_id',  // collaboratore
-        'customer_id',  // cliente
-        'financial_table_id',  // tabella/piano finanziario
-        'insurance_id',  // assicurazione
-        'installment_id',  // numero rate
-        'customer_type_id',  // tipologia cliente
-        'previous_finance',  // finanziaria estinta
-        'inserted_at',  // data di inserimento in sistema
-        'started_at',  // data di apertura pratica
-        'paid_at',  // data liquidazione
-        'extinguished_at',  // data di estinzione
-        'renewable_at',  // data di rinnovo
-        'practice_status',  // stato prodotto
-        'rate_amount',  // importo rata
-        'tan',  // TAN
-        'teg',  // TEG
-        'taeg',  // TAEG
-        'notes', // note
-        'practice_code',  // id univoco pratica
+        // Relazioni
+        'product_type_id',        // es. Cessione, Mutuo
+        'product_subtype_id',     // es. Mutuo Under 36
+        'user_id',                // collaboratore
+        'customer_id',            // cliente
+        'financial_table_id',     // tabella provvigione
+        'insurance_id',           // assicurazione
+        'installment_id',         // numero rate
+        'customer_type_id',       // tipologia cliente
+
+        // Importi finanziari
+        'amount_disbursed',       // finanziato
+        'total_amount',           // montante
+        'rate_amount',            // importo rata
+        'tan',                    // TAN
+        'teg',                    // TEG
+        'taeg',                   // TAEG
+
+        // Date
+        'inserted_at',            // inserimento sistema
+        'started_at',             // data decorrenza
+        'paid_at',                // data liquidazione
+        'first_due_date',         // data prima rata
+        'last_due_date',          // data ultima rata
+        'extinguished_at',        // data estinzione anticipata
+        'renewable_at',           // data rinnovabilità (calcolata)
+
+        // Stato e flag
+        'practice_status',        // stato pratica
+        'days_transformation',    // trasformazione GG
+        'sum_dec_plus_35',        // somma dec + 35%
+
+        // Dettagli
+        'previous_finance',       // finanziaria estinta
+        'practice_code',          // ID pratica univoco
+        'notes',                  // note libere
     ];
 
     protected $casts = [
-        'practice_status' => PracticeStatus::class,
-        'inserted_at' => 'datetime',
-        'started_at' => 'datetime',
-        'paid_at' => 'datetime',
-        'extinguished_at' => 'datetime',
-        'renewable_at' => 'datetime',
+        'amount_disbursed' => 'decimal:2',
+        'total_amount' => 'decimal:2',
         'rate_amount' => 'decimal:2',
         'tan' => 'decimal:3',
         'teg' => 'decimal:2',
         'taeg' => 'decimal:2',
+
+        'inserted_at' => 'date',
+        'started_at' => 'date',
+        'paid_at' => 'date',
+        'first_due_date' => 'date',
+        'last_due_date' => 'date',
+        'extinguished_at' => 'date',
+        'renewable_at' => 'date',
+
+        'practice_status' => PracticeStatus::class,
+        'days_transformation' => 'integer',
+        'sum_dec_plus_35' => 'decimal:2',
     ];
 
     // RELATIONSHIPS
@@ -170,6 +193,22 @@ class Practice extends Model
     protected function formattedRateAmount(): Attribute
     {
         return Attribute::get(fn() => $this->rate_amount !== null ? number_format($this->rate_amount, 2, ',', '.') . '€' : '-');
+    }
+
+    /**
+     * Accessor to obtain formatted amount disbursed.
+     */
+    protected function formattedAmountDisbursed(): Attribute
+    {
+        return Attribute::get(fn() => $this->amount_disbursed !== null ? number_format($this->amount_disbursed, 2, ',', '.') . '€' : '-');
+    }
+
+    /**
+     * Accessor to obtain formatted total amount.
+     */
+    protected function formattedTotalAmount(): Attribute
+    {
+        return Attribute::get(fn() => $this->total_amount !== null ? number_format($this->total_amount, 2, ',', '.') . '€' : '-');
     }
 
     // END ACCESSORS
