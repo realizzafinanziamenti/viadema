@@ -80,7 +80,7 @@ class Customer extends Model
      */
     protected function formattedDateOfBirth(): Attribute
     {
-        return Attribute::get(fn() => $this->date_of_birth?->format('d-m-Y'));
+        return Attribute::get(fn() => $this->date_of_birth?->format('d/m/y'));
     }
 
     // END ACCESSORS
