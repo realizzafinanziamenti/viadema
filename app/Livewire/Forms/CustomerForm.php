@@ -83,8 +83,13 @@ class CustomerForm extends Form
     /**
      * set customer for update
      */
-    public function setCustomer(Customer $customer)
+    public function setCustomer(?Customer $customer)
     {
+        if (is_null($customer)) {
+            $this->resetCustomerForm();
+            return;
+        }
+
         $this->customer = $customer;
 
         $this->userId = $customer->user_id;
@@ -98,6 +103,25 @@ class CustomerForm extends Form
         $this->city = $customer->city;
         $this->state = $customer->state;
         $this->taxId = $customer->tax_id;
+    }
+
+    /**
+     * Reset all form fields to null.
+     */
+    protected function resetCustomerForm(): void
+    {
+        $this->customer = null;
+        $this->userId = null;
+        $this->firstName = null;
+        $this->lastName = null;
+        $this->email = null;
+        $this->phone = null;
+        $this->dateOfBirth = null;
+        $this->address = null;
+        $this->postalCode = null;
+        $this->city = null;
+        $this->state = null;
+        $this->taxId = null;
     }
 
     /**
