@@ -3,6 +3,7 @@
     'form' => 'form',
     'submitButtonLabel' => 'Crea',
     'teamMembers' => [],
+    'closeModalButton' => false,
 ])
 
 <form wire:submit.prevent='{{ $submitFunction }}' class="w-2xl mx-auto mt-10 mb-5">
@@ -106,12 +107,20 @@
 
     {{-- Submit Buttons --}}
     <div class="flex items-center justify-end gap-x-3 mt-18">
-        <a href="{{ route('customer.index') }}" wire:navigate>
+        @if ($closeModalButton)
             <flux:button variant="primary" type="button" size="sm"
+                x-on:click="$dispatch('close-modal', 'customer-create')"
                 class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
                 Annulla
             </flux:button>
-        </a>
+        @else
+            <a href="{{ route('customer.index') }}" wire:navigate>
+                <flux:button variant="primary" type="button" size="sm"
+                    class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
+                    Annulla
+                </flux:button>
+            </a>
+        @endif
 
         <flux:button variant="primary" type="submit" size="sm"
             class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
