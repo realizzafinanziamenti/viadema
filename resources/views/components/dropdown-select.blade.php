@@ -28,11 +28,11 @@
                 <span>{{ $label }}</span>
 
                 @if ($selectedValue)
-                    <flux:icon.x-circle
+                    <flux:icon.x-mark
                         @click.stop="value = null; label = '{{ $placeholder }}'; $wire.set('{{ $model }}', null);"
-                        class="cursor-pointer hover:text-red-600" />
+                        class="cursor-pointer hover:text-red-600 size-3.5" />
                 @else
-                    <flux:icon.chevron-down />
+                    <flux:icon.chevron-down class="size-3" />
                 @endif
             </x-dropdown-trigger-button>
         </x-slot>
