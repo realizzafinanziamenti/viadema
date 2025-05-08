@@ -14,27 +14,26 @@
 
 @php
     $selectedValue = old($model) ?? data_get($this, $model);
-    $initialLabel =
+    $label =
         $selectedValue !== null && array_key_exists($selectedValue, $selectableItems)
             ? $selectableItems[$selectedValue]
             : null;
 @endphp
 
-<div x-data="{ value: '{{ $selectedValue }}', label: '{{ $initialLabel ?? $placeholder }}' }">
+<div x-data="{ value: @entangle($model).defer }">
     <x-dropdown align="{{ $align }}" width="{{ $width }}">
         <x-slot name="trigger">
             <x-dropdown-trigger-button
                 class="{{ $width }} {{ $hasError ? 'border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
-                <span x-text="label"></span>
+                <span>{{ $label }}</span>
 
-                <template x-if="value">
+                @if ($selectedValue)
                     <flux:icon.x-circle
                         @click.stop="value = null; label = '{{ $placeholder }}'; $wire.set('{{ $model }}', null);"
                         class="cursor-pointer hover:text-red-600" />
-                </template>
-                <template x-if="!value">
+                @else
                     <flux:icon.chevron-down />
-                </template>
+                @endif
             </x-dropdown-trigger-button>
         </x-slot>
 
@@ -50,7 +49,6 @@
                     <x-dropdown-button
                         @click="
                             value = '{{ $key }}';
-                            label = '{{ $value }}';
                             $wire.set('{{ $model }}', {{ $key }});
                         ">
                         {{ $value }}
