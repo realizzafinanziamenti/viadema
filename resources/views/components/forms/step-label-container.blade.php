@@ -1,5 +1,5 @@
 {{-- @props() --}}
 
-<div {{ $attributes->merge(['class' => 'flex items-center justify-between border-b-2 border-collapse']) }}>
+<div {{ $attributes->merge(['class' => 'flex items-center justify-between border-b']) }}>
     {{ $slot }}
 </div>
