@@ -25,7 +25,7 @@ return new class extends Migration
             $table->foreignId('customer_type_id')->nullable()->constrained()->nullOnDelete();   // tipologia cliente
 
             // Importi finanziari
-            $table->decimal('amount_disbursed', 10, 2)->nullable();     // finanziato
+            $table->decimal('amount_disbursed', 10, 2)->nullable();     // finanziato/importo
             $table->decimal('total_amount', 10, 2)->nullable();             // montante
             $table->decimal('rate_amount', 10, 2)->nullable();              // importo rata
             $table->decimal('tan', 5, 3)->nullable();                               // TAN
@@ -34,10 +34,10 @@ return new class extends Migration
 
             // Date
             $table->date('inserted_at')->nullable();                        // inserimento sistema
-            $table->date('started_at')->nullable();                         // data decorrenza
+            $table->date('started_at')->nullable();                         // data d'inizio
             $table->date('paid_at')->nullable();                            // data liquidazione
-            $table->date('first_due_date')->nullable();                // data prima rata
-            $table->date('last_due_date')->nullable();                 // data ultima rata
+            $table->date('first_due_date')->nullable();                // data prima rata / data d'inizio
+            $table->date('last_due_date')->nullable();                 // data ultima rata / data di liquidazione
             $table->date('extinguished_at')->nullable();               // data estinzione anticipata
             $table->date('renewable_at')->nullable();                  // data rinnovabilità (calcolata)
 
