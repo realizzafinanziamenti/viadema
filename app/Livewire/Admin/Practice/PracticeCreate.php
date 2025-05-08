@@ -30,8 +30,6 @@ class PracticeCreate extends Component
     public array $installments = [];
     public array $customerTypes = [];
     public array $practiceStatuses = [];
-    public array $teamMembers = [];
-    public array $customers = [];
     public int $step = 1;
     public string $teamMemberSearch = '';
     public string $customerSearch = '';
@@ -101,7 +99,10 @@ class PracticeCreate extends Component
      */
     public function savePractice(): void
     {
-        //
+        Gate::authorize('create', Practice::class);
+        $practice = $this->practiceForm->store();
+
+        $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
     }
 
     /**
@@ -109,52 +110,28 @@ class PracticeCreate extends Component
      */
     protected function initSelectValues(): void
     {
-        $this->productTypes = ProductType::all()
+        $this->productTypes = ProductType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
 
-        $this->productSubtypes = ProductSubtype::all()
+        $this->productSubtypes = ProductSubtype::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
 
-        $this->financialTables = FinancialTable::all()
+        $this->financialTables = FinancialTable::orderBy('percentage')
             ->pluck('percentage', 'id')
             ->toArray();
 
-        $this->insurances = Insurance::all()
+        $this->insurances = Insurance::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
 
-        $this->installments = Installment::all()
+        $this->installments = Installment::orderBy('value')
             ->pluck('value', 'id')
             ->toArray();
 
-        $this->customerTypes = CustomerType::all()
+        $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
-            ->toArray();
-
-        $this->practiceStatuses = [
-            PracticeStatus::UNDER_REVIEW->value => PracticeStatus::UNDER_REVIEW->getLabelText(),
-            PracticeStatus::REJECTED->value => PracticeStatus::REJECTED->getLabelText(),
-            PracticeStatus::APPROVED->value => PracticeStatus::APPROVED->getLabelText(),
-            PracticeStatus::SUSPENDED->value => PracticeStatus::SUSPENDED->getLabelText(),
-            PracticeStatus::PENDING->value => PracticeStatus::PENDING->getLabelText(),
-            PracticeStatus::DISBURSED->value => PracticeStatus::DISBURSED->getLabelText(),
-        ];
-
-        $this->teamMembers = User::teamMembers()
-            ->filterBySearch($this->teamMemberSearch)
-            ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->get()
-            ->pluck('full_name', 'id')
-            ->toArray();
-
-        $this->customers = Customer::filterBySearch($this->customerSearch)
-            ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->get()
-            ->pluck('full_name', 'id')
             ->toArray();
     }
 
@@ -167,9 +144,24 @@ class PracticeCreate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
+        $teamMembers = User::teamMembers()
+            ->filterBySearch($this->teamMemberSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
+
+        $customers = Customer::filterBySearch($this->customerSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
+
         return view('livewire.admin.practice.practice-create', [
-            'teamMembers' => $this->teamMembers,
-            'customers' => $this->customers,
+            'teamMembers' => $teamMembers,
+            'customers' => $customers,
         ]);
     }
 }

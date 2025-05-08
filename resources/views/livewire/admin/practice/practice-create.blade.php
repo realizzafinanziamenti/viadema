@@ -357,17 +357,17 @@
                     {{-- Product Type --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Prodotto</flux:label>
-                        <x-display-input value="{{ $practiceForm->productTypeId }}" />
+                        <x-display-input :value="$productTypes[$practiceForm->productTypeId] ?? null" />
                     </div>
                     {{-- Product Subtype --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Tipo prodotto</flux:label>
-                        <x-display-input value="{{ $practiceForm->productSubtypeId }}" />
+                        <x-display-input :value="$productSubtypes[$practiceForm->productSubtypeId] ?? null" />
                     </div>
                     {{-- Team Member --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Assegna a</flux:label>
-                        <x-display-input value="{{ $practiceForm->userId }}" />
+                        <x-display-input :value="$teamMembers[$practiceForm->userId] ?? null" />
                     </div>
                     {{-- Started At Date --}}
                     <div class="flex flex-col gap-1.5">
@@ -387,7 +387,7 @@
                     {{-- Installment --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Rate</flux:label>
-                        <x-display-input value="{{ $practiceForm->installmentId }}" />
+                        <x-display-input :value="$installments[$practiceForm->installmentId] ?? null" />
                     </div>
                     {{-- Rate Amount --}}
                     <div class="flex flex-col gap-1.5">
@@ -417,17 +417,17 @@
                     {{-- Customer Type --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Tipologia cliente</flux:label>
-                        <x-display-input value="{{ $practiceForm->customerTypeId }}" />
+                        <x-display-input :value="$customerTypes[$practiceForm->customerTypeId] ?? null" />
                     </div>
                     {{-- Insurance --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Assicurazione</flux:label>
-                        <x-display-input value="{{ $practiceForm->insuranceId }}" />
+                        <x-display-input :value="$insurances[$practiceForm->insuranceId] ?? null" />
                     </div>
                     {{-- Financial Table --}}
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Tabella provvigionale</flux:label>
-                        <x-display-input value="{{ $practiceForm->financialTableId }}" />
+                        <x-display-input :value="$financialTables[$practiceForm->financialTableId] ?? null" />
                     </div>
                     {{-- Notes --}}
                     <div class="flex flex-col gap-1.5 col-span-2">
@@ -456,6 +456,7 @@
     {{-- Create New Customer Modal --}}
     <x-modal name="customer-create" maxWidth="3xl">
         <x-modal-header label="Crea nuovo cliente" />
-        <x-forms.customer-form :teamMembers="$teamMembers" form="customerForm" submitFunction="saveCustomer" />
+        <x-forms.customer-form :teamMembers="$teamMembers" form="customerForm" submitFunction="saveCustomer"
+            closeModalButton />
     </x-modal>
 </div>
