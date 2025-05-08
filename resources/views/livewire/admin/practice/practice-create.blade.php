@@ -16,7 +16,16 @@
                 <div class="grid grid-cols-2 gap-6">
                     {{-- Customer Select --}}
                     <div class="flex flex-col gap-1.5 col-span-2">
-                        <flux:label>Cerca cliente censito</flux:label>
+                        <div class="flex items-center justify-between">
+                            <flux:label>Cerca cliente censito</flux:label>
+
+                            <x-buttons.inline-action-button label="Crea anagrafica nuovo cliente"
+                                x-on:click="$dispatch('open-modal', 'customer-create')">
+                                <x-slot:icon>
+                                    <flux:icon.plus class="size-2.5" />
+                                </x-slot:icon>
+                            </x-buttons.inline-action-button>
+                        </div>
 
                         <x-dropdown-select model="practiceForm.userId" :selectable-items="$customers" :has-error="$errors->has('practiceForm.userId')" searchable
                             search-model="customerSearch" placeholder="Seleziona cliente" />
@@ -258,4 +267,10 @@
 
         </form>
     </x-card>
+
+    {{-- Create New Customer Modal --}}
+    <x-modal name="customer-create" maxWidth="3xl">
+        <x-modal-header label="Crea nuovo cliente" />
+        <x-forms.customer-form :teamMembers="$teamMembers" form="customerForm" submitFunction="saveCustomer" />
+    </x-modal>
 </div>

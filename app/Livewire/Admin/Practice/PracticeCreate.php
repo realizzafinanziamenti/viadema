@@ -50,6 +50,19 @@ class PracticeCreate extends Component
         $this->step = 1;
     }
 
+    /**
+     * Save customer
+     */
+    public function saveCustomer(): void
+    {
+        Gate::authorize('create', Customer::class);
+        $customer = $this->customerForm->store();
+
+        $this->selectedCustomer = $customer;
+        $this->practiceForm->userId = $customer->id;
+        $this->dispatch('close-modal', 'customer-create');
+    }
+
     public function mount()
     {
         Gate::authorize('create', Practice::class);
