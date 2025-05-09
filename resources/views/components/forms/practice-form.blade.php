@@ -16,7 +16,7 @@
     'step' => 1,
 ])
 
-<form wire:submit.prevent='{{ $submitFunction }}' class="w-xl mx-auto mt-10 mb-5" novalidate>
+<form wire:submit.prevent='{{ $submitFunction }}' class="w-xl mx-auto mt-10 mb-5">
 
     {{-- Toggle Buttons --}}
     <x-forms.step-label-container class="mx-auto w-3/4 mb-6">
@@ -26,7 +26,7 @@
     </x-forms.step-label-container>
 
     {{-- STEP 1 --}}
-    <div wire:show="step === 1">
+    @if ($step === 1)
         <div class="grid grid-cols-2 gap-6">
             {{-- Customer Select --}}
             <div class="flex flex-col gap-1.5 col-span-2">
@@ -64,10 +64,10 @@
                 Continua
             </flux:button>
         </div>
-    </div>
+    @endif
 
     {{-- STEP 2 --}}
-    <div wire:show="step === 2">
+    @if ($step === 2)
         <div class="grid grid-cols-2 gap-6">
             {{-- Practice Code --}}
             <div class="flex flex-col gap-1.5">
@@ -244,10 +244,10 @@
                 Continua
             </flux:button>
         </div>
-    </div>
+    @endif
 
     {{-- STEP 3 --}}
-    <div wire:show="step === 3">
+    @if ($step === 3)
         {{-- Customer Details --}}
         <x-forms.customer-preview-fields :selectedCustomer="$selectedCustomer" />
 
@@ -352,6 +352,6 @@
                 {{ $submitButtonLabel }}
             </flux:button>
         </div>
-    </div>
+    @endif
 
 </form>
