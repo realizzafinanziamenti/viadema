@@ -40,7 +40,7 @@ class CustomerForm extends Form
                 'postalCode' => 'nullable|string|max:10',
                 'city' => 'nullable|string|max:255',
                 'state' => 'nullable|string|max:255',
-                'taxId' => 'nullable|string|size:16',
+                'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
             ],
             $this->userIdRules()
         );
