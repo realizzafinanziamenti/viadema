@@ -35,6 +35,15 @@ class PracticeCreate extends Component
     public string $customerSearch = '';
 
     /**
+     * open create customer modal
+     */
+    public function openCreateCustomerModal(): void
+    {
+        $this->teamMemberSearch = '';
+        $this->dispatch('open-modal', 'customer-create');
+    }
+
+    /**
      * updated practice form userId callback function
      */
     public function updatedPracticeFormCustomerId($id): void
@@ -53,6 +62,7 @@ class PracticeCreate extends Component
             return;
         }
 
+        $this->teamMemberSearch = '';
         $this->step = 2;
         $this->dispatch('step-changed');
     }
