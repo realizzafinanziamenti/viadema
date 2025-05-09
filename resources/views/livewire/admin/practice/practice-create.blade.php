@@ -118,7 +118,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     {{-- Practice Code --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Id pratica</flux:label>
+                        <flux:label>Id pratica *</flux:label>
                         <div class="flex flex-col gap-0.5">
                             <flux:input size="sm" wire:model='practiceForm.practiceCode' />
                             <flux:error name="practiceForm.practiceCode" />
@@ -126,7 +126,7 @@
                     </div>
                     {{-- Product Type --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Prodotto</flux:label>
+                        <flux:label>Prodotto *</flux:label>
                         <div class="flex flex-col gap-0.5">
                             <x-dropdown-select model="practiceForm.productTypeId" :selectable-items="$productTypes" :has-error="$errors->has('practiceForm.productTypeId')"
                                 placeholder="Seleziona prodotto" />
@@ -146,7 +146,7 @@
                     </div>
                     {{-- Team Member --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Assegna a</flux:label>
+                        <flux:label>Assegna a *</flux:label>
                         <div class="flex flex-col gap-0.5">
                             <x-dropdown-select model="practiceForm.userId" :selectable-items="$teamMembers" :has-error="$errors->has('practiceForm.userId')"
                                 placeholder="Seleziona collaboratore" />
@@ -156,7 +156,7 @@
                     </div>
                     {{-- Started At Date --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Data di inizio</flux:label>
+                        <flux:label>Data di inizio *</flux:label>
                         <div class="flex flex-col gap-0.5">
                             <flux:input type="date" size="sm" wire:model='practiceForm.startedAt' />
                             <flux:error name="practiceForm.startedAt" />
@@ -172,15 +172,16 @@
                     </div>
                     {{-- Amount Disbursed --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Importo</flux:label>
+                        <flux:label>Importo *</flux:label>
                         <div class="flex flex-col gap-0.5">
-                            <flux:input type="email" size="sm" wire:model='practiceForm.amountDisbursed' />
+                            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                                model="practiceForm.amountDisbursed" symbol="€" />
                             <flux:error name="practiceForm.amountDisbursed" />
                         </div>
                     </div>
                     {{-- Installment --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Rate</flux:label>
+                        <flux:label>Rate *</flux:label>
                         <div class="flex flex-col gap-0.5">
                             <x-dropdown-select model="practiceForm.installmentId" :selectable-items="$installments" :has-error="$errors->has('practiceForm.installmentId')"
                                 placeholder="Seleziona rate" />
@@ -190,25 +191,28 @@
                     </div>
                     {{-- Rate Amount --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Rata mensile</flux:label>
+                        <flux:label>Rata mensile *</flux:label>
                         <div class="flex flex-col gap-0.5">
-                            <flux:input size="sm" wire:model='practiceForm.rateAmount' />
+                            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                                model="practiceForm.rateAmount" symbol="€" />
                             <flux:error name="practiceForm.rateAmount" />
                         </div>
                     </div>
                     {{-- Taeg --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Taeg fisso</flux:label>
+                        <flux:label>Taeg fisso *</flux:label>
                         <div class="flex flex-col gap-0.5">
-                            <flux:input size="sm" wire:model='practiceForm.taeg' />
+                            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                                model="practiceForm.taeg" symbol="%" />
                             <flux:error name="practiceForm.taeg" />
                         </div>
                     </div>
                     {{-- Tan --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:label>Tan fisso</flux:label>
+                        <flux:label>Tan fisso *</flux:label>
                         <div class="flex flex-col gap-0.5">
-                            <flux:input size="sm" wire:model='practiceForm.tan' />
+                            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                                model="practiceForm.tan" symbol="%" />
                             <flux:error name="practiceForm.tan" />
                         </div>
                     </div>
@@ -216,7 +220,8 @@
                     <div class="flex flex-col gap-1.5">
                         <flux:label>Totale dovuto</flux:label>
                         <div class="flex flex-col gap-0.5">
-                            <flux:input size="sm" wire:model='practiceForm.totalAmount' />
+                            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                                model="practiceForm.totalAmount" symbol="€" />
                             <flux:error name="practiceForm.totalAmount" />
                         </div>
                     </div>
