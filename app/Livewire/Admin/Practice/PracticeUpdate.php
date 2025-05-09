@@ -143,7 +143,6 @@ class PracticeUpdate extends Component
      */
     public function savePractice(): void
     {
-        dd('eccoci');
         Gate::authorize('update', $this->practice);
         $practice = $this->practiceForm->update();
 

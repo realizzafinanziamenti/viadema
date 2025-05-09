@@ -6,6 +6,7 @@ use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -71,7 +72,7 @@ class PracticeForm extends Form
             // 'daysTransformation' => ['nullable', 'integer'],
             // 'sumDecPlus35' => ['nullable', 'numeric'],
             // 'previousFinance' => ['nullable', 'string'],
-            'practiceCode' => ['required', 'string', 'unique:practices,practice_code'],
+            'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
             'notes' => ['nullable', 'string'],
         ];
     }
@@ -94,8 +95,8 @@ class PracticeForm extends Form
             'teg' => 'TEG',
             'taeg' => 'TAEG',
             'insertedAt' => "data inserimento sistema",
-            'startedAt' => "data decorrenza",
-            'paidAt' => "data liquidazione",
+            'startedAt' => "data di inizio",
+            'paidAt' => "data di fine",
             'firstDueDate' => "data prima rata",
             'lastDueDate' => "data ultima rata",
             'extinguishedAt' => "data estinzione anticipata",
@@ -131,14 +132,14 @@ class PracticeForm extends Form
             'tan' => $practice->tan,
             'teg' => $practice->teg,
             'taeg' => $practice->taeg,
-            'insertedAt' => $practice->inserted_at,
-            'startedAt' => $practice->started_at,
-            'paidAt' => $practice->paid_at,
-            'firstDueDate' => $practice->first_due_date,
-            'lastDueDate' => $practice->last_due_date,
-            'extinguishedAt' => $practice->extinguished_at,
-            'renewableAt' => $practice->renewable_at,
-            'practiceStatus' => $practice->practice_status,
+            'insertedAt' => $practice->inserted_at?->format('Y-m-d'),
+            'startedAt' => $practice->started_at?->format('Y-m-d'),
+            'paidAt' => $practice->paid_at?->format('Y-m-d'),
+            'firstDueDate' => $practice->first_due_date?->format('Y-m-d'),
+            'lastDueDate' => $practice->last_due_date?->format('Y-m-d'),
+            'extinguishedAt' => $practice->extinguished_at?->format('Y-m-d'),
+            'renewableAt' => $practice->renewable_at?->format('Y-m-d'),
+            'practiceStatus' => $practice->practice_status?->value,
             'daysTransformation' => $practice->days_transformation,
             'sumDecPlus35' => $practice->sum_dec_plus_35,
             'previousFinance' => $practice->previous_finance,
@@ -221,7 +222,7 @@ class PracticeForm extends Form
             ]);
 
             Toaster::success('Pratica aggiornata con successo');
-            return true;
+            return $this->practice;
         } catch (Exception $e) {
             Log::error('Errore durante l\'aggiornamento della pratica: ' . $e->getMessage());
             Toaster::error('Errore durante l\'aggiornamento della pratica: ' . $e->getMessage());

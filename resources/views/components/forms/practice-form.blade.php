@@ -1,10 +1,11 @@
 @props([
-    'submitFunction' => 'save',
+    'submitFunction' => 'savePractice',
     'form' => 'practiceForm',
     'practiceForm',
-    'submitButtonLabel' => 'Crea',
+    'submitButtonLabel' => 'Continua',
     'customers' => [],
     'selectedCustomer' => null,
+    'customerSearch' => 'customerSearch',
     'productTypes' => [],
     'productSubtypes' => [],
     'teamMembers' => [],
@@ -15,7 +16,7 @@
     'step' => 1,
 ])
 
-<form wire:submit.prevent='{{ $submitFunction }}' class="w-xl mx-auto mt-10 mb-5">
+<form wire:submit.prevent='{{ $submitFunction }}' class="w-xl mx-auto mt-10 mb-5" novalidate>
 
     {{-- Toggle Buttons --}}
     <x-forms.step-label-container class="mx-auto w-3/4 mb-6">
@@ -33,7 +34,7 @@
                     <flux:label>Cerca cliente censito</flux:label>
 
                     <x-buttons.inline-action-button label="Crea anagrafica nuovo cliente"
-                        x-on:click="$dispatch('open-modal', 'customer-create')">
+                        wire:click="openCreateCustomerModal">
                         <x-slot:icon>
                             <flux:icon.plus class="size-2.5" />
                         </x-slot:icon>
@@ -41,7 +42,7 @@
                 </div>
 
                 <x-dropdown-select model="practiceForm.customerId" :selectable-items="$customers" :has-error="$errors->has('practiceForm.customerId')" searchable
-                    search-model="customerSearch" placeholder="Seleziona cliente" />
+                    search-model="{{ $customerSearch }}" placeholder="Seleziona cliente" />
 
                 <flux:error name="practiceForm.customerId" />
             </div>
@@ -101,7 +102,7 @@
                 <flux:label>Assegna a *</flux:label>
                 <div class="flex flex-col gap-0.5">
                     <x-dropdown-select model="{{ $form }}.userId" :selectable-items="$teamMembers" :has-error="$errors->has('{{ $form }}.userId')"
-                        placeholder="Seleziona collaboratore" />
+                        placeholder="Seleziona collaboratore" searchable searchModel="teamMemberSearch" />
 
                     <flux:error name="{{ $form }}.userId" />
                 </div>
@@ -222,6 +223,15 @@
             </div>
         </div>
 
+        @if ($errors->any())
+            <ul class="text-sm text-red-600 space-y-1 mt-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        @endif
+
+
         {{-- Next Step Buttons --}}
         <div class="flex items-center justify-end gap-x-3 mt-18">
             <flux:button variant="primary" type="button" size="sm" wire:click="firstPrevStep"
@@ -339,7 +349,7 @@
 
             <flux:button variant="primary" type="submit" size="sm"
                 class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                Continua
+                {{ $submitButtonLabel }}
             </flux:button>
         </div>
     </div>
