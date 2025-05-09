@@ -10,8 +10,6 @@
     'align' => 'right',
 ])
 
-<input type="hidden" wire:model="{{ $model }}" x-model="value" />
-
 @php
     $selectedValue = old($model) ?? data_get($this, $model);
     $label =
@@ -21,6 +19,8 @@
 @endphp
 
 <div x-data="{ value: @entangle($model).defer }">
+    <input type="hidden" wire:model="{{ $model }}" x-model="value" />
+
     <x-dropdown align="{{ $align }}" width="{{ $width }}">
         <x-slot name="trigger">
             <x-dropdown-trigger-button
@@ -41,7 +41,7 @@
             @if ($searchable)
                 <flux:input size="sm" placeholder="{{ $placeholder }}"
                     wire:model.live.debounce.500ms="{{ $searchModel }}" icon:trailing="magnifying-glass"
-                    x-on:click.stop />
+                    x-on:click.stop.prevent="true" />
             @endif
 
             <div class="overflow-y-auto max-h-56">
