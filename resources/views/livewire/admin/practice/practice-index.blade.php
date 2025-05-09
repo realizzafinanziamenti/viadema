@@ -84,9 +84,9 @@
                             @endcan
 
                             @can('update', $practice)
-                                {{-- <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-edit />
-                                {{-- </a> --}}
+                                <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
+                                    <x-table-action-button-edit />
+                                </a>
                             @endcan
 
                             @can('delete', $practice)
