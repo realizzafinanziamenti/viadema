@@ -1,6 +1,7 @@
 @props([
     'submitFunction' => 'save',
     'form' => 'form',
+    'search' => 'search',
     'submitButtonLabel' => 'Crea',
     'teamMembers' => [],
     'closeModalButton' => false,
@@ -98,7 +99,8 @@
                 <flux:label>Collaboratore *</flux:label>
 
                 <x-dropdown-select align="top" model="{{ $form }}.userId" :selectable-items="$teamMembers"
-                    :has-error="$errors->has('{{ $form }}.userId')" searchable search-model="search" placeholder="Seleziona collaboratore" />
+                    :has-error="$errors->has('{{ $form }}.userId')" searchable search-model="{{ $search }}"
+                    placeholder="Seleziona collaboratore" />
 
                 <flux:error name="{{ $form }}.userId" />
             </div>
