@@ -431,8 +431,8 @@
                     </div>
                     {{-- Notes --}}
                     <div class="flex flex-col gap-1.5 col-span-2">
-                        <flux:textarea label="Note" resize="none" wire:model='practiceForm.notes' />
-                        <flux:error name="practiceForm.notes" />
+                        <flux:label>Note</flux:label>
+                        <x-display-textarea value="{{ $practiceForm->notes }}" />
                     </div>
                 </div>
 
