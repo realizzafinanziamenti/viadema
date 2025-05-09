@@ -54,6 +54,7 @@ class PracticeCreate extends Component
         }
 
         $this->step = 2;
+        $this->dispatch('step-changed');
     }
 
     /**
@@ -62,6 +63,7 @@ class PracticeCreate extends Component
     public function firstPrevStep(): void
     {
         $this->step = 1;
+        $this->dispatch('step-changed');
     }
 
     /**
@@ -69,8 +71,14 @@ class PracticeCreate extends Component
      */
     public function secondNextStep(): void
     {
-        // $this->practiceForm->validate();
+        // set practice status to UNDER_REVIEW if not set
+        if (! $this->practiceForm->practiceStatus) {
+            $this->practiceForm->practiceStatus = PracticeStatus::UNDER_REVIEW->value;
+        }
+
+        $this->practiceForm->validate();
         $this->step = 3;
+        $this->dispatch('step-changed');
     }
 
     /**
@@ -79,6 +87,7 @@ class PracticeCreate extends Component
     public function secondPrevStep(): void
     {
         $this->step = 2;
+        $this->dispatch('step-changed');
     }
 
     /**

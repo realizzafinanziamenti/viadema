@@ -1,4 +1,4 @@
-<div class="w-full">
+<div class="w-full" x-data x-on:step-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <x-card class="w-3xl mx-auto">
         <x-card-header label="Crea nuova pratica" />
 
@@ -264,6 +264,15 @@
                         <flux:error name="practiceForm.notes" />
                     </div>
                 </div>
+
+                @if ($errors->any())
+                    <ul class="text-sm text-red-600 space-y-1 mt-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+
 
                 {{-- Next Step Buttons --}}
                 <div class="flex items-center justify-end gap-x-3 mt-18">

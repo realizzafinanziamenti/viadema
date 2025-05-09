@@ -173,7 +173,7 @@ class PracticeForm extends Form
                 'started_at' => $this->startedAt,
                 'paid_at' => $this->paidAt,
                 'renewable_at' => $this->renewableAt,
-                'practice_status' => $this->practiceStatus,
+                'practice_status' => $this->practiceStatus,    // default to UNDER_REVIEW
                 'practice_code' => $this->practiceCode,
                 'notes' => $this->notes
             ]);
