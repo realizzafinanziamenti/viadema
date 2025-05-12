@@ -98,7 +98,7 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Collaboratore *</flux:label>
 
-                <x-dropdown-select align="top" model="{{ $form }}.userId" :selectable-items="$teamMembers"
+                <x-dropdown-select size="sm" align="top" model="{{ $form }}.userId" :selectable-items="$teamMembers"
                     :has-error="$errors->has('{{ $form }}.userId')" searchable search-model="{{ $search }}"
                     placeholder="Seleziona collaboratore" />
 
