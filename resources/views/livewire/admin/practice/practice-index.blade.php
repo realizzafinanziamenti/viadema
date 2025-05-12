@@ -9,19 +9,20 @@
 
     <x-card>
         {{-- Filters and Create Button --}}
-        <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center justify-between gap-4 mb-5">
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca..." />
+                placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
 
-            @if (!$expired)
-                @can('create practices')
-                    <a href="{{ route('practice.create') }}" wire:navigate>
-                        <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">
-                            Crea
-                            nuova
-                            pratica</flux:button>
-                    </a>
-                @endcan
+            <div class="flex items-center gap-4">
+                <x-buttons.filter-modal-button />
+
+                @if (!$expired)
+                    @can('create practices')
+                        <a href="{{ route('practice.create') }}" wire:navigate>
+                            <x-buttons.create-button label="Crea nuova pratica" />
+                        </a>
+                    @endcan
+            </div>
             @endif
         </div>
 
