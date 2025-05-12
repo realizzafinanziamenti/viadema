@@ -21,7 +21,7 @@ class PracticeIndex extends Component
     public ?ProductType $type = null;
     public ?bool $expired = false;
     public Practice|null $selectedPractice = null;
-    public $search = '';
+    public string $search = '';
 
     /**
      * This method is called when the user clicks the delete button.
@@ -77,10 +77,12 @@ class PracticeIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Practice::with('customer', 'teamMember')
+        $query = Practice::with('customer', 'teamMember', 'productType')
             ->filterByProductType($this->type)
-            ->isExpired($this->expired);
+            ->isExpired($this->expired)
+            ->orderByDesc('updated_at');
 
+        $query = $query->filterBySearch($this->search);
         $practices = $query->paginate(15);
 
         return view('livewire.admin.practice.practice-index', [
