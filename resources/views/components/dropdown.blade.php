@@ -1,4 +1,4 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'p-0.5 bg-white'])
+@props(['align' => 'right', 'width' => 'w-48', 'contentClasses' => 'p-0.5 bg-white'])
 
 @php
     $alignmentClasses = match ($align) {
@@ -8,8 +8,8 @@
     };
 
     $width = match ($width) {
-        '48' => 'w-48',
-        'full' => 'w-full',
+        'w-48' => 'w-48',
+        'w-full' => 'w-full',
         default => $width,
     };
 @endphp
