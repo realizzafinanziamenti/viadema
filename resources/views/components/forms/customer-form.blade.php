@@ -7,7 +7,7 @@
     'closeModalButton' => false,
 ])
 
-<form wire:submit.prevent='{{ $submitFunction }}' class="w-2xl mx-auto mt-10 mb-5">
+<form wire:submit.prevent='{{ $submitFunction }}' class="w-full mt-10 mb-5">
     <div class="grid grid-cols-2 gap-6">
         {{-- First Name --}}
         <div class="flex flex-col gap-1.5">
