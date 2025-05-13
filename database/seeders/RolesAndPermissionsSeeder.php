@@ -30,6 +30,13 @@ class RolesAndPermissionsSeeder extends Seeder
          * Create permissions
          */
         $permissions = [
+            // calendar and events permissions
+            'access calendar',
+            'access events',
+            'create events',
+            'view events',
+            'update events',
+            'delete events',
             // team members permissions
             'access team members',
             'create team members',
@@ -62,6 +69,13 @@ class RolesAndPermissionsSeeder extends Seeder
          * Assign permissions to roles
          */
         $teamMember->givePermissionTo([
+            // calendar and events permissions
+            'access calendar',
+            'access events',
+            'create events',
+            'view events',
+            'update events',
+            'delete events',
             // assign team members permissions
             'access team members',
             'view team members',
@@ -80,6 +94,10 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         $observer->givePermissionTo([
+            // calendar and events permissions
+            'access calendar',
+            'access events',
+            'view events',
             // assign team members permissions
             'access team members',
             'view team members',
