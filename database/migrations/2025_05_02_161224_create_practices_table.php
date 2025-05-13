@@ -15,31 +15,41 @@ return new class extends Migration
             $table->id();
 
             // Relazioni
-            $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();  // tipo prodotto
-            $table->foreignId('product_subtype_id')->nullable()->constrained()->nullOnDelete();  // sottotipo prodotto
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();  // collaboratore
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();  // cliente
-            $table->foreignId('financial_table_id')->nullable()->constrained()->nullOnDelete();  // tabella/piano finanziario
-            $table->foreignId('insurance_id')->nullable()->constrained()->nullOnDelete();  // assicurazione
-            $table->foreignId('installment_id')->nullable()->constrained()->nullOnDelete();  // numero rate
-            $table->foreignId('customer_type_id')->nullable()->constrained()->nullOnDelete();  // tipologia cliente
+            $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();                 // es. Cessione, Mutuo
+            $table->foreignId('product_subtype_id')->nullable()->constrained()->nullOnDelete(); // es. Mutuo Under 36
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();                               // collaboratore
+            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();                       // cliente
+            $table->foreignId('financial_table_id')->nullable()->constrained()->nullOnDelete();     // tabella provvigione
+            $table->foreignId('insurance_id')->nullable()->constrained()->nullOnDelete();           // assicurazione
+            $table->foreignId('installment_id')->nullable()->constrained()->nullOnDelete();         // numero rate
+            $table->foreignId('customer_type_id')->nullable()->constrained()->nullOnDelete();   // tipologia cliente
 
-            // Dati finanziari e di tracciamento
-            $table->string('previous_finance')->nullable();  // finanziaria estinta
-            $table->date('inserted_at')->nullable();  // data di inserimento in sistema
-            $table->date('started_at')->nullable();  // data di apertura pratica
-            $table->date('paid_at')->nullable();  // data liquidazione
-            $table->date('extinguished_at')->nullable();  // data di estinzione
-            $table->date('renewable_at')->nullable();  // data di rinnovo
-            $table->tinyInteger('practice_status');  // stato prodotto
-            $table->decimal('rate_amount', 10, 2)->nullable();  // importo rata
-            $table->decimal('tan', 5, 3)->nullable();               // TAN
-            $table->decimal('teg', 5, 2)->nullable();               // TEG
-            $table->decimal('taeg', 5, 2)->nullable();              // TAEG
+            // Importi finanziari
+            $table->decimal('amount_disbursed', 10, 2)->nullable();     // finanziato/importo
+            $table->decimal('total_amount', 10, 2)->nullable();             // montante
+            $table->decimal('rate_amount', 10, 2)->nullable();              // importo rata
+            $table->decimal('tan', 5, 3)->nullable();                               // TAN
+            $table->decimal('teg', 5, 2)->nullable();                               // TEG
+            $table->decimal('taeg', 5, 2)->nullable();                             // TAEG
 
-            // Codice e note
-            $table->text('notes')->nullable();
-            $table->string('practice_code')->unique();  // id univoco pratica
+            // Date
+            $table->date('inserted_at')->nullable();                        // inserimento sistema
+            $table->date('started_at')->nullable();                         // data d'inizio
+            $table->date('paid_at')->nullable();                            // data liquidazione
+            $table->date('first_due_date')->nullable();                // data prima rata / data d'inizio
+            $table->date('last_due_date')->nullable();                 // data ultima rata / data di liquidazione
+            $table->date('extinguished_at')->nullable();               // data estinzione anticipata
+            $table->date('renewable_at')->nullable();                  // data rinnovabilità (calcolata)
+
+            // Stato e flag
+            $table->tinyInteger('practice_status');                         // stato pratica
+            $table->integer('days_transformation')->nullable();        // Trasformazione GG (differenza giorni?)
+            $table->decimal('sum_dec_plus_35', 10, 2)->nullable();     // somma dec + 35% (se utile davvero)
+
+            // Dettagli
+            $table->string('previous_finance')->nullable();            // finanziaria estinta
+            $table->string('practice_code')->unique();                   // ID pratica univoco
+            $table->text('notes')->nullable();                                  // note libere
 
             $table->timestamps();
             $table->softDeletes();

@@ -10,31 +10,30 @@
     'align' => 'right',
 ])
 
-<input type="hidden" wire:model="{{ $model }}" x-model="value" />
-
 @php
     $selectedValue = old($model) ?? data_get($this, $model);
-    $initialLabel =
+    $label =
         $selectedValue !== null && array_key_exists($selectedValue, $selectableItems)
             ? $selectableItems[$selectedValue]
             : null;
 @endphp
 
-<div x-data="{ value: '{{ $selectedValue }}', label: '{{ $initialLabel ?? $placeholder }}' }">
+<div x-data="{ value: @entangle($model).defer }">
+    <input type="hidden" wire:model="{{ $model }}" x-model="value" />
+
     <x-dropdown align="{{ $align }}" width="{{ $width }}">
         <x-slot name="trigger">
             <x-dropdown-trigger-button
                 class="{{ $width }} {{ $hasError ? 'border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
-                <span x-text="label"></span>
+                <span>{{ $label }}</span>
 
-                <template x-if="value">
-                    <flux:icon.x-circle
+                @if ($selectedValue)
+                    <flux:icon.x-mark
                         @click.stop="value = null; label = '{{ $placeholder }}'; $wire.set('{{ $model }}', null);"
-                        class="cursor-pointer hover:text-red-600" />
-                </template>
-                <template x-if="!value">
-                    <flux:icon.chevron-down />
-                </template>
+                        class="cursor-pointer hover:text-red-600 size-3.5" />
+                @else
+                    <flux:icon.chevron-down class="size-3" />
+                @endif
             </x-dropdown-trigger-button>
         </x-slot>
 
@@ -42,7 +41,7 @@
             @if ($searchable)
                 <flux:input size="sm" placeholder="{{ $placeholder }}"
                     wire:model.live.debounce.500ms="{{ $searchModel }}" icon:trailing="magnifying-glass"
-                    x-on:click.stop />
+                    x-on:click.stop.prevent="true" />
             @endif
 
             <div class="overflow-y-auto max-h-56">
@@ -50,7 +49,6 @@
                     <x-dropdown-button
                         @click="
                             value = '{{ $key }}';
-                            label = '{{ $value }}';
                             $wire.set('{{ $model }}', {{ $key }});
                         ">
                         {{ $value }}

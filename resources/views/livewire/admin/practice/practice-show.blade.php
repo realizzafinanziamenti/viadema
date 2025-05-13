@@ -54,8 +54,8 @@
                 <x-card-header class="mb-6" label="Totale dovuto" />
 
                 <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Liquidato: </span>
-                    <span></span>
+                    <span class="text-gray-custom-4">Finanziato: </span>
+                    <span>{{ $practice->formatted_amount_disbursed }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
@@ -80,7 +80,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Totale dovuto: </span>
-                    <span></span>
+                    <span>{{ $practice->formatted_total_amount }}</span>
                 </div>
             </x-card>
 
