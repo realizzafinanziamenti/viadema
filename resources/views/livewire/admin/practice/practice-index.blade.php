@@ -106,4 +106,34 @@
     {{-- Delete Practice Modal --}}
     <x-delete-modal name="delete-practice" header="Conferma Eliminazione Pratica" function="deletePractice"
         message="Sei sicuro di voler eliminare la pratica di <strong>{{ $selectedPractice?->customer?->full_name }}</strong>?" />
+
+    {{-- Filter Modal --}}
+    <x-modals.filter-modal header="Filtra pratiche">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1.5">
+                <flux:label>Ordine elenco</flux:label>
+                <x-dropdown-select model="selectedPracticeStatus" :selectable-items="$practiceStatuses" placeholder="Ordina per" />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <flux:label>Stato pratica</flux:label>
+                <x-dropdown-select model="selectedPracticeStatus" :selectable-items="$practiceStatuses" placeholder="Filtra per stato" />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <flux:label>Data apertura</flux:label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <flux:input type="date" wire:model='startDate' />
+                        <flux:error name="startDate" />
+                    </div>
+
+                    <div class="col-span-1">
+                        <flux:input type="date" wire:model='endDate' />
+                        <flux:error name="endDate" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </x-modals.filter-modal>
 </div>
