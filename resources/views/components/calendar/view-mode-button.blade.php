@@ -4,7 +4,7 @@
     'viewMode' => 'month',
 ])
 
-<button wire:click="$set('viewMode', '{{ $view }}')"
+<button wire:click="setViewMode('{{ $view }}')"
     {{ $attributes->merge([
         'type' => 'button',
         'class' =>
