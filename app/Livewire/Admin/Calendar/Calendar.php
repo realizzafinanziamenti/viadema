@@ -40,14 +40,35 @@ class Calendar extends Component
     public function setViewMode(string $mode)
     {
         $this->viewMode = $mode;
-        $this->setInitialDate();
+        // $this->setInitialDate();  // decommenta se vuoi resettare la data iniziale quando cambi modalità
+        $this->applyViewData();
+    }
 
-        match ($mode) {
-            'month' => $this->calculateMonthData(),
-            'week' => $this->calculateWeekData(),
-            'day' => null,
-            default => null,
-        };
+    /**
+     * Set the current date to today
+     */
+    public function setToday()
+    {
+        $this->currentDate = Carbon::now();
+        $this->applyViewData();
+    }
+
+    /**
+     * aggiorna i dati in base alla data corrente
+     */
+    public function applyViewData()
+    {
+        if ($this->viewMode === 'month') {
+            $this->currentMonth = $this->currentDate->month;
+            $this->currentYear = $this->currentDate->year;
+            $this->calculateMonthData();
+        }
+
+        if ($this->viewMode === 'week') {
+            $this->currentWeekStart = $this->currentDate->copy()->startOfWeek();
+            $this->currentWeekEnd = $this->currentDate->copy()->endOfWeek();
+            $this->calculateWeekData();
+        }
     }
 
     /**
@@ -55,33 +76,29 @@ class Calendar extends Component
      */
     public function calculateMonthData()
     {
-        if ($this->viewMode === 'month') {
-            // get days in current month
-            $this->daysInCurrentMonth = Carbon::create($this->currentYear, $this->currentMonth)->daysInMonth;
-            // get first day of current month (0 = Monday, 6 = Sunday)
-            $firstDay = Carbon::create($this->currentYear, $this->currentMonth, 1);
-            $this->firstDayOfMonth = $firstDay->dayOfWeek === 0 ? 6 : $firstDay->dayOfWeek - 1;
-            // get previous month days
-            $prevMonth = Carbon::create($this->currentYear, $this->currentMonth)->subMonth();
-            $this->daysInPrevMonth = $prevMonth->daysInMonth;
-            // get previous month start
-            $this->prevMonthStart = $this->daysInPrevMonth - $this->firstDayOfMonth + 1;
-            // calculate total days and weeks in calendar
-            $this->totalDays = $this->firstDayOfMonth + $this->daysInCurrentMonth;
-            $this->totalWeeks = ceil($this->totalDays / 7);
-            // get first calendar date
-            $this->firstCalendarDate = Carbon::create($this->currentYear, $this->currentMonth, 1)
-                ->subDays($this->firstDayOfMonth)
-                ->toDateString();
-            // get last calendar date
-            $this->lastCalendarDate = Carbon::create($this->currentYear, $this->currentMonth, $this->daysInCurrentMonth)
-                ->addDays(($this->totalWeeks * 7) - $this->totalDays)
-                ->toDateString();
-            // get days in next month
-            $this->daysInNextMonth = ($this->totalWeeks * 7) - $this->totalDays;
-        }
-
-        // $this->loadEvents();
+        // get days in current month
+        $this->daysInCurrentMonth = $this->currentDate->daysInMonth;
+        // get first day of current month (0 = Monday, 6 = Sunday)
+        $firstDay = $this->currentDate->copy()->startOfMonth();
+        $this->firstDayOfMonth = $firstDay->dayOfWeek === 0 ? 6 : $firstDay->dayOfWeek - 1;
+        // get previous month days
+        $prevMonth = $this->currentDate->copy()->subMonth();
+        $this->daysInPrevMonth = $prevMonth->daysInMonth;
+        // get previous month start
+        $this->prevMonthStart = $this->daysInPrevMonth - $this->firstDayOfMonth + 1;
+        // calculate total days and weeks in calendar
+        $this->totalDays = $this->firstDayOfMonth + $this->daysInCurrentMonth;
+        $this->totalWeeks = ceil($this->totalDays / 7);
+        // get first calendar date
+        $this->firstCalendarDate = Carbon::create($this->currentYear, $this->currentMonth, 1)
+            ->subDays($this->firstDayOfMonth)
+            ->toDateString();
+        // get last calendar date
+        $this->lastCalendarDate = Carbon::create($this->currentYear, $this->currentMonth, $this->daysInCurrentMonth)
+            ->addDays(($this->totalWeeks * 7) - $this->totalDays)
+            ->toDateString();
+        // get days in next month
+        $this->daysInNextMonth = ($this->totalWeeks * 7) - $this->totalDays;
     }
 
     /**
@@ -89,14 +106,7 @@ class Calendar extends Component
      */
     public function calculateWeekData()
     {
-        if ($this->viewMode === 'week') {
-            if (!$this->currentWeekStart) {
-                $this->currentWeekStart = Carbon::now()->startOfWeek();
-            }
-            if (!$this->currentWeekEnd) {
-                $this->currentWeekEnd = Carbon::now()->endOfWeek();
-            }
-        }
+        //
     }
 
     /**
@@ -104,22 +114,14 @@ class Calendar extends Component
      */
     public function prev()
     {
-        if ($this->viewMode === 'month') {
-            $this->currentMonth--;
-            if ($this->currentMonth < 1) {
-                $this->currentMonth = 12;
-                $this->currentYear--;
-            }
-            $this->currentDate = Carbon::create($this->currentYear, $this->currentMonth, 1);
-            $this->calculateMonthData();
-        } elseif ($this->viewMode === 'week') {
-            $this->currentWeekStart = $this->currentWeekStart->subWeek();
-            $this->currentWeekEnd = $this->currentWeekEnd->subWeek();
-            $this->currentDate = $this->currentWeekStart;
-            $this->calculateWeekData();
-        } elseif ($this->viewMode === 'day') {
-            $this->currentDate = $this->currentDate->subDay();
-        }
+        $this->currentDate = match ($this->viewMode) {
+            'month' => $this->currentDate->copy()->subMonth(),
+            'week'  => $this->currentDate->copy()->subWeek(),
+            'day'   => $this->currentDate->copy()->subDay(),
+            default => $this->currentDate,
+        };
+
+        $this->applyViewData();
     }
 
     /**
@@ -127,33 +129,20 @@ class Calendar extends Component
      */
     public function next()
     {
-        if ($this->viewMode === 'month') {
-            $this->currentMonth++;
-            if ($this->currentMonth > 12) {
-                $this->currentMonth = 1;
-                $this->currentYear++;
-            }
-            $this->currentDate = Carbon::create($this->currentYear, $this->currentMonth, 1);
-            $this->calculateMonthData();
-        } elseif ($this->viewMode === 'week') {
-            $this->currentWeekStart = $this->currentWeekStart->addWeek();
-            $this->currentWeekEnd = $this->currentWeekEnd->addWeek();
-            $this->currentDate = $this->currentWeekStart;
-            $this->calculateWeekData();
-        } elseif ($this->viewMode === 'day') {
-            $this->currentDate = $this->currentDate->addDay();
-        }
+        $this->currentDate = match ($this->viewMode) {
+            'month' => $this->currentDate->copy()->addMonth(),
+            'week'  => $this->currentDate->copy()->addWeek(),
+            'day'   => $this->currentDate->copy()->addDay(),
+            default => $this->currentDate,
+        };
+
+        $this->applyViewData();
     }
 
     public function mount()
     {
         $this->setInitialDate();
-
-        match ($this->viewMode) {
-            'month' => $this->calculateMonthData(),
-            'week' => $this->calculateWeekData(),
-            default => null
-        };
+        $this->setViewMode($this->viewMode);
     }
 
     #[Layout('components.layouts.app')]

@@ -4,24 +4,26 @@
     'firstDayOfMonth',
     'daysInCurrentMonth',
     'prevMonthStart',
+    'currentDate',
     'currentYear',
     'currentMonth',
     'daysInCurrentMonth',
     'daysInNextMonth',
     'totalWeeks',
+    'currentWeekStart',
+    'currentWeekEnd',
 ])
 
 @php $cellIndex = 0; @endphp {{-- indice globale celle, per sapere dove ci troviamo --}}
 
-<div class="border rounded-lg">
-    {{ dump($viewMode) }}
+<div>
     {{-- Monthly View --}}
     @if ($viewMode === 'month')
         <div x-data="{ animate: false }" x-init="setTimeout(() => animate = true, 100)" x-bind:class="animate ? 'opacity-100' : 'opacity-0'"
-            class="transition-opacity duration-200 ease-in-out opacity-0">
+            class="transition-opacity duration-200 ease-in-out opacity-0 border rounded-lg">
 
             {{-- Header --}}
-            <div class="grid grid-cols-7 text-sm h-11 text-azure-custom bg-azure-custom-light rounded-t-lg">
+            <div class="grid grid-cols-7 text-sm h-10 text-azure-custom bg-azure-custom-light rounded-t-lg">
                 <div class="flex items-center justify-center">Lunedì</div>
                 <div class="flex items-center justify-center">Martedì</div>
                 <div class="flex items-center justify-center">Mercoledì</div>
@@ -98,7 +100,7 @@
                         </div>
 
                         <!-- Verifica la presenza di eventi -->
-                        <div class="flex flex-col mt-1 min-h-32 gap-y-1">
+                        <div class="flex flex-col mt-1 min-h-24 gap-y-1">
                             {{-- @foreach ($currentMonthEvents as $event)
                                 @if ($event->start_date->toDateString() === $currentDate)
                                     <x-calendar-monthly-event :event="$event" />
@@ -139,7 +141,7 @@
                                 {{ $i }}</div>
                         </div>
 
-                        <div class="flex flex-col mt-1 min-h-32 gap-y-1">
+                        <div class="flex flex-col mt-1 min-h-24 gap-y-1">
                             {{-- @foreach ($nextMonthEvents as $event)
                                 @if ($event->start_date->toDateString() === $currentDate)
                                     <x-calendar-monthly-event :event="$event" />
@@ -153,5 +155,96 @@
     @endif
 
     {{-- Weekly View --}}
+    @if ($viewMode === 'week')
+        <div class="flex flex-col transition-opacity duration-200 ease-in-out opacity-0" x-data="{ animate: false }"
+            x-init="setTimeout(() => animate = true, 100)" x-bind:class="animate ? 'opacity-100' : 'opacity-0'">
+            {{-- Header Row --}}
+            <div class="flex h-10">
+                <div class="w-20">{{-- Empty row  --}}</div>
 
+                <div class="grid flex-1 grid-cols-7  rounded-t-lg">
+                    @foreach (range(0, 6) as $i)
+                        @php
+                            $date = $currentWeekStart->copy()->addDays($i);
+                            $currentDate = $date->toDateString();
+                        @endphp
+
+                        <div wire:key='week-header-{{ $i }}'
+                            class="flex items-center justify-center text-sm border
+                            {{ $currentDate === now()->toDateString() ? 'font-extrabold bg-azure-custom text-azure-custom-light border-azure-custom' : 'text-azure-custom bg-azure-custom-light border-azure-custom-light' }}
+                            {{ $currentDate === $currentWeekStart->toDateString() ? 'rounded-tl-lg' : '' }}
+                            {{ $currentDate === $currentWeekEnd->toDateString() ? 'rounded-tr-lg' : '' }}">
+                            {{ $date->translatedFormat('l d') }}
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Hour Rows --}}
+            @foreach (range(8, 21) as $hour)
+                <div class="flex min-h-24" wire:key='week-hour-{{ $hour }}'>
+                    <!-- Colonna delle Ore -->
+                    <div class="flex items-center justify-center w-20 text-xs border-b text-gray-custom-4">
+                        {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00
+                    </div>
+
+                    <!-- Corpo della colonna per gli eventi -->
+                    <div class="grid flex-1 grid-cols-7">
+                        @foreach (range(0, 6) as $i)
+                            @php
+                                $date = $currentWeekStart->copy()->addDays($i);
+                            @endphp
+
+                            <div class="flex flex-col p-1 border-b border-e {{ $i === 0 ? 'border-s' : '' }} gap-y-1 {{ $i === 6 && $hour === 21 ? 'rounded-br-lg' : '' }}"
+                                wire:key='week-hour-{{ $hour }}-{{ $i }}'>
+                                {{-- @foreach ($currentWeekEvents as $event)
+                                    @if ($event->start_date->toDateString() === $date->toDateString() && $event->start_time->format('H') == $hour)
+                                        <x-calendar-daily-weekly-event :event="$event" />
+                                    @endif
+                                @endforeach --}}
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    {{-- Daily View --}}
+    @if ($viewMode === 'day')
+        <div class="flex flex-col transition-opacity duration-200 ease-in-out opacity-0" x-data="{ animate: false }"
+            x-init="setTimeout(() => animate = true, 100)" x-bind:class="animate ? 'opacity-100' : 'opacity-0'">
+            {{-- Header Row --}}
+            <div class="flex h-10">
+                <div class="w-20">{{-- Empty row  --}}</div>
+
+                <div
+                    class="flex items-center justify-center flex-1 rounded-t-lg text-sm
+                    {{ $currentDate->toDateString() === now()->toDateString() ? 'font-extrabold bg-azure-custom text-azure-custom-light' : 'text-azure-custom bg-azure-custom-light' }}">
+                    {{ ucfirst($currentDate->translatedFormat('l d')) }}
+                </div>
+            </div>
+
+            {{-- Hour Rows --}}
+            @foreach (range(8, 21) as $hour)
+                <div class="flex flex-1 border-b min-h-24 {{ $hour === 21 ? 'rounded-br-lg' : '' }}"
+                    wire:key='day-hour-{{ $hour }}'>
+                    <!-- Colonna delle Ore -->
+                    <div class="flex items-center justify-center w-20 text-xs text-gray-4">
+                        {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00
+                    </div>
+
+                    <!-- Corpo della colonna per gli eventi -->
+                    <div
+                        class="grid flex-1 grid-cols-4 gap-1 p-1 border-s border-e {{ $hour === 21 ? 'rounded-br-lg' : '' }}">
+                        {{-- @foreach ($currentDayEvents as $event)
+                            @if ($event->start_time->format('H') == $hour)
+                                <x-calendar-daily-weekly-event :event="$event" />
+                            @endif
+                        @endforeach --}}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
 </div>

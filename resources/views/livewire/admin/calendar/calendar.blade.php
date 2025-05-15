@@ -39,34 +39,31 @@
                 <x-calendar.view-mode-button label="Giorno" view="day" :viewMode="$viewMode"
                     class="rounded-r-md border-y border-r
                 {{ $viewMode === 'day' ? 'bg-blue-custom text-white' : 'text-blue-custom' }}" />
-                {{ dump($viewMode) }}
             </div>
+
+            {{-- Today Button --}}
+            <button wire:click="setToday"
+                class='px-3 py-1.5 text-sm border border-azure-custom cursor-pointer bg-azure-custom
+            text-white hover:bg-azure-custom-hover rounded-md'>
+                Oggi
+            </button>
 
         </div>
 
         {{-- SearchBar --}}
-        <flux:input class="w-sm! xl:w-lg! mb-6" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-            placeholder="Cerca per nome, cognome..." />
-
-        <div class="grid grid-cols-6 gap-x-5">
-
-            {{-- Calendar --}}
-            <div class="col-span-5">
-                <x-calendar.calendar :events="$events" :viewMode="$viewMode" :currentDate="$currentDate" :currentYear="$currentYear"
-                    :currentMonth="$currentMonth" :firstDayOfMonth="$firstDayOfMonth" :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth" :prevMonthStart="$prevMonthStart"
-                    :totalWeeks="$totalWeeks" />
-            </div>
+        <div class="flex items-center justify-between mb-6">
+            <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
+                placeholder="Cerca per nome, cognome..." />
 
             {{-- Event List --}}
-            <div class="col-span-1 border">
-                <flux:button icon="plus"
-                    class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! max-w-[210px] w-full">
-                    Aggiungi Evento</flux:button>
-
-                {{-- <x-calendar.event-list :events="$events" /> --}}
-            </div>
-
+            <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+                Aggiungi Evento</flux:button>
         </div>
+
+        {{-- Calendar --}}
+        <x-calendar.calendar :events="$events" :viewMode="$viewMode" :currentDate="$currentDate" :currentYear="$currentYear" :currentMonth="$currentMonth"
+            :firstDayOfMonth="$firstDayOfMonth" :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth" :prevMonthStart="$prevMonthStart" :totalWeeks="$totalWeeks"
+            :currentWeekStart="$currentWeekStart" :currentWeekEnd="$currentWeekEnd" />
 
     </x-card>
 </div>
