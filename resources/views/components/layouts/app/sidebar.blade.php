@@ -66,9 +66,11 @@
 
             {{-- CALENDAR --}}
             <flux:navlist.group heading="Calendario" class="grid">
-                <x-sidebar-item route="dashboard" routeIs="#" label="Calendario">
-                    <x-icons.icon-akar-calendar />
-                </x-sidebar-item>
+                @can('access calendar')
+                    <x-sidebar-item route="calendar" routeIs="calendar" label="Calendario">
+                        <x-icons.icon-akar-calendar />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Elenco Eventi">
                     <x-icons.icon-akar-grid />

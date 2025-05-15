@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Calendar\Calendar;
 use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
@@ -20,6 +21,9 @@ Route::permanentRedirect('/', 'login');
 Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     // Dasboard Route
     Route::view('dashboard', 'dashboard')->name('dashboard');
+
+    // Calendar Route
+    Route::get('calendar', Calendar::class)->name('calendar')->middleware('can:access calendar');
 
     // Team Member Routes
     Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');
