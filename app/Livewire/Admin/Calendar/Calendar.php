@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Calendar;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -141,6 +142,7 @@ class Calendar extends Component
 
     public function mount()
     {
+        Gate::authorize('access calendar');
         $this->setInitialDate();
         $this->setViewMode($this->viewMode);
     }
