@@ -41,8 +41,8 @@
                     </x-buttons.inline-action-button>
                 </div>
 
-                <x-dropdown-select model="practiceForm.customerId" :selectable-items="$customers" :has-error="$errors->has('practiceForm.customerId')" searchable
-                    search-model="{{ $customerSearch }}" placeholder="Seleziona cliente" />
+                <x-dropdown-select size="sm" model="practiceForm.customerId" :selectable-items="$customers" :has-error="$errors->has('practiceForm.customerId')"
+                    searchable search-model="{{ $customerSearch }}" placeholder="Seleziona cliente" />
 
                 <flux:error name="practiceForm.customerId" />
             </div>
@@ -81,8 +81,8 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Prodotto *</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.productTypeId" :selectable-items="$productTypes" :has-error="$errors->has('{{ $form }}.productTypeId')"
-                        placeholder="Seleziona prodotto" />
+                    <x-dropdown-select size="sm" model="{{ $form }}.productTypeId" :selectable-items="$productTypes"
+                        :has-error="$errors->has('{{ $form }}.productTypeId')" placeholder="Seleziona prodotto" />
 
                     <flux:error name="{{ $form }}.productTypeId" />
                 </div>
@@ -91,7 +91,7 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Tipo prodotto</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.productSubtypeId" :selectable-items="$productSubtypes"
+                    <x-dropdown-select size="sm" model="{{ $form }}.productSubtypeId" :selectable-items="$productSubtypes"
                         :has-error="$errors->has('{{ $form }}.productSubtypeId')" placeholder="Seleziona tipo prodotto" />
 
                     <flux:error name="{{ $form }}.productSubtypeId" />
@@ -101,8 +101,9 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Assegna a *</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.userId" :selectable-items="$teamMembers" :has-error="$errors->has('{{ $form }}.userId')"
-                        placeholder="Seleziona collaboratore" searchable searchModel="teamMemberSearch" />
+                    <x-dropdown-select size="sm" model="{{ $form }}.userId" :selectable-items="$teamMembers"
+                        :has-error="$errors->has('{{ $form }}.userId')" placeholder="Seleziona collaboratore" searchable
+                        searchModel="teamMemberSearch" />
 
                     <flux:error name="{{ $form }}.userId" />
                 </div>
@@ -136,8 +137,8 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Rate *</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.installmentId" :selectable-items="$installments" :has-error="$errors->has('{{ $form }}.installmentId')"
-                        placeholder="Seleziona rate" />
+                    <x-dropdown-select size="sm" model="{{ $form }}.installmentId" :selectable-items="$installments"
+                        :has-error="$errors->has('{{ $form }}.installmentId')" placeholder="Seleziona rate" />
 
                     <flux:error name="{{ $form }}.installmentId" />
                 </div>
@@ -190,7 +191,7 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Tipologia cliente</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.customerTypeId" :selectable-items="$customerTypes"
+                    <x-dropdown-select size="sm" model="{{ $form }}.customerTypeId" :selectable-items="$customerTypes"
                         :has-error="$errors->has('{{ $form }}.customerTypeId')" placeholder="Seleziona tipologia cliente" />
 
                     <flux:error name="{{ $form }}.customerTypeId" />
@@ -200,8 +201,8 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Assicurazione</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.insuranceId" :selectable-items="$insurances" :has-error="$errors->has('{{ $form }}.insuranceId')"
-                        placeholder="Seleziona assicurazione" />
+                    <x-dropdown-select size="sm" model="{{ $form }}.insuranceId" :selectable-items="$insurances"
+                        :has-error="$errors->has('{{ $form }}.insuranceId')" placeholder="Seleziona assicurazione" />
 
                     <flux:error name="{{ $form }}.insuranceId" />
                 </div>
@@ -210,7 +211,7 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Tabella provvigionale</flux:label>
                 <div class="flex flex-col gap-0.5">
-                    <x-dropdown-select model="{{ $form }}.financialTableId" :selectable-items="$financialTables"
+                    <x-dropdown-select size="sm" model="{{ $form }}.financialTableId" :selectable-items="$financialTables"
                         :has-error="$errors->has('{{ $form }}.financialTableId')" placeholder="Seleziona tabella provvigionale" />
 
                     <flux:error name="{{ $form }}.financialTableId" />

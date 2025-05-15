@@ -8,6 +8,7 @@
     'searchModel' => '', // wire:model for search
     'hasError' => false,
     'align' => 'right',
+    'size' => '',
 ])
 
 @php
@@ -15,7 +16,7 @@
     $label =
         $selectedValue !== null && array_key_exists($selectedValue, $selectableItems)
             ? $selectableItems[$selectedValue]
-            : null;
+            : $placeholder;
 @endphp
 
 <div x-data="{ value: @entangle($model).defer }">
@@ -23,13 +24,12 @@
 
     <x-dropdown align="{{ $align }}" width="{{ $width }}">
         <x-slot name="trigger">
-            <x-dropdown-trigger-button
+            <x-dropdown-trigger-button size="{{ $size }}"
                 class="{{ $width }} {{ $hasError ? 'border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
                 <span>{{ $label }}</span>
 
                 @if ($selectedValue)
-                    <flux:icon.x-mark
-                        @click.stop="value = null; label = '{{ $placeholder }}'; $wire.set('{{ $model }}', null);"
+                    <flux:icon.x-mark @click.stop="value = null; $wire.set('{{ $model }}', null);"
                         class="cursor-pointer hover:text-red-600 size-3.5" />
                 @else
                     <flux:icon.chevron-down class="size-3" />
@@ -46,7 +46,7 @@
 
             <div class="overflow-y-auto max-h-56">
                 @forelse ($selectableItems as $key => $value)
-                    <x-dropdown-button
+                    <x-dropdown-button size="{{ $size }}"
                         @click="
                             value = '{{ $key }}';
                             $wire.set('{{ $model }}', {{ $key }});

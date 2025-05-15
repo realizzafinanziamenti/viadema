@@ -9,9 +9,7 @@
 
             @can('create team members')
                 <a href="{{ route('user.team.create') }}" wire:navigate>
-                    <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover!  text-white! px-10">Crea
-                        nuova
-                        pratica</flux:button>
+                    <x-buttons.create-button label="Crea nuova anagrafica" />
                 </a>
             @endcan
         </div>

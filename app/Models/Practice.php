@@ -247,5 +247,22 @@ class Practice extends Model
             );
     }
 
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->whereHas('customer', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
+                    ->orWhere('tax_id', 'like', "%{$search}%");
+            })->orWhere('practice_code', 'like', "%{$search}%");
+        });
+    }
+
     // END SCOPES
 }
