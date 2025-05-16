@@ -29,7 +29,7 @@
         </div>
 
         {{-- Past Events --}}
-        <div x-show="section === 'section2'" class="flex flex-col gap-2">
+        <div x-show="section === 'section2'" class="flex flex-col gap-2 bg-gray-custom-1 p-2 rounded-lg">
             @foreach ($pastEvents as $event)
                 <x-calendar.event-element-for-list :event="$event" wire:key='event-{{ $event->id }}' />
             @endforeach

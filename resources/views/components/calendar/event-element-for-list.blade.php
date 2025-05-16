@@ -1,7 +1,6 @@
 @props(['event'])
 
-<div
-    class="grid grid-cols-12 px-4 py-3 gap-x-3 bg-white text-sm transition duration-300 ease-in-out border rounded-lg cursor-pointer hover:shadow-lg">
+<div class="grid grid-cols-12 px-4 py-3 gap-x-3 bg-white text-sm transition duration-300 ease-in-out border rounded-lg">
 
     {{-- Title --}}
     <div class="col-span-4 flex items-center">
