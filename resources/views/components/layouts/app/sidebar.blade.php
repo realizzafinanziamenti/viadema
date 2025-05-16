@@ -72,9 +72,11 @@
                     </x-sidebar-item>
                 @endcan
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Elenco Eventi">
-                    <x-icons.icon-akar-grid />
-                </x-sidebar-item>
+                @can('access events')
+                    <x-sidebar-item route="event.index" routeIs="event" label="Elenco Eventi">
+                        <x-icons.icon-akar-grid />
+                    </x-sidebar-item>
+                @endcan
             </flux:navlist.group>
 
             {{-- MANAGEMENT --}}

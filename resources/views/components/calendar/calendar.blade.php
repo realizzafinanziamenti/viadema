@@ -178,7 +178,7 @@
                             {{ $currentDate === now()->toDateString() ? 'font-extrabold bg-azure-custom text-azure-custom-light border-azure-custom' : 'text-azure-custom bg-azure-custom-light border-azure-custom-light' }}
                             {{ $currentDate === $currentWeekStart->toDateString() ? 'rounded-tl-lg' : '' }}
                             {{ $currentDate === $currentWeekEnd->toDateString() ? 'rounded-tr-lg' : '' }}">
-                            {{ $date->translatedFormat('l d') }}
+                            {{ ucfirst($date->translatedFormat('l d')) }}
                         </div>
                     @endforeach
                 </div>

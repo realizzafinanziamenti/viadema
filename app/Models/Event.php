@@ -56,6 +56,14 @@ class Event extends Model
     // ACCESSORS
 
     /**
+     * Accessor to obtain formatted start date.
+     */
+    protected function formattedStartDate(): Attribute
+    {
+        return Attribute::get(fn() => $this->start_date?->format('d/m/Y'));
+    }
+
+    /**
      * Accessor to obtain formatted start time.
      */
     protected function formattedStartTime(): Attribute
@@ -85,6 +93,18 @@ class Event extends Model
         }
 
         return $query->where('user_id', $user->id);
+    }
+
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        });
     }
 
     // END SCOPES
