@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
             PracticeSeeder::class,
+            EventSeeder::class,
         ]);
     }
 }
