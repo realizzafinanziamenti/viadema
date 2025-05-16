@@ -60,7 +60,7 @@
 
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
                             @foreach ($previousMonthEvents as $event)
-                                @if ($event->starts_at->toDateString() <= $currentDate && $event->ends_at->toDateString() >= $currentDate)
+                                @if ($event->start_date->toDateString() === $currentDate)
                                     <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
                             @endforeach
@@ -104,7 +104,7 @@
                         <!-- Verifica la presenza di eventi -->
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
                             @foreach ($currentMonthEvents as $event)
-                                @if ($event->starts_at->toDateString() <= $currentDate && $event->ends_at->toDateString() >= $currentDate)
+                                @if ($event->start_date->toDateString() === $currentDate)
                                     <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
                             @endforeach
@@ -145,7 +145,7 @@
 
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
                             @foreach ($nextMonthEvents as $event)
-                                @if ($event->starts_at->toDateString() <= $currentDate && $event->ends_at->toDateString() >= $currentDate)
+                                @if ($event->start_date->toDateString() === $currentDate)
                                     <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
                             @endforeach

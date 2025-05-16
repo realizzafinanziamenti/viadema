@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,8 +36,8 @@ class Event extends Model
      */
     protected $casts = [
         'start_date' => 'date:Y-m-d',
-        'start_time' => 'string',
-        'end_time' => 'string',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
         'is_all_day' => 'boolean',
     ];
 
@@ -51,6 +52,26 @@ class Event extends Model
     }
 
     // END RELATIONSHIPS
+
+    // ACCESSORS
+
+    /**
+     * Accessor to obtain formatted start time.
+     */
+    protected function formattedStartTime(): Attribute
+    {
+        return Attribute::get(fn() => $this->start_time?->format('H:i'));
+    }
+
+    /**
+     * Accessor to obtain formatted end time.
+     */
+    protected function formattedEndTime(): Attribute
+    {
+        return Attribute::get(fn() => $this->end_time?->format('H:i'));
+    }
+
+    // END ACCESSORS
 
     // SCOPES
 
