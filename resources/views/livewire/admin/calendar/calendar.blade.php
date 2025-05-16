@@ -61,9 +61,10 @@
         </div>
 
         {{-- Calendar --}}
-        <x-calendar.calendar :previousMonthEvents="$previousMonthEvents" :currentMonthEvents="$currentMonthEvents" :nextMonthEvents="$nextMonthEvents" :viewMode="$viewMode" :currentDate="$currentDate"
-            :currentYear="$currentYear" :currentMonth="$currentMonth" :firstDayOfMonth="$firstDayOfMonth" :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth"
-            :prevMonthStart="$prevMonthStart" :totalWeeks="$totalWeeks" :currentWeekStart="$currentWeekStart" :currentWeekEnd="$currentWeekEnd" />
+        <x-calendar.calendar :previousMonthEvents="$previousMonthEvents" :currentMonthEvents="$currentMonthEvents" :nextMonthEvents="$nextMonthEvents" :currentWeekEvents="$currentWeekEvents" :currentDayEvents="$currentDayEvents"
+            :viewMode="$viewMode" :currentDate="$currentDate" :currentYear="$currentYear" :currentMonth="$currentMonth" :firstDayOfMonth="$firstDayOfMonth"
+            :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth" :prevMonthStart="$prevMonthStart" :totalWeeks="$totalWeeks" :currentWeekStart="$currentWeekStart"
+            :currentWeekEnd="$currentWeekEnd" />
 
     </x-card>
 </div>
