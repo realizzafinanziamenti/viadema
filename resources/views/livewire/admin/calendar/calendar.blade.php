@@ -50,12 +50,11 @@
 
         </div>
 
-        {{-- SearchBar --}}
+        {{-- SearchBar and Create Event Button --}}
         <div class="flex items-center justify-between mb-6">
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca per nome, cognome..." />
+                placeholder="Cerca per titolo evento..." />
 
-            {{-- Event List --}}
             <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
                 Aggiungi Evento</flux:button>
         </div>
