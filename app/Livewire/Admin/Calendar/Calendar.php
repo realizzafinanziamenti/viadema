@@ -152,18 +152,19 @@ class Calendar extends Component
     {
         $query = Event::with('user')
             ->visibleByUser(auth()->user())
-            ->orderBy('starts_at', 'asc');
+            ->orderBy('start_date', 'asc')
+            ->orderBy('start_time', 'asc');
 
         if ($this->viewMode === 'month') {
             // 🔹 Eventi del mese precedente
             $this->previousMonthEvents = (clone $query)
-                ->whereBetween('starts_at', [$this->firstCalendarDate, Carbon::create($this->currentYear, $this->currentMonth, 1)->subDay()->toDateString()])
+                ->whereBetween('start_date', [$this->firstCalendarDate, Carbon::create($this->currentYear, $this->currentMonth, 1)->subDay()->toDateString()])
                 ->get();
 
             // 🔹 Eventi del mese corrente
             $this->currentMonthEvents = (clone $query)
-                ->whereMonth('starts_at', $this->currentMonth)
-                ->whereYear('starts_at', $this->currentYear)
+                ->whereMonth('start_date', $this->currentMonth)
+                ->whereYear('start_date', $this->currentYear)
                 ->get();
 
             // 🔹 Eventi del mese successivo
@@ -171,19 +172,19 @@ class Calendar extends Component
             $nextMonth = $this->currentMonth == 12 ? 1 : $this->currentMonth + 1;
 
             $this->nextMonthEvents = (clone $query)
-                ->whereBetween('starts_at', [Carbon::create($nextMonthYear, $nextMonth, 1)->toDateString(), $this->lastCalendarDate])
+                ->whereBetween('start_date', [Carbon::create($nextMonthYear, $nextMonth, 1)->toDateString(), $this->lastCalendarDate])
                 ->get();
         }
 
         if ($this->viewMode === 'week') {
             $this->currentWeekEvents = (clone $query)
-                ->whereBetween('starts_at', [$this->currentWeekStart, $this->currentWeekEnd])
+                ->whereBetween('start_date', [$this->currentWeekStart, $this->currentWeekEnd])
                 ->get();
         }
 
         if ($this->viewMode === 'day') {
             $this->currentDayEvents = (clone $query)
-                ->whereDate('starts_at', $this->currentDate->toDateString())
+                ->whereDate('start_date', $this->currentDate->toDateString())
                 ->get();
         }
     }
