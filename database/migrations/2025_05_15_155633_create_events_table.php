@@ -16,8 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->dateTime('starts_at');
-            $table->dateTime('ends_at');
+            $table->date('start_date');
+            $table->time('start_time');
+            $table->time('end_time');
             $table->boolean('is_all_day')->default(false);
             $table->timestamps();
             $table->softDeletes();

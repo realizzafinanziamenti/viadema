@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,16 +27,23 @@ class EventFactory extends Factory
             $userIds = [1]; // Fallback to a default user ID if no users exist
         }
 
-        $start = Carbon::instance(fake()->dateTimeBetween('-1 month', '+1 month'));
-        $end = fake()->dateTimeBetween($start, $start->copy()->addDay());
+        $startTime = Carbon::createFromTime(
+            rand(9, 16),
+            rand(0, 59)
+        )->format('H:i:s');
+
+        $endTime = Carbon::createFromFormat('H:i:s', $startTime)
+            ->addMinutes(rand(30, 180))
+            ->format('H:i:s');
 
         return [
             'user_id' => fake()->randomElement($userIds),
             'title' => fake()->sentence(),
             'description' => fake()->paragraph(),
-            'starts_at' => $start,
-            'ends_at' => $end,
-            'is_all_day' => fake()->boolean(),
+            'start_date' => fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d'),
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'is_all_day' => false,
         ];
     }
 }
