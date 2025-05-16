@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,4 +49,20 @@ class Event extends Model
     }
 
     // END RELATIONSHIPS
+
+    // SCOPES
+
+    /**
+     * Scope a query to only include events for the current user.
+     */
+    public function scopeVisibleByUser(Builder $query, User $user): Builder
+    {
+        if ($user->can('view all events')) {       // superadmin
+            return $query;
+        }
+
+        return $query->where('user_id', $user->id);
+    }
+
+    // END SCOPES
 }

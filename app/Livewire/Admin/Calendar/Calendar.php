@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Calendar;
 
+use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -22,7 +23,11 @@ class Calendar extends Component
     public ?int $prevMonthStart = null; // property to hold the start of the previous month
     public ?int $totalDays = null; // property to hold the total number of days in the calendar
     public ?int $totalWeeks = null; // property to hold the total number of weeks in the calendar
-    public array $events = []; // events property to hold the events for the calendar
+    public  $previousMonthEvents = []; //  to hold events from the previous month - view mode month
+    public  $currentMonthEvents = []; //  to hold events from the current month - view mode month
+    public  $nextMonthEvents = []; //  to hold events from the next month - view mode month
+    public  $currentWeekEvents = []; //  to hold events from the current week - view mode week
+    public  $currentDayEvents = []; //  to hold events from the current day - view mode day
     public string $search = ''; // search property to hold the search term
 
     /**
@@ -42,7 +47,7 @@ class Calendar extends Component
     {
         $this->viewMode = $mode;
         // $this->setInitialDate();  // decommenta se vuoi resettare la data iniziale quando cambi modalità
-        $this->applyViewData();
+        $this->refreshCalendar();
     }
 
     /**
@@ -51,7 +56,7 @@ class Calendar extends Component
     public function setToday()
     {
         $this->currentDate = Carbon::now();
-        $this->applyViewData();
+        $this->refreshCalendar();
     }
 
     /**
@@ -122,7 +127,7 @@ class Calendar extends Component
             default => $this->currentDate,
         };
 
-        $this->applyViewData();
+        $this->refreshCalendar();
     }
 
     /**
@@ -137,14 +142,68 @@ class Calendar extends Component
             default => $this->currentDate,
         };
 
+        $this->refreshCalendar();
+    }
+
+    /**
+     * Load events
+     */
+    public function loadEvents()
+    {
+        $query = Event::with('user')
+            ->visibleByUser(auth()->user())
+            ->orderBy('starts_at', 'asc');
+
+        if ($this->viewMode === 'month') {
+            // 🔹 Eventi del mese precedente
+            $this->previousMonthEvents = (clone $query)
+                ->whereBetween('starts_at', [$this->firstCalendarDate, Carbon::create($this->currentYear, $this->currentMonth, 1)->subDay()->toDateString()])
+                ->get();
+
+            // 🔹 Eventi del mese corrente
+            $this->currentMonthEvents = (clone $query)
+                ->whereMonth('starts_at', $this->currentMonth)
+                ->whereYear('starts_at', $this->currentYear)
+                ->get();
+
+            // 🔹 Eventi del mese successivo
+            $nextMonthYear = $this->currentMonth == 12 ? $this->currentYear + 1 : $this->currentYear;
+            $nextMonth = $this->currentMonth == 12 ? 1 : $this->currentMonth + 1;
+
+            $this->nextMonthEvents = (clone $query)
+                ->whereBetween('starts_at', [Carbon::create($nextMonthYear, $nextMonth, 1)->toDateString(), $this->lastCalendarDate])
+                ->get();
+        }
+
+        if ($this->viewMode === 'week') {
+            $this->currentWeekEvents = (clone $query)
+                ->whereBetween('starts_at', [$this->currentWeekStart, $this->currentWeekEnd])
+                ->get();
+        }
+
+        if ($this->viewMode === 'day') {
+            $this->currentDayEvents = (clone $query)
+                ->whereDate('starts_at', $this->currentDate->toDateString())
+                ->get();
+        }
+    }
+
+    /**
+     * refresh calendar function
+     */
+    protected function refreshCalendar(): void
+    {
         $this->applyViewData();
+        $this->loadEvents();
     }
 
     public function mount()
     {
         Gate::authorize('access calendar');
         $this->setInitialDate();
-        $this->setViewMode($this->viewMode);
+        $this->refreshCalendar();
+
+        // dd($this->previousMonthEvents, $this->currentMonthEvents, $this->nextMonthEvents, $this->currentWeekEvents, $this->currentDayEvents);
     }
 
     #[Layout('components.layouts.app')]
