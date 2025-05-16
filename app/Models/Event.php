@@ -22,8 +22,9 @@ class Event extends Model
         'user_id',
         'title',
         'description',
-        'starts_at',
-        'ends_at',
+        'start_date',
+        'start_time',
+        'end_time',
         'is_all_day',
     ];
 
@@ -33,8 +34,9 @@ class Event extends Model
      * @return array<string, string>
      */
     protected $casts = [
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
+        'start_date' => 'date:Y-m-d',
+        'start_time' => 'string',
+        'end_time' => 'string',
         'is_all_day' => 'boolean',
     ];
 
