@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Admin\Calendar;
 
+use App\Livewire\Forms\EventForm;
 use App\Models\Event;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Masmerise\Toaster\Toaster;
 
 class Calendar extends Component
 {
@@ -23,12 +26,16 @@ class Calendar extends Component
     public ?int $prevMonthStart = null; // property to hold the start of the previous month
     public ?int $totalDays = null; // property to hold the total number of days in the calendar
     public ?int $totalWeeks = null; // property to hold the total number of weeks in the calendar
+    public ?string $firstCalendarDate = null; // property to hold the first date in the calendar
+    public ?string $lastCalendarDate = null; // property to hold the last date in the calendar
     public  $previousMonthEvents = []; //  to hold events from the previous month - view mode month
     public  $currentMonthEvents = []; //  to hold events from the current month - view mode month
     public  $nextMonthEvents = []; //  to hold events from the next month - view mode month
     public  $currentWeekEvents = []; //  to hold events from the current week - view mode week
     public  $currentDayEvents = []; //  to hold events from the current day - view mode day
     public string $search = ''; // search property to hold the search term
+    public EventForm $form; // form property to hold the event form
+    public ?Event $selectedEvent = null; // property to hold the selected event
 
     /**
      * Set the initial date to the current date.
@@ -196,6 +203,77 @@ class Calendar extends Component
     {
         $this->applyViewData();
         $this->loadEvents();
+    }
+
+    /**
+     * open create event modal
+     */
+    public function openCreateEventModal(): void
+    {
+        $this->resetErrorBag();
+        $this->form->reset();
+        $this->dispatch('open-modal', 'event-create');
+    }
+
+    /**
+     * open edit event modal
+     */
+    public function openEditEventModal(): void
+    {
+        $this->resetErrorBag();
+        $this->form->setEvent($this->selectedEvent);
+        $this->dispatch('open-modal', 'event-edit');
+    }
+
+    /**
+     * open detail event modal
+     */
+    public function openDetailEventModal(int $id): void
+    {
+        $this->selectedEvent = Event::findOrFail($id);
+        $this->dispatch('open-modal', 'event-detail');
+    }
+
+    /**
+     * save event
+     */
+    public function save()
+    {
+        Gate::authorize('create', Event::class);
+        $this->form->store();
+        $this->loadEvents();
+        $this->dispatch('close-modal', 'event-create');
+    }
+
+    /**
+     * edit event
+     */
+    public function edit()
+    {
+        Gate::authorize('update', $this->selectedEvent);
+        $this->selectedEvent = $this->form->update();
+        $this->loadEvents();
+        $this->dispatch('close-modal', 'event-edit');
+    }
+
+    /**
+     * Delete event function
+     */
+    public function delete(): void
+    {
+        try {
+            Gate::authorize('delete', $this->selectedEvent);
+            $this->selectedEvent->delete();
+
+            Toaster::success('Evento eliminato con successo');
+        } catch (Exception $e) {
+            Toaster::error('Si è verificato un errore: ' . $e->getMessage());
+        }
+
+        $this->selectedEvent = null;
+        $this->loadEvents();
+        $this->dispatch('close-modal', 'event-detail');
+        $this->dispatch('close-modal', 'event-delete');
     }
 
     public function mount()
