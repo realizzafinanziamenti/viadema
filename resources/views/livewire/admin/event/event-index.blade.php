@@ -8,7 +8,8 @@
                 placeholder="Cerca per titolo evento..." />
 
             {{-- Create Event --}}
-            <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+            <flux:button icon="plus" wire:click='openCreateEventModal'
+                class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
                 Aggiungi Evento</flux:button>
         </div>
 
@@ -38,4 +39,23 @@
             {{ $pastEvents->links() }}
         </div>
     </x-card>
+
+    {{-- Event Details Modal --}}
+    <x-calendar.event-details :event="$selectedEvent" />
+
+    {{-- Create New Customer Modal --}}
+    <x-modal name="event-create" maxWidth="2xl">
+        <x-modal-header label="Crea nuovo evento" />
+        <x-forms.event-form submitFunction="save" />
+    </x-modal>
+
+    {{-- Edit Customer Modal --}}
+    <x-modal name="event-edit" maxWidth="2xl">
+        <x-modal-header label="Modifica evento" />
+        <x-forms.event-form submitFunction="edit" />
+    </x-modal>
+
+    {{-- Delete User Modal --}}
+    <x-delete-modal name="event-delete" header="Conferma Eliminazione Evento" function="delete({{ $event->id }})"
+        message="Sei sicuro di voler eliminare l'evento." />
 </div>

@@ -107,5 +107,37 @@ class Event extends Model
         });
     }
 
+    /**
+     * Scope a query to only return past events.
+     */
+    public function scopePastEvents(Builder $query)
+    {
+        return $query->where(function ($query) {
+            $query->where('start_date', '<', today())
+                ->orWhere(function ($sub) {
+                    $sub->whereDate('start_date', today())
+                        ->whereTime('start_time', '<', now()->format('H:i:s'));
+                });
+        })
+            ->orderByDesc('start_date')
+            ->orderByDesc('start_time');
+    }
+
+    /**
+     * Scope a query to only return the upcoming events.
+     */
+    public function scopeUpcomingEvents(Builder $query)
+    {
+        return $query->where(function ($query) {
+            $query->where('start_date', '>', today())
+                ->orWhere(function ($sub) {
+                    $sub->whereDate('start_date', today())
+                        ->whereTime('start_time', '>=', now()->format('H:i:s'));
+                });
+        })
+            ->orderBy('start_date', 'asc')
+            ->orderBy('start_time', 'asc');
+    }
+
     // END SCOPES
 }

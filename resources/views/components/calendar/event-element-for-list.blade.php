@@ -10,11 +10,18 @@
     </div>
 
     {{-- Date --}}
-    <div class="col-span-2 flex flex-col items-center justify-start text-gray-custom-3">
-        <span class="text-sm font-bold">
+    <div class="col-span-2 text-sm flex flex-col items-center justify-start text-gray-custom-3">
+        <span class="font-bold flex items-center gap-x-1">
+            @if ($event->start_date->isToday())
+                <div
+                    class="bg-azure-custom text-white inline-flex items-center text-xs font-semibold rounded-sm px-1 py-0.5">
+                    Oggi
+                </div>
+            @endif
+
             {{ $event->formatted_start_date }}
         </span>
-        <span class="text-sm">
+        <span>
             {{ $event->formatted_start_time }} - {{ $event->formatted_end_time }}
         </span>
     </div>
@@ -29,15 +36,15 @@
     {{-- Actions --}}
     <div class="col-span-2 flex items-center justify-end gap-3">
         @can('view', $event)
-            <x-table-action-button-view />
+            <x-table-action-button-view wire:click='openDetailEventModal({{ $event->id }})' />
         @endcan
 
         @can('update', $event)
-            <x-table-action-button-edit />
+            <x-table-action-button-edit wire:click='openEditEventModal({{ $event->id }})' />
         @endcan
 
         @can('delete', $event)
-            <x-table-action-button-delete wire:click='selectCustomerForDelete({{ $event->id }})' />
+            <x-table-action-button-delete x-on:click="$dispatch('open-modal', 'event-delete')" />
         @endcan
     </div>
 
