@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,8 +23,9 @@ class Event extends Model
         'user_id',
         'title',
         'description',
-        'starts_at',
-        'ends_at',
+        'start_date',
+        'start_time',
+        'end_time',
         'is_all_day',
     ];
 
@@ -32,8 +35,9 @@ class Event extends Model
      * @return array<string, string>
      */
     protected $casts = [
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
+        'start_date' => 'date:Y-m-d',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
         'is_all_day' => 'boolean',
     ];
 
@@ -48,4 +52,92 @@ class Event extends Model
     }
 
     // END RELATIONSHIPS
+
+    // ACCESSORS
+
+    /**
+     * Accessor to obtain formatted start date.
+     */
+    protected function formattedStartDate(): Attribute
+    {
+        return Attribute::get(fn() => $this->start_date?->format('d/m/Y'));
+    }
+
+    /**
+     * Accessor to obtain formatted start time.
+     */
+    protected function formattedStartTime(): Attribute
+    {
+        return Attribute::get(fn() => $this->start_time?->format('H:i'));
+    }
+
+    /**
+     * Accessor to obtain formatted end time.
+     */
+    protected function formattedEndTime(): Attribute
+    {
+        return Attribute::get(fn() => $this->end_time?->format('H:i'));
+    }
+
+    // END ACCESSORS
+
+    // SCOPES
+
+    /**
+     * Scope a query to only include events for the current user.
+     */
+    public function scopeVisibleByUser(Builder $query, User $user): Builder
+    {
+        if ($user->can('view all events')) {       // superadmin
+            return $query;
+        }
+
+        return $query->where('user_id', $user->id);
+    }
+
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        });
+    }
+
+    /**
+     * Scope a query to only return past events.
+     */
+    public function scopePastEvents(Builder $query)
+    {
+        return $query->where(function ($query) {
+            $query->where('start_date', '<', today())
+                ->orWhere(function ($sub) {
+                    $sub->whereDate('start_date', today())
+                        ->whereTime('start_time', '<', now()->format('H:i:s'));
+                });
+        })
+            ->orderByDesc('start_date')
+            ->orderByDesc('start_time');
+    }
+
+    /**
+     * Scope a query to only return the upcoming events.
+     */
+    public function scopeUpcomingEvents(Builder $query)
+    {
+        return $query->where(function ($query) {
+            $query->where('start_date', '>', today())
+                ->orWhere(function ($sub) {
+                    $sub->whereDate('start_date', today())
+                        ->whereTime('start_time', '>=', now()->format('H:i:s'));
+                });
+        })
+            ->orderBy('start_date', 'asc')
+            ->orderBy('start_time', 'asc');
+    }
+
+    // END SCOPES
 }

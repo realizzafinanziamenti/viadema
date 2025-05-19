@@ -1,5 +1,9 @@
 @props([
-    'events' => [],
+    'previousMonthEvents' => [],
+    'currentMonthEvents' => [],
+    'nextMonthEvents' => [],
+    'currentDayEvents' => [],
+    'currentWeekEvents' => [],
     'viewMode' => 'month',
     'firstDayOfMonth',
     'daysInCurrentMonth',
@@ -57,11 +61,11 @@
                         </div>
 
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
-                            {{-- @foreach ($previousMonthEvents as $event)
+                            @foreach ($previousMonthEvents as $event)
                                 @if ($event->start_date->toDateString() === $currentDate)
-                                    <x-calendar-monthly-event :event="$event" />
+                                    <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
-                            @endforeach --}}
+                            @endforeach
                         </div>
                     </div>
                 @endfor
@@ -101,11 +105,11 @@
 
                         <!-- Verifica la presenza di eventi -->
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
-                            {{-- @foreach ($currentMonthEvents as $event)
+                            @foreach ($currentMonthEvents as $event)
                                 @if ($event->start_date->toDateString() === $currentDate)
-                                    <x-calendar-monthly-event :event="$event" />
+                                    <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
-                            @endforeach --}}
+                            @endforeach
                         </div>
                     </div>
                 @endfor
@@ -142,11 +146,11 @@
                         </div>
 
                         <div class="flex flex-col mt-1 min-h-24 gap-y-1">
-                            {{-- @foreach ($nextMonthEvents as $event)
+                            @foreach ($nextMonthEvents as $event)
                                 @if ($event->start_date->toDateString() === $currentDate)
-                                    <x-calendar-monthly-event :event="$event" />
+                                    <x-calendar.calendar-monthly-event :event="$event" />
                                 @endif
-                            @endforeach --}}
+                            @endforeach
                         </div>
                     </div>
                 @endfor
@@ -174,7 +178,7 @@
                             {{ $currentDate === now()->toDateString() ? 'font-extrabold bg-azure-custom text-azure-custom-light border-azure-custom' : 'text-azure-custom bg-azure-custom-light border-azure-custom-light' }}
                             {{ $currentDate === $currentWeekStart->toDateString() ? 'rounded-tl-lg' : '' }}
                             {{ $currentDate === $currentWeekEnd->toDateString() ? 'rounded-tr-lg' : '' }}">
-                            {{ $date->translatedFormat('l d') }}
+                            {{ ucfirst($date->translatedFormat('l d')) }}
                         </div>
                     @endforeach
                 </div>
@@ -195,13 +199,13 @@
                                 $date = $currentWeekStart->copy()->addDays($i);
                             @endphp
 
-                            <div class="flex flex-col p-1 border-b border-e {{ $i === 0 ? 'border-s' : '' }} gap-y-1 {{ $i === 6 && $hour === 21 ? 'rounded-br-lg' : '' }}"
+                            <div class="flex flex-col px-1 py-1.5 border-b border-e {{ $i === 0 ? 'border-s' : '' }} gap-y-1 {{ $i === 6 && $hour === 21 ? 'rounded-br-lg' : '' }}"
                                 wire:key='week-hour-{{ $hour }}-{{ $i }}'>
-                                {{-- @foreach ($currentWeekEvents as $event)
+                                @foreach ($currentWeekEvents as $event)
                                     @if ($event->start_date->toDateString() === $date->toDateString() && $event->start_time->format('H') == $hour)
-                                        <x-calendar-daily-weekly-event :event="$event" />
+                                        <x-calendar.calendar-weekly-daily-event :event="$event" />
                                     @endif
-                                @endforeach --}}
+                                @endforeach
                             </div>
                         @endforeach
                     </div>
@@ -236,12 +240,12 @@
 
                     <!-- Corpo della colonna per gli eventi -->
                     <div
-                        class="grid flex-1 grid-cols-4 gap-1 p-1 border-s border-e {{ $hour === 21 ? 'rounded-br-lg' : '' }}">
-                        {{-- @foreach ($currentDayEvents as $event)
+                        class="grid flex-1 grid-cols-4 gap-1 px-1 py-1.5 border-s border-e {{ $hour === 21 ? 'rounded-br-lg' : '' }}">
+                        @foreach ($currentDayEvents as $event)
                             @if ($event->start_time->format('H') == $hour)
-                                <x-calendar-daily-weekly-event :event="$event" />
+                                <x-calendar.calendar-weekly-daily-event :event="$event" />
                             @endif
-                        @endforeach --}}
+                        @endforeach
                     </div>
                 </div>
             @endforeach

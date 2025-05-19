@@ -7,7 +7,7 @@
     'maxWidth' => 'lg',
 ])
 
-<x-modal :name="$name" :show="$show" maxWidth="{{ $maxWidth }}" alignItems="items-start">
+<x-modal :name="$name" :show="$show" maxWidth="{{ $maxWidth }}">
     <div class="flex flex-col">
         <x-modal-header :label="$header" class="mb-6" />
 

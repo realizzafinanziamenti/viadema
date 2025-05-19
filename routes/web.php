@@ -5,6 +5,7 @@ use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
+use App\Livewire\Admin\Event\EventIndex;
 use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
@@ -24,6 +25,9 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
 
     // Calendar Route
     Route::get('calendar', Calendar::class)->name('calendar')->middleware('can:access calendar');
+
+    // Event Routes
+    Route::get('events', EventIndex::class)->name('event.index')->middleware('can:access events');
 
     // Team Member Routes
     Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');

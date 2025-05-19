@@ -50,20 +50,40 @@
 
         </div>
 
-        {{-- SearchBar --}}
+        {{-- SearchBar and Create Event Button --}}
         <div class="flex items-center justify-between mb-6">
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca per nome, cognome..." />
+                placeholder="Cerca per titolo evento..." />
 
-            {{-- Event List --}}
-            <flux:button icon="plus" class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+            <flux:button wire:click="openCreateEventModal" icon="plus"
+                class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
                 Aggiungi Evento</flux:button>
         </div>
 
         {{-- Calendar --}}
-        <x-calendar.calendar :events="$events" :viewMode="$viewMode" :currentDate="$currentDate" :currentYear="$currentYear" :currentMonth="$currentMonth"
-            :firstDayOfMonth="$firstDayOfMonth" :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth" :prevMonthStart="$prevMonthStart" :totalWeeks="$totalWeeks"
-            :currentWeekStart="$currentWeekStart" :currentWeekEnd="$currentWeekEnd" />
+        <x-calendar.calendar :previousMonthEvents="$previousMonthEvents" :currentMonthEvents="$currentMonthEvents" :nextMonthEvents="$nextMonthEvents" :currentWeekEvents="$currentWeekEvents" :currentDayEvents="$currentDayEvents"
+            :viewMode="$viewMode" :currentDate="$currentDate" :currentYear="$currentYear" :currentMonth="$currentMonth" :firstDayOfMonth="$firstDayOfMonth"
+            :daysInCurrentMonth="$daysInCurrentMonth" :daysInNextMonth="$daysInNextMonth" :prevMonthStart="$prevMonthStart" :totalWeeks="$totalWeeks" :currentWeekStart="$currentWeekStart"
+            :currentWeekEnd="$currentWeekEnd" />
 
     </x-card>
+
+    {{-- Event Details Modal --}}
+    <x-calendar.event-details :event="$selectedEvent" />
+
+    {{-- Create New Customer Modal --}}
+    <x-modal name="event-create" maxWidth="2xl">
+        <x-modal-header label="Crea nuovo evento" />
+        <x-forms.event-form submitFunction="save" />
+    </x-modal>
+
+    {{-- Edit Customer Modal --}}
+    <x-modal name="event-edit" maxWidth="2xl">
+        <x-modal-header label="Modifica evento" />
+        <x-forms.event-form submitFunction="edit" modalName="event-edit" submitButtonLabel="Modifica" />
+    </x-modal>
+
+    {{-- Delete User Modal --}}
+    <x-delete-modal name="event-delete" header="Conferma Eliminazione Evento" function="delete"
+        message="Sei sicuro di voler eliminare l'evento." />
 </div>
