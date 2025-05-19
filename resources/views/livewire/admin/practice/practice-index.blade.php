@@ -22,8 +22,8 @@
                             <x-buttons.create-button label="Crea nuova pratica" />
                         </a>
                     @endcan
+                @endif
             </div>
-            @endif
         </div>
 
         <x-table class="mb-5">
