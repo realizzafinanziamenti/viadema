@@ -26,7 +26,7 @@ class EventForm extends Form
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'startDate' => 'required|date',
+            'startDate' => 'required|date|after_or_equal:today',
             'startTime' => 'required|date_format:H:i|after_or_equal:08:00|before_or_equal:21:00',
             'endTime' => 'required|date_format:H:i|after:startTime|after_or_equal:08:30|before_or_equal:22:00',
             'repeatUntil' => 'nullable|date|after:startDate|before_or_equal:' . Carbon::parse($this->startDate)->addMonths(1)->format('Y-m-d'),
@@ -48,6 +48,7 @@ class EventForm extends Form
     protected function messages()
     {
         return [
+            'startDate.after_or_equal' => 'La data deve essere uguale o successiva alla data odierna',
             'endTime.after' => 'L\'orario di fine evento deve essere uguale o successivo all\'orario di inizio evento',
             'repeatUntil.after' => 'La data deve essere successiva alla data di inizio evento',
             'repeatUntil.before_or_equal' => 'La data selezionata è oltre il consentito',

@@ -35,7 +35,7 @@
             <flux:label>Data evento *</flux:label>
             <div class="flex flex-col gap-0.5">
                 <flux:input type="date" size="sm" wire:model='{{ $form }}.startDate' x-model="startDate"
-                    id="start_date" name="start_date" />
+                    id="start_date" name="start_date" min="{{ now()->format('Y-m-d') }}" />
                 <flux:error name="{{ $form }}.startDate" />
             </div>
         </div>
