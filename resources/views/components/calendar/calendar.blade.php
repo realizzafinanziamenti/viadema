@@ -199,7 +199,7 @@
                                 $date = $currentWeekStart->copy()->addDays($i);
                             @endphp
 
-                            <div class="flex flex-col p-1 border-b border-e {{ $i === 0 ? 'border-s' : '' }} gap-y-1 {{ $i === 6 && $hour === 21 ? 'rounded-br-lg' : '' }}"
+                            <div class="flex flex-col px-1 py-1.5 border-b border-e {{ $i === 0 ? 'border-s' : '' }} gap-y-1 {{ $i === 6 && $hour === 21 ? 'rounded-br-lg' : '' }}"
                                 wire:key='week-hour-{{ $hour }}-{{ $i }}'>
                                 @foreach ($currentWeekEvents as $event)
                                     @if ($event->start_date->toDateString() === $date->toDateString() && $event->start_time->format('H') == $hour)
@@ -240,7 +240,7 @@
 
                     <!-- Corpo della colonna per gli eventi -->
                     <div
-                        class="grid flex-1 grid-cols-4 gap-1 p-1 border-s border-e {{ $hour === 21 ? 'rounded-br-lg' : '' }}">
+                        class="grid flex-1 grid-cols-4 gap-1 px-1 py-1.5 border-s border-e {{ $hour === 21 ? 'rounded-br-lg' : '' }}">
                         @foreach ($currentDayEvents as $event)
                             @if ($event->start_time->format('H') == $hour)
                                 <x-calendar.calendar-weekly-daily-event :event="$event" />

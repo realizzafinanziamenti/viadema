@@ -25,10 +25,12 @@
             <span>{{ $event?->formatted_end_time }}</span>
         </div>
         {{-- Description --}}
-        <div class="mb-2.5">
-            <span class="text-gray-custom-4">Descrizione: </span>
-            <span>{{ $event?->description }}</span>
-        </div>
+        @if ($event?->description)
+            <div class="mb-2.5">
+                <span class="text-gray-custom-4">Descrizione: </span>
+                <span>{{ $event?->description }}</span>
+            </div>
+        @endif
     </div>
 
     {{-- Submit Buttons --}}
