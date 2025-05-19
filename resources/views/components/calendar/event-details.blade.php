@@ -3,31 +3,31 @@
 <x-modal name="event-detail" maxWidth="2xl">
     <x-modal-header label="Dettaglio evento" />
 
-    <div class="w-full mt-10 mb-5">
+    <div class="w-full mt-10 mb-5 text-sm">
         {{-- Title --}}
-        <div class="flex flex-col gap-1.5 col-span-2">
+        <div class="mb-2.5">
             <span class="text-gray-custom-4">Titolo: </span>
             <span>{{ $event?->title }}</span>
         </div>
         {{-- Start Date --}}
-        <div class="flex flex-col gap-1.5">
+        <div class="mb-2.5">
             <span class="text-gray-custom-4">Data evento: </span>
             <span>{{ $event?->formatted_start_date }}</span>
         </div>
         {{-- Start Time --}}
-        <div class="flex flex-col gap-1.5">
+        <div class="mb-2.5">
             <span class="text-gray-custom-4">Orario inizio: </span>
             <span>{{ $event?->formatted_start_time }}</span>
         </div>
         {{-- End Time --}}
-        <div class="flex flex-col gap-1.5">
+        <div class="mb-2.5">
             <span class="text-gray-custom-4">Orario fine: </span>
             <span>{{ $event?->formatted_end_time }}</span>
         </div>
         {{-- Description --}}
-        <div class="flex flex-col gap-1.5 col-span-2">
-            <flux:label>Descrizione</flux:label>
-            <x-display-textarea value="{{ $event?->description }}" />
+        <div class="mb-2.5">
+            <span class="text-gray-custom-4">Descrizione: </span>
+            <span>{{ $event?->description }}</span>
         </div>
     </div>
 
