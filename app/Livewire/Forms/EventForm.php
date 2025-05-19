@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Models\Event;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -15,9 +16,9 @@ class EventForm extends Form
     public ?Event $event;
     public string $title = '';
     public string $description = '';
-    public ?Carbon $startDate = null;
-    public ?Carbon $startTime = null;
-    public ?Carbon $endTime = null;
+    public ?string $startDate = null;
+    public ?string $startTime = null;
+    public ?string $endTime = null;
     public $repeatUntil = null;
 
     protected function rules()
@@ -140,8 +141,6 @@ class EventForm extends Form
                 'start_time' => $event->start_time,
                 'end_time' => $event->end_time,
             ]);
-
-            $newEvent->secondaryAgents()->attach($event->secondaryAgents->pluck('id')->toArray());
 
             $nextDate->addDay();
         }

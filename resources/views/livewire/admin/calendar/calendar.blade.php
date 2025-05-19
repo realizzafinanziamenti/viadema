@@ -80,7 +80,7 @@
     {{-- Edit Customer Modal --}}
     <x-modal name="event-edit" maxWidth="2xl">
         <x-modal-header label="Modifica evento" />
-        <x-forms.event-form submitFunction="edit" />
+        <x-forms.event-form submitFunction="edit" modalName="event-edit" submitButtonLabel="Modifica" />
     </x-modal>
 
     {{-- Delete User Modal --}}

@@ -254,6 +254,7 @@ class Calendar extends Component
         $this->selectedEvent = $this->form->update();
         $this->loadEvents();
         $this->dispatch('close-modal', 'event-edit');
+        $this->dispatch('close-modal', 'event-detail');
     }
 
     /**
@@ -281,8 +282,6 @@ class Calendar extends Component
         Gate::authorize('access calendar');
         $this->setInitialDate();
         $this->refreshCalendar();
-
-        // dd($this->previousMonthEvents, $this->currentMonthEvents, $this->nextMonthEvents, $this->currentWeekEvents, $this->currentDayEvents);
     }
 
     #[Layout('components.layouts.app')]
