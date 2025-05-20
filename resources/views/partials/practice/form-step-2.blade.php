@@ -1,0 +1,167 @@
+<div class="grid grid-cols-2 gap-6">
+    {{-- Practice Code --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Id pratica *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input size="sm" wire:model='practiceForm.practiceCode' />
+            <flux:error name="practiceForm.practiceCode" />
+        </div>
+    </div>
+    {{-- Product Type --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Prodotto *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$productTypes" :selected="$practiceForm->productTypeId" placeholder='Seleziona prodotto'
+                setFunction="setProductType" :has-error="$errors->has('practiceForm.productTypeId')" />
+
+            <flux:error name="practiceForm.productTypeId" />
+        </div>
+    </div>
+    {{-- Product Subtype --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Tipo prodotto</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$productSubtypes" :selected="$practiceForm->productSubtypeId" placeholder='Seleziona tipo prodotto'
+                setFunction="setProductSubtype" :has-error="$errors->has('practiceForm.productSubtypeId')" />
+
+            <flux:error name="practiceForm.productSubtypeId" />
+        </div>
+    </div>
+    {{-- Team Member --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Assegna a *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$practiceForm->userId" searchable search="teamMemberSearch"
+                placeholder='Seleziona collaboratore' setFunction="setPracticeTeamMember" :has-error="$errors->has('practiceForm.userId')" />
+
+            <flux:error name="practiceForm.userId" />
+        </div>
+    </div>
+    {{-- Started At Date --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Data di inizio *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input type="date" size="sm" wire:model='practiceForm.startedAt' />
+            <flux:error name="practiceForm.startedAt" />
+        </div>
+    </div>
+    {{-- Paid At Date --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Data di fine</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input type="date" size="sm" wire:model='practiceForm.paidAt' />
+            <flux:error name="practiceForm.paidAt" />
+        </div>
+    </div>
+    {{-- Amount Disbursed --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Importo *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                model="practiceForm.amountDisbursed" symbol="€" />
+            <flux:error name="practiceForm.amountDisbursed" />
+        </div>
+    </div>
+    {{-- Installment --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Rate *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$practiceForm->installmentId" placeholder='Seleziona rate'
+                setFunction="setInstallment" :has-error="$errors->has('practiceForm.installmentId')" />
+
+            <flux:error name="practiceForm.installmentId" />
+        </div>
+    </div>
+    {{-- Rate Amount --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Rata mensile *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                model="practiceForm.rateAmount" symbol="€" />
+            <flux:error name="practiceForm.rateAmount" />
+        </div>
+    </div>
+    {{-- Taeg --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Taeg fisso *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                model="practiceForm.taeg" symbol="%" />
+            <flux:error name="practiceForm.taeg" />
+        </div>
+    </div>
+    {{-- Tan --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Tan fisso *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                model="practiceForm.tan" symbol="%" />
+            <flux:error name="practiceForm.tan" />
+        </div>
+    </div>
+    {{-- Total Amount --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Totale dovuto</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+                model="practiceForm.totalAmount" symbol="€" />
+            <flux:error name="practiceForm.totalAmount" />
+        </div>
+    </div>
+    {{-- Renewed --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Rinnovo</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input type="date" size="sm" wire:model='practiceForm.renewableAt' />
+            <flux:error name="practiceForm.renewableAt" />
+        </div>
+    </div>
+    {{-- Customer Type --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Tipologia cliente</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$customerTypes" :selected="$practiceForm->customerTypeId"
+                placeholder='Seleziona tipologia cliente' setFunction="setCustomerType" :has-error="$errors->has('practiceForm.customerTypeId')" />
+
+            <flux:error name="practiceForm.customerTypeId" />
+        </div>
+    </div>
+    {{-- Insurance --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Assicurazione</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$insurances" :selected="$practiceForm->insuranceId"
+                placeholder='Seleziona assicurazione' setFunction="setInsurance" :has-error="$errors->has('practiceForm.insuranceId')" />
+
+            <flux:error name="practiceForm.insuranceId" />
+        </div>
+    </div>
+    {{-- Financial Table --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Tabella provvigionale</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$financialTables" :selected="$practiceForm->financialTableId"
+                placeholder='Seleziona tabella provvigionale' setFunction="setFinancialTable" :has-error="$errors->has('practiceForm.financialTableId')" />
+
+            <flux:error name="practiceForm.financialTableId" />
+        </div>
+    </div>
+    {{-- Notes --}}
+    <div class="flex flex-col gap-1.5 col-span-2">
+        <flux:textarea label="Note" resize="none" wire:model='practiceForm.notes' />
+        <flux:error name="practiceForm.notes" />
+    </div>
+</div>
+
+{{-- Next Step Buttons --}}
+<div class="flex items-center justify-end gap-x-3 mt-18">
+    <flux:button variant="primary" type="button" size="sm" wire:click="firstPrevStep"
+        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
+        Annulla
+    </flux:button>
+
+    <flux:button variant="primary" type="button" size="sm" wire:click='secondNextStep'
+        class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+        Continua
+    </flux:button>
+</div>
