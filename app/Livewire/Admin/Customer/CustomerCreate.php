@@ -5,15 +5,28 @@ namespace App\Livewire\Admin\Customer;
 use App\Livewire\Forms\CustomerForm;
 use App\Models\Customer;
 use App\Models\User;
+use App\Traits\InteractsWithDropdowns;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class CustomerCreate extends Component
 {
+    use InteractsWithDropdowns;
+
     // customer form component
     public CustomerForm $form;
     public string $search = '';
+    public array $teamMembers = [];
+    public ?string $teamMemberLabel = null;
+
+    /**
+     * Set title customer
+     */
+    public function setTeamMember(?int $value = null): void
+    {
+        $this->setFormSelectValue('userId', $value);
+    }
 
     /**
      * Save customer
@@ -34,7 +47,7 @@ class CustomerCreate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $teamMembers = User::teamMembers()
+        $this->teamMembers = User::teamMembers()
             ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')
@@ -43,7 +56,8 @@ class CustomerCreate extends Component
             ->toArray();
 
         return view('livewire.admin.customer.customer-create', [
-            'teamMembers' => $teamMembers,
+            'teamMembers' => $this->teamMembers,
+            'selectedUserId' => $this->form->userId,
         ]);
     }
 }

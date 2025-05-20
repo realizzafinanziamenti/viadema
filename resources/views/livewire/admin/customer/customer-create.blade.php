@@ -2,6 +2,6 @@
     <x-card class="w-3xl mx-auto">
         <x-card-header label="Crea nuovo cliente" />
 
-        <x-forms.customer-form :teamMembers="$teamMembers" />
+        <x-forms.customer-form :teamMembers="$teamMembers" :selectedUserId="$selectedUserId" />
     </x-card>
 </div>

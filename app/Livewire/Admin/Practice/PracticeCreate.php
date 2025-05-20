@@ -14,12 +14,15 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\InteractsWithDropdowns;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class PracticeCreate extends Component
 {
+    use InteractsWithDropdowns;
+
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
     public ?Customer $selectedCustomer = null;
@@ -35,21 +38,87 @@ class PracticeCreate extends Component
     public string $customerSearch = '';
 
     /**
+     * Set team member for customer form
+     */
+    public function setTeamMember(?int $value = null): void
+    {
+        $this->setFormSelectValue('userId', $value, 'customerForm');
+    }
+
+    /**
+     * Set team member for practice form
+     */
+    public function setPracticeTeamMember(?int $value = null): void
+    {
+        $this->setFormSelectValue('userId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set customer
+     */
+    public function setCustomer(?int $value = null): void
+    {
+        $this->setFormSelectValue('customerId', $value, 'practiceForm');
+
+        $this->resetValidation('practiceForm.customerId');
+        $this->selectedCustomer = Customer::find($this->practiceForm->customerId);
+    }
+
+    /**
+     * Set product type
+     */
+    public function setProductType(?int $value = null): void
+    {
+        $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set product subtype
+     */
+    public function setProductSubtype(?int $value = null): void
+    {
+        $this->setFormSelectValue('productSubtypeId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set financial table
+     */
+    public function setFinancialTable(?int $value = null): void
+    {
+        $this->setFormSelectValue('financialTableId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set insurance
+     */
+    public function setInsurance(?int $value = null): void
+    {
+        $this->setFormSelectValue('insuranceId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set installment
+     */
+    public function setInstallment(?int $value = null): void
+    {
+        $this->setFormSelectValue('installmentId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set customer type
+     */
+    public function setCustomerType(?int $value = null): void
+    {
+        $this->setFormSelectValue('customerTypeId', $value, 'practiceForm');
+    }
+
+    /**
      * open create customer modal
      */
     public function openCreateCustomerModal(): void
     {
         $this->teamMemberSearch = '';
         $this->dispatch('open-modal', 'customer-create');
-    }
-
-    /**
-     * updated practice form userId callback function
-     */
-    public function updatedPracticeFormCustomerId($id): void
-    {
-        $this->resetValidation('practiceForm.customerId');
-        $this->selectedCustomer = Customer::find($id);
     }
 
     /**
@@ -181,6 +250,15 @@ class PracticeCreate extends Component
         return view('livewire.admin.practice.practice-create', [
             'teamMembers' => $teamMembers,
             'customers' => $customers,
+            'selectedUserId' => $this->customerForm->userId,
+            'selectedPracticeUserId' => $this->practiceForm->userId,
+            'selectedCustomerId' => $this->practiceForm->customerId,
+            'selectedProductTypeId' => $this->practiceForm->productTypeId,
+            'selectedProductSubtypeId' => $this->practiceForm->productSubtypeId,
+            'selectedFinancialTableId' => $this->practiceForm->financialTableId,
+            'selectedInsuranceId' => $this->practiceForm->insuranceId,
+            'selectedInstallmentId' => $this->practiceForm->installmentId,
+            'selectedCustomerTypeId' => $this->practiceForm->customerTypeId,
         ]);
     }
 }
