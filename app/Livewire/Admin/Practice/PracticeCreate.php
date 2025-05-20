@@ -250,15 +250,6 @@ class PracticeCreate extends Component
         return view('livewire.admin.practice.practice-create', [
             'teamMembers' => $teamMembers,
             'customers' => $customers,
-            'selectedUserId' => $this->customerForm->userId,
-            'selectedPracticeUserId' => $this->practiceForm->userId,
-            'selectedCustomerId' => $this->practiceForm->customerId,
-            'selectedProductTypeId' => $this->practiceForm->productTypeId,
-            'selectedProductSubtypeId' => $this->practiceForm->productSubtypeId,
-            'selectedFinancialTableId' => $this->practiceForm->financialTableId,
-            'selectedInsuranceId' => $this->practiceForm->insuranceId,
-            'selectedInstallmentId' => $this->practiceForm->installmentId,
-            'selectedCustomerTypeId' => $this->practiceForm->customerTypeId,
         ]);
     }
 }

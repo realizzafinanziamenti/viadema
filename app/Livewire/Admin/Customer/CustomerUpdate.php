@@ -5,19 +5,30 @@ namespace App\Livewire\Admin\Customer;
 use App\Livewire\Forms\CustomerForm;
 use App\Models\Customer;
 use App\Models\User;
+use App\Traits\InteractsWithDropdowns;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class CustomerUpdate extends Component
 {
+    use InteractsWithDropdowns;
+
     public Customer $customer;
     // customer form component
     public CustomerForm $form;
     public string $search = '';
 
     /**
-     * edit assignment
+     * Set title customer
+     */
+    public function setTeamMember(?int $value = null): void
+    {
+        $this->setFormSelectValue('userId', $value);
+    }
+
+    /**
+     * edit customer
      */
     public function save(): void
     {

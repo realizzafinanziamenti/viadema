@@ -1,5 +1,3 @@
-@props(['selectedCustomer'])
-
 <div class="grid grid-cols-2 gap-6 col-span-2">
     {{-- First Name --}}
     <div class="flex flex-col gap-1.5">
