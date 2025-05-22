@@ -2,34 +2,25 @@
 
     {{-- Only show if AUTH is onwer of message --}}
     @if ($belongsToAuth)
-        <span class="font-bold text-xs dark:text-white/90 dark:font-normal">
+        <span class="font-semibold text-[13px] text-black-custom">
             @lang('wirechat::chats.labels.you'):
         </span>
     @elseif(!$belongsToAuth && $group !== null)
-        <span class="font-bold text-xs dark:text-white/80 dark:font-normal">
+        <span class="font-semibold text-[13px] text-black-custom">
             {{ $lastMessage->sendable?->display_name }}:
         </span>
     @endif
 
     <p @class([
-        'truncate text-sm dark:text-white  gap-2 items-center',
-        'font-semibold text-black' =>
+        'truncate text-[13px] dark:text-white  gap-2 items-center',
+        'font-bold text-black-custom' =>
             !$isReadByAuth && !$lastMessage?->ownedBy($this->auth),
-        'font-normal text-gray-600' =>
+        'font-normal text-gray-custom-5' =>
             $isReadByAuth && !$lastMessage?->ownedBy($this->auth),
-        'font-normal text-gray-600' =>
+        'font-normal text-gray-custom-5' =>
             $isReadByAuth && $lastMessage?->ownedBy($this->auth),
     ])>
-        {{ $lastMessage->body != '' ? $lastMessage->body : ($lastMessage->isAttachment() ? '📎 '.__('wirechat::chats.labels.attachment') : '') }}
+        {{ $lastMessage->body != '' ? $lastMessage->body : ($lastMessage->isAttachment() ? '📎 ' . __('wirechat::chats.labels.attachment') : '') }}
     </p>
-
-    <span class="font-medium px-1 text-xs shrink-0 text-gray-800 dark:text-gray-50">
-        @if ($lastMessage->created_at->diffInMinutes(now()) < 1)
-          @lang('wirechat::chats.labels.now')
-        @else
-            {{ $lastMessage->created_at->shortAbsoluteDiffForHumans() }}
-        @endif
-    </span>
-
 
 </div>

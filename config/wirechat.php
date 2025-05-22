@@ -65,7 +65,7 @@ return [
     | This will be used to highlight buttons and elements.
     |
     */
-    'color' => '#a855f7',
+    'color' => '#8DD4DC',
 
     /*
     |--------------------------------------------------------------------------
@@ -113,6 +113,7 @@ return [
     | Enable or disable specific frontend features of Wirechat.
     |
     */
+    'show_home_route_button' => false,
     'show_new_chat_modal_button' => true,
     'show_new_group_modal_button' => true,
     'allow_chats_search' => true,
@@ -142,7 +143,7 @@ return [
     | to chat with. These fields should exist on your User model.
     |
     */
-    'user_searchable_fields' => ['name'],
+    'user_searchable_fields' => ['first_name', 'last_name'],
 
     /*
     |--------------------------------------------------------------------------
