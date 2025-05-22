@@ -5,7 +5,7 @@
 
     @if ($showNotificationBadge)
         <a href="/admin/chats" wire:navigate
-            class="absolute right-1 bottom-[26px] flex items-center justify-center w-2 h-2 text-[10px] rounded-full bg-white">
+            class="absolute right-0 bottom-[19px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
         </a>
     @endif
 
