@@ -7,6 +7,11 @@
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
+/* wirechat */
+@source '../../vendor/namu/wirechat/resources/views/**/*.blade.php';
+@source '../../vendor/namu/wirechat/src/Livewire/**/*.php';
+/* wirechat */
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
