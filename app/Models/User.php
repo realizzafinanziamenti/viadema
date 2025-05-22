@@ -8,6 +8,7 @@ use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -208,25 +209,19 @@ class User extends Authenticatable
     /**
      * Search for users when creating a new chat or adding members to a group.
      */
-    // public function searchChatables(string $search): ?Collection
-    // {
-    //     $user = auth()->user();
-    //     $search = trim($search);
+    public function searchChatables(string $search): ?Collection
+    {
+        $search = trim($search);
 
-    //     $query = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
-    //         ->limit(20);
+        $query = User::where('id', '!=', auth()->id())
+            ->where(function ($query) use ($search) {
+                $query->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->limit(20);
 
-    //     // If the user has the permission to view all chat users, show all users
-    //     if ($user->can('view all chat users')) {
-    //         $query->orWhereHas('agency', function ($subQuery) use ($search) {
-    //             $subQuery->where('company_name', 'like', '%' . $search . '%');
-    //         });
-    //     } else {
-    //         // Otherwise, show only users from the same agency
-    //         $query->where('agency_id', $user->agency_id);
-    //     }
-
-    //     return $query->get();
-    // }
+        return $query->get();
+    }
     // WIRECHAT TRAITS AND METHODS END
 }
