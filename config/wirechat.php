@@ -76,7 +76,7 @@ return [
     | This can be any valid route or URL in your application.
     |
     */
-    'home_route' => '/',
+    'home_route' => '/admin/chats',
 
     /*
     |--------------------------------------------------------------------------
@@ -88,7 +88,7 @@ return [
     |
     */
     'routes' => [
-        'prefix' => 'chats',
+        'prefix' => 'admin/chats',
         'middleware' => ['web', 'auth:web'],
         'guards' => ['web'],
     ],
@@ -103,7 +103,7 @@ return [
     | the dynamic chat content.
     |
     */
-    'layout' => 'wirechat::layouts.app',
+    'layout' => 'components.layouts.app',
 
     /*
     |--------------------------------------------------------------------------

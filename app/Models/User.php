@@ -15,13 +15,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Namu\WireChat\Traits\Chatable;
 use Spatie\Permission\Traits\HasRoles;
 
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable;
 
     /**
      * The attributes that are mass assignable.
@@ -183,4 +184,49 @@ class User extends Authenticatable
         });
     }
     // END SCOPES
+
+
+    // WIRECHAT TRAITS AND METHODS
+    /**
+     * Returns the URL for the user's cover image for chats (avatar).
+     */
+    public function getCoverUrlAttribute(): ?string
+    {
+        return $this->profile_photo_path
+            ? asset("storage/{$this->profile_photo_path}")
+            : asset('images/placeholder-user.jpg');
+    }
+
+    /**
+     * Accessor Returns the display name for the user.
+     */
+    public function getDisplayNameAttribute(): ?string
+    {
+        return $this->full_name ?? 'user';
+    }
+
+    /**
+     * Search for users when creating a new chat or adding members to a group.
+     */
+    // public function searchChatables(string $search): ?Collection
+    // {
+    //     $user = auth()->user();
+    //     $search = trim($search);
+
+    //     $query = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
+    //         ->limit(20);
+
+    //     // If the user has the permission to view all chat users, show all users
+    //     if ($user->can('view all chat users')) {
+    //         $query->orWhereHas('agency', function ($subQuery) use ($search) {
+    //             $subQuery->where('company_name', 'like', '%' . $search . '%');
+    //         });
+    //     } else {
+    //         // Otherwise, show only users from the same agency
+    //         $query->where('agency_id', $user->agency_id);
+    //     }
+
+    //     return $query->get();
+    // }
+    // WIRECHAT TRAITS AND METHODS END
 }

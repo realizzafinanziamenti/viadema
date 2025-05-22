@@ -3,6 +3,8 @@
 
 <head>
     @include('partials.head')
+
+    @wirechatStyles
 </head>
 
 <body class="min-h-screen bg-gray-custom-1">
@@ -112,9 +114,7 @@
             </button>
 
             {{-- Chat Button --}}
-            <button class="p-1 mx-2.5">
-                <x-icons.icon-akar-chat-dots />
-            </button>
+            <livewire:layout.chat-button />
 
             {{-- Notification Button and Drawer --}}
             <button class="p-1 mx-2.5">
@@ -168,6 +168,8 @@
         }
     </style>
     {{-- END TOASTER --}}
+
+    @wirechatAssets
 </body>
 
 </html>
