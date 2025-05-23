@@ -1,30 +1,30 @@
 @use('Namu\WireChat\Helpers\Helper')
 
-<footer class="shrink-0 h-auto relative   sticky bottom-0 mt-auto">
+<footer class="shrink-0 h-auto    sticky bottom-0 mt-auto">
 
     {{-- Check if group allows :sending messages --}}
     @if ($conversation->isGroup() && !$conversation->group?->allowsMembersToSendMessages() && !$authParticipant->isAdmin())
         <div
             class="dark:bg-[var(--wc-dark-secondary)]  bg-[var(--wc-light-secondary)] w-full text-center text-gray-600 dark:text-gray-200 justify-center text-sm flex py-4 ">
-            Only admins can send messages
+            Solo l'amministratore può inviare messaggi
         </div>
     @else
         <div id="chat-footer" x-data="{ 'openEmojiPicker': false }"
-            class=" px-3 md:px-1 border-t shadow-sm bg-[var(--wc-light-secondary)]  dark:bg-[var(--wc-dark-secondary)]   z-50   border-[var(--wc-light-primary)] dark:border-[var(--wc-dark-primary)] flex flex-col gap-3 items-center  w-full   mx-auto">
+            class=" bg-white   z-50   flex flex-col gap-3 items-center  w-full   mx-auto">
 
             {{-- Emoji section , we put it seperate to avoid interfering as overlay for form when opened --}}
-            <section wire:ignore x-cloak x-show="openEmojiPicker" x-transition:enter="transition  ease-out duration-180 transform"
+            <section wire:ignore x-cloak x-show="openEmojiPicker"
+                x-transition:enter="transition  ease-out duration-180 transform"
                 x-transition:enter-start=" translate-y-full" x-transition:enter-end=" translate-y-0"
                 x-transition:leave="transition ease-in duration-180 transform" x-transition:leave-start=" translate-y-0"
                 x-transition:leave-end="translate-y-full"
-                class="w-full flex hidden sm:flex   py-2 sm:px-4 py-1.5 border-b border-[var(--wc-light-primary)] dark:border-[var(--wc-dark-primary)]  h-96 min-w-full">
+                class="w-full  hidden sm:flex   py-2 sm:px-4  h-96 min-w-full">
 
-                <emoji-picker  dusk="emoji-picker" style="width: 100%"
+                <emoji-picker dusk="emoji-picker" style="width: 100%"
                     class=" flex w-full h-full rounded-xl"></emoji-picker>
             </section>
             {{-- form and detail section  --}}
-            <section
-                class=" py-2 sm:px-4 py-1.5    z-50  dark:bg-[var(--wc-dark-secondary)]  bg-[var(--wc-light-secondary)]   flex flex-col gap-3 items-center  w-full mx-auto">
+            <section class=" py-2 sm:px-4 z-50 bg-azure-chat-bg flex flex-col gap-3 items-center  w-full mx-auto">
 
                 {{-- Media preview section --}}
                 <section x-show="$wire.media.length>0 ||$wire.files.length>0" x-cloak
@@ -42,8 +42,8 @@
                                     <button @click="$wire.resetAttachmentErrors()">X</button>
                             </span>
                             @enderror --}}
-                                                {{-- todo:Show progress when uploading files --}}
-                                                {{-- <div  x-show="isUploading"  class="w-full">
+                            {{-- todo:Show progress when uploading files --}}
+                            {{-- <div  x-show="isUploading"  class="w-full">
                                     <progress class="w-full h-1 rounded-lg" max="100" x-bind:value="progress"></progress>
                                 </div> --}}
                             <section
@@ -192,7 +192,7 @@
                     <section class="p-px py-1 w-full col-span-12">
                         <div class="flex justify-between items-center dark:text-white">
                             <h6 class="text-sm">
-                                    {{ $replyMessage?->ownedBy($this->auth) ? __('wirechat::chat.labels.replying_to_yourself'): __('wirechat::chat.labels.replying_to',['participant'=>$replyMessage->sendable?->name])  }}
+                                {{ $replyMessage?->ownedBy($this->auth) ? __('wirechat::chat.labels.replying_to_yourself') : __('wirechat::chat.labels.replying_to', ['participant' => $replyMessage->sendable?->name]) }}
                             </h6>
                             <button wire:loading.attr="disabled" wire:click="removeReply()"
                                 class="disabled:cursor-progress">
@@ -204,7 +204,7 @@
                         </div>
 
                         {{-- Message being replied to --}}
-                        <p class="truncate text-sm text-gray-500 dark:text-gray-200 max-w-md">
+                        <p class="truncate text-sm text-gray-custom-5 dark:text-gray-200 max-w-md">
                             {{ $replyMessage->body != '' ? $replyMessage->body : ($replyMessage->hasAttachment() ? 'Attachment' : '') }}
                         </p>
 
@@ -257,21 +257,23 @@
                         inputField.setSelectionRange(startPos + emoji.length, startPos + emoji.length);
                     });"
                     @submit.prevent="((body && body?.trim().length > 0) || ($wire.media && $wire.media.length > 0)|| ($wire.files && $wire.files.length > 0)) ? $wire.sendMessage() : null"
-                    method="POST" autocapitalize="off" @class(['flex items-center col-span-12 w-full  gap-2 gap-5'])>
+                    method="POST" autocapitalize="off" @class([
+                        'flex items-center col-span-12 w-full bg-white px-2 py-1.5 rounded-lg border gap-2 gap-5',
+                    ])>
                     @csrf
 
                     <input type="hidden" autocomplete="false" style="display: none">
 
 
                     {{-- Emoji Triggger icon --}}
-                    <div class="w-10 hidden sm:flex max-w-fit  items-center">
+                    <div class="w-10 hidden sm:flex max-w-fit bg-white rounded-lg items-center">
                         <button wire:loading.attr="disabled" type="button" dusk="emoji-trigger-button"
                             @click="openEmojiPicker = ! openEmojiPicker" x-ref="emojibutton"
                             class="cursor-pointer hover:scale-105 transition-transform disabled:cursor-progress rounded-full p-px dark:border-gray-700">
                             <svg x-bind:style="openEmojiPicker && { color: 'var(--wc-brand-primary)' }"
                                 viewBox="0 0 24 24" height="24" width="24"
                                 preserveAspectRatio="xMidYMid meet"
-                                class="w-7 h-7 text-gray-600 dark:text-gray-300 srtoke-[1.3] dark:stroke-[1.2]"
+                                class="w-7 h-7 text-gray-custom-5 dark:text-gray-300 srtoke-[1.3] dark:stroke-[1.2]"
                                 version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24">
                                 <title>smiley</title>
                                 <path fill="currentColor"
@@ -344,7 +346,7 @@
                                             </span>
 
                                             <span class=" dark:text-white">
-                                               @lang('wirechat::chat.actions.upload_file.label')
+                                                @lang('wirechat::chat.actions.upload_file.label')
                                             </span>
                                         </div>
                                     </label>
@@ -377,7 +379,7 @@
                                             </span>
 
                                             <span class=" dark:text-white">
-                                               @lang('wirechat::chat.actions.upload_media.label')
+                                                @lang('wirechat::chat.actions.upload_media.label')
                                             </span>
                                         </div>
                                     </label>
@@ -395,12 +397,12 @@
                     <div @class(['flex gap-2 sm:px-2 w-full'])>
                         <textarea @focus-input-field.window="$el.focus()" autocomplete="off" x-model='body' x-ref="body"
                             wire:loading.delay.longest.attr="disabled" wire:target="sendMessage" id="chat-input-field" autofocus
-                            type="text" name="message" placeholder="{{ __('wirechat::chat.inputs.message.placeholder') }}" maxlength="1700" rows="1"
-                            @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px';"
+                            type="text" name="message" placeholder="{{ __('wirechat::chat.inputs.message.placeholder') }}"
+                            maxlength="1700" rows="1" @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px';"
                             @keydown.shift.enter.prevent="insertNewLine($el)" {{-- @keydown.enter.prevent prevents the
                                default behavior of Enter key press only if Shift is not held down. --}} @keydown.enter.prevent=""
                             @keyup.enter.prevent="$event.shiftKey ? null : (((body && body?.trim().length > 0) || ($wire.media && $wire.media.length > 0)) ? $wire.sendMessage() : null)"
-                            class="w-full disabled:cursor-progress resize-none h-auto max-h-20  sm:max-h-72 flex grow border-0 outline-0 focus:border-0 focus:ring-0  hover:ring-0 rounded-lg   dark:text-white bg-none dark:bg-inherit  focus:outline-hidden   "
+                            class="w-full disabled:cursor-progress resize-none h-auto max-h-20 text-sm sm:max-h-72 flex grow border-0 outline-0 focus:border-0 focus:ring-0  hover:ring-0 rounded-lg   dark:text-white bg-none dark:bg-inherit  focus:outline-hidden   "
                             x-init="document.querySelector('emoji-picker')
                                 .addEventListener('emoji-click', event => {
                                     const emoji = event.detail['unicode'];
@@ -437,10 +439,11 @@
                     <div x-cloak @class(['w-[5%] justify-end min-w-max  items-center gap-2 '])>
 
                         {{--  Submit button --}}
-                        <button
+                        {{-- <button
                             x-show="((body?.trim()?.length>0) ||  $wire.media.length > 0 || $wire.files.length > 0 )"
                             wire:loading.attr="disabled" wire:target="sendMessage" type="submit"
-                            id="sendMessageButton" class="cursor-pointer hover:text-[var(--wc-brand-primary)] transition-color ml-auto disabled:cursor-progress cursor-pointer font-bold">
+                            id="sendMessageButton"
+                            class="cursor-pointer text-gray-custom-5 hover:text-orange-custom transition-color ml-auto disabled:cursor-progress flex items-center font-bold">
 
                             <svg class="w-7 h-7   dark:text-gray-200" xmlns="http://www.w3.org/2000/svg"
                                 width="36" height="36" viewBox="0 0 24 24" fill="none"
@@ -450,21 +453,28 @@
                                     d="M9.912 12H4L2.023 4.135A.662.662 0 0 1 2 3.995c-.022-.721.772-1.221 1.46-.891L22 12 3.46 20.896c-.68.327-1.464-.159-1.46-.867a.66.66 0 0 1 .033-.186L3.5 15" />
                             </svg>
 
-                        </button>
-
+                        </button> --}}
+                        <flux:button size="sm"
+                            x-show="((body?.trim()?.length>0) ||  $wire.media.length > 0 || $wire.files.length > 0 )"
+                            wire:loading.attr="disabled" wire:target="sendMessage" type="submit"
+                            id="sendMessageButton"
+                            class="cursor-pointer text-white! px-6 bg-orange-custom! transition-color ml-auto disabled:cursor-progress flex items-center font-bold">
+                            Invia
+                        </flux:button>
 
 
                         {{-- send Like button --}}
                         <button
                             x-show="!((body?.trim()?.length>0) || $wire.media.length > 0 || $wire.files.length > 0 )"
                             wire:loading.attr="disabled" wire:target="sendMessage" wire:click='sendLike()'
-                            type="button" class="hover:scale-105 transition-transform cursor-pointer group disabled:cursor-progress">
+                            type="button"
+                            class="hover:scale-105 transition-transform cursor-pointer flex items-center group disabled:cursor-progress">
 
                             <!-- outlined heart -->
                             <span class=" group-hover:hidden transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    class="w-7 h-7 text-gray-600 dark:text-white/90 stroke-[1.4] dark:stroke-[1.4]">
+                                    class="w-7 h-7 text-red-500 dark:text-white/90 stroke-[1.4] dark:stroke-[1.4]">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                 </svg>
@@ -536,23 +546,28 @@
                                     () => {
                                         fileProgress[index] = 100; // Mark this file as complete
                                         // this.isUploading = false;
-                                        this.progress = Math.round((fileProgress.reduce((a, b) => a + b, 0)) / files.length);
+                                        this.progress = Math.round((fileProgress.reduce((a, b) => a + b, 0)) /
+                                            files.length);
                                     },
                                     (error) => {
                                         // this.isUploading = false;
                                         fileProgress[index] = -1; // Mark as failed
-                                        $dispatch('wirechat-toast', { type: 'error', message: `Validation error: ${error}` });
+                                        $dispatch('wirechat-toast', {
+                                            type: 'error',
+                                            message: `Validation error: ${error}`
+                                        });
                                     },
                                     (event) => {
                                         fileProgress[index] = event.detail.progress; // Update per-file progress
-                                        this.progress = Math.round((fileProgress.reduce((a, b) => a + b, 0)) / files.length); // Overall progress
+                                        this.progress = Math.round((fileProgress.reduce((a, b) => a + b, 0)) /
+                                            files.length); // Overall progress
                                     }
                                 );
                             });
                         },
 
                         // Upload files using Livewire's uploadMultiple method
-                        
+
                         // Remove an uploaded file from Livewire
                         removeUpload(filename) {
                             $wire.removeUpload(this.wireModel, filename);
@@ -565,10 +580,10 @@
                             // Check if total file count exceeds the maximum allowed
                             if (totalFiles > this.MAXFILES) {
                                 files = Array.from(files).slice(0, this.MAXFILES -
-                                count); // Limit files to the allowed number
+                                    count); // Limit files to the allowed number
                                 $dispatch('wirechat-toast', {
                                     type: 'warning',
-                                    message: @js(__('wirechat::validation.max.array', ['attribute' => __('wirechat::chat.inputs.media.label'),'max'=>config('wirechat.attachments.max_uploads', 5)]))
+                                    message: @js(__('wirechat::validation.max.array', ['attribute' => __('wirechat::chat.inputs.media.label'), 'max' => config('wirechat.attachments.max_uploads', 5)]))
                                 });
                             }
 
@@ -576,7 +591,7 @@
                             const invalidFiles = Array.from(files).filter((file) => {
                                 const fileType = file.type.split('/')[1].toLowerCase(); // Extract file extension
                                 return file.size > this.maxSize || !this.allowedFileTypes.includes(
-                                fileType); // Check size and type
+                                    fileType); // Check size and type
                             });
 
                             // Filter valid files
@@ -591,15 +606,15 @@
                                     if (file.size > this.maxSize) {
                                         $dispatch('wirechat-toast', {
                                             type: 'warning',
-                                            message: @js(__('wirechat::validation.max.file', ['attribute' => __('wirechat::chat.inputs.media.label'),'max'=>config('wirechat.attachments.media_max_upload_size', 12288)]))
-                                         //   message: `File size exceeds the maximum limit (${this.maxSize / 1024 / 1024}MB): ${file.name}`
+                                            message: @js(__('wirechat::validation.max.file', ['attribute' => __('wirechat::chat.inputs.media.label'), 'max' => config('wirechat.attachments.media_max_upload_size', 12288)]))
+                                            //   message: `File size exceeds the maximum limit (${this.maxSize / 1024 / 1024}MB): ${file.name}`
                                         });
                                     } else {
                                         const extension = file.name.split('.').pop().toLowerCase();
                                         $dispatch('wirechat-toast', {
                                             type: 'warning',
-                                            message: @js(__('wirechat::validation.mimes', [ 'attribute' => __('wirechat::chat.inputs.media.label'), 'values' => implode(', ', config('wirechat.attachments.media_mimes')) ]))
-                                           // message: `One or more Files not uploaded: .${extension} (type not allowed)`
+                                            message: @js(__('wirechat::validation.mimes', ['attribute' => __('wirechat::chat.inputs.media.label'), 'values' => implode(', ', config('wirechat.attachments.media_mimes'))]))
+                                            // message: `One or more Files not uploaded: .${extension} (type not allowed)`
                                         });
 
                                     }

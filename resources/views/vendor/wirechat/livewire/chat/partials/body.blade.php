@@ -1,4 +1,3 @@
-
 <main x-data="{
     height: 0,
     previousHeight: 0,
@@ -20,36 +19,22 @@
 
     }
 
-    }"  
-        x-init="
-
-        setTimeout(() => {
-
-                requestAnimationFrame(() => {
-                    
-                    this.height = $el.scrollHeight;
-                    $el.scrollTop = this.height;
-                });
-
-            }, 300); //! Add delay so height can be update at right time 
-
-     
-        "
-    @scroll ="
-        scrollTop= $el.scrollTop;
-        if((scrollTop<=0) && $wire.canLoadMore){
-
-            $wire.loadMore();
-
-        }
-     "
+}" x-init="$nextTick(() => {
+    if ($el) {
+        requestAnimationFrame(() => {
+            this.height = $el.scrollHeight || 0;
+            $el.scrollTop = this.height;
+        });
+    }
+});"
+    @scroll =" scrollTop=$el.scrollTop; if((scrollTop<=0) && $wire.canLoadMore){
+    $wire.loadMore(); } "
     @update-height.window="
         requestAnimationFrame(() => {
             updateScrollPosition();
           });
         "
-
-        @scroll-bottom.window="
+    @scroll-bottom.window="
         requestAnimationFrame(() => {
             {{-- overflow-y: hidden; is used to hide the vertical scrollbar initially. --}}
             $el.style.overflowY='hidden';
@@ -59,24 +44,23 @@
             {{-- scroll the element down --}}
             $el.scrollTop = $el.scrollHeight;
 
-            {{-- After updating the chat height, overflowY is set back to 'auto', 
-                which allows the browser to determine whether to display the scrollbar 
+            {{-- After updating the chat height, overflowY is set back to 'auto',
+                which allows the browser to determine whether to display the scrollbar
                 based on the content height.  --}}
                $el.style.overflowY='auto';
         });
     "
-    
-
     x-cloak
-     class='flex flex-col h-full  relative gap-2 gap-y-4 p-4 md:p-5 lg:p-8  grow  overscroll-contain overflow-x-hidden w-full my-auto'
-    style="contain: content" >
+    class='flex flex-col h-full text-sm relative gap-2 gap-y-4 p-4 md:p-5 lg:p-8  grow bg-azure-chat-bg overscroll-contain overflow-x-hidden w-full my-auto'
+    style="contain: content">
 
 
 
-    <div x-cloak wire:loading.delay.class.remove="invisible" wire:target="loadMore" class="invisible transition-all duration-300 ">
+    <div x-cloak wire:loading.delay.class.remove="invisible" wire:target="loadMore"
+        class="invisible transition-all duration-300 ">
         <x-wirechat::loading-spin />
     </div>
- 
+
     {{-- Define previous message outside the loop --}}
     @php
         $previousMessage = null;
@@ -86,9 +70,9 @@
     @if ($loadedMessages)
         {{-- @dd($loadedMessages) --}}
         @foreach ($loadedMessages as $date => $messageGroup)
-
             {{-- Date  --}}
-            <div  class="sticky top-0 uppercase p-2 shadow-xs px-2.5 z-50 rounded-xl border dark:border-[var(--wc-dark-primary)] border-[var(--wc-light-primary)] text-sm flex text-center justify-center  bg-[var(--wc-light-secondary)] dark:bg-[var(--wc-dark-secondary)] dark:text-white  w-28 mx-auto ">
+            <div
+                class="relative text-gray-custom-4 p-2  px-2.5 z-50 rounded-xl  bg-azure-chat-bg text-[13px] flex text-center justify-center   mx-auto ">
                 {{ $date }}
             </div>
 
@@ -99,7 +83,6 @@
                     $parent = $message->parent ?? null;
                     $attachment = $message->attachment ?? null;
                     $isEmoji = $message->isEmoji();
-
 
                     // keep track of previous message
                     // The ($key -1 ) will get the previous message from loaded
@@ -113,7 +96,7 @@
                 @endphp
 
 
-                <div class="flex gap-2" wire:key="message-{{ $key }}"  >
+                <div class="flex gap-2" wire:key="message-{{ $key }}">
 
                     {{-- Message user Avatar --}}
                     {{-- Hide avatar if message belongs to auth --}}
@@ -133,7 +116,8 @@
                     <div class="w-[95%] mx-auto">
                         <div @class([
                             'max-w-[85%] md:max-w-[78%]  flex flex-col gap-y-2  ',
-                            'ml-auto' => $belongsToAuth])>
+                            'ml-auto' => $belongsToAuth,
+                        ])>
 
 
 
@@ -147,13 +131,13 @@
 
 
                                     @php
-                                    $sender = $message?->ownedBy($this->auth) 
-                                        ? __('wirechat::chat.labels.you') 
-                                        : ($message->sendable?->display_name ?? __('wirechat::chat.labels.user'));
+                                        $sender = $message?->ownedBy($this->auth)
+                                            ? __('wirechat::chat.labels.you')
+                                            : $message->sendable?->display_name ?? __('wirechat::chat.labels.user');
 
-                                    $receiver = $parent?->ownedBy($this->auth) 
-                                        ? __('wirechat::chat.labels.you') 
-                                        : ($parent->sendable?->display_name ?? __('wirechat::chat.labels.user'));
+                                        $receiver = $parent?->ownedBy($this->auth)
+                                            ? __('wirechat::chat.labels.you')
+                                            : $parent->sendable?->display_name ?? __('wirechat::chat.labels.user');
                                     @endphp
 
                                     <h6 class="text-xs text-gray-500 dark:text-gray-300 px-2">
@@ -177,7 +161,7 @@
                                     ])>
                                         <p
                                             class=" bg-[var(--wc-light-secondary)] dark:text-white  dark:bg-[var(--wc-dark-secondary)] text-black line-clamp-1 text-sm  rounded-full max-w-fit   px-3 py-1 ">
-                                            {{ $parent?->body != '' ? $parent?->body : ($parent->hasAttachment() ?  __('wirechat::chat.labels.attachment') : '') }}
+                                            {{ $parent?->body != '' ? $parent?->body : ($parent->hasAttachment() ? __('wirechat::chat.labels.attachment') : '') }}
                                         </p>
                                     </div>
 
@@ -195,67 +179,76 @@
 
                                 {{-- Message Actions --}}
                                 @if (($isGroup && $conversation->group?->allowsMembersToSendMessages()) || $authParticipant->isAdmin())
-                                <div dusk="message_actions" @class([ 'my-auto flex  w-auto  items-center gap-2', 'order-1' => !$belongsToAuth, ])>
-                                    {{-- reply button --}}
-                                    <button wire:click="setReply('{{ encrypt($message->id) }}')"
-                                        class=" invisible  group-hover:visible hover:scale-110 transition-transform">
-                                    
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            fill="currentColor" class="bi bi-reply-fill w-4 h-4 dark:text-white"
-                                            viewBox="0 0 16 16">
-                                            <path
-                                                d="M5.921 11.9 1.353 8.62a.72.72 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z" />
-                                        </svg>
-                                    </button>
-                                    {{-- Dropdown actions button --}}
-                                    <x-wirechat::dropdown class="w-40" align="{{ $belongsToAuth ? 'right' : 'left' }}"
-                                        width="48">
-                                        <x-slot name="trigger">
-                                            {{-- Dots --}}
-                                            <button class="invisible  group-hover:visible hover:scale-110 transition-transform">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                    fill="currentColor"
-                                                    class="bi bi-three-dots h-3 w-3 text-gray-700 dark:text-white"
-                                                    viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
-                                                </svg>
-                                            </button>
-                                        </x-slot>
-                                        <x-slot name="content">
+                                    <div dusk="message_actions" @class([
+                                        'my-auto flex  w-auto  items-center gap-2',
+                                        'order-1' => !$belongsToAuth,
+                                    ])>
+                                        {{-- reply button --}}
+                                        <button wire:click="setReply('{{ encrypt($message->id) }}')"
+                                            class=" invisible  group-hover:visible hover:scale-110 transition-transform">
 
-                                            @if ($message->ownedBy($this->auth)|| ($authParticipant->isAdmin() && $isGroup))
-                                                <button dusk="delete_message_for_everyone" wire:click="deleteForEveryone('{{ encrypt($message->id) }}')"
-                                                    wire:confirm="{{ __('wirechat::chat.actions.delete_for_everyone.confirmation_message') }}" class="w-full text-start">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" class="bi bi-reply-fill w-4 h-4 dark:text-white"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M5.921 11.9 1.353 8.62a.72.72 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z" />
+                                            </svg>
+                                        </button>
+                                        {{-- Dropdown actions button --}}
+                                        <x-wirechat::dropdown class="w-40"
+                                            align="{{ $belongsToAuth ? 'right' : 'left' }}" width="48">
+                                            <x-slot name="trigger">
+                                                {{-- Dots --}}
+                                                <button
+                                                    class="invisible  group-hover:visible hover:scale-110 transition-transform">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                                        height="16" fill="currentColor"
+                                                        class="bi bi-three-dots h-3 w-3 text-gray-700 dark:text-white"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+                                                    </svg>
+                                                </button>
+                                            </x-slot>
+                                            <x-slot name="content">
+
+                                                @if ($message->ownedBy($this->auth) || ($authParticipant->isAdmin() && $isGroup))
+                                                    <button dusk="delete_message_for_everyone"
+                                                        wire:click="deleteForEveryone('{{ encrypt($message->id) }}')"
+                                                        wire:confirm="{{ __('wirechat::chat.actions.delete_for_everyone.confirmation_message') }}"
+                                                        class="w-full text-start">
+                                                        <x-wirechat::dropdown-link>
+                                                            @lang('wirechat::chat.actions.delete_for_everyone.label')
+                                                        </x-wirechat::dropdown-link>
+                                                    </button>
+                                                @endif
+
+
+                                                {{-- Dont show delete for me if is group --}}
+                                                @if (!$isGroup)
+                                                    <button dusk="delete_message_for_me"
+                                                        wire:click="deleteForMe('{{ encrypt($message->id) }}')"
+                                                        wire:confirm="{{ __('wirechat::chat.actions.delete_for_me.confirmation_message') }}"
+                                                        class="w-full text-start">
+                                                        <x-wirechat::dropdown-link>
+                                                            @lang('wirechat::chat.actions.delete_for_me.label')
+                                                        </x-wirechat::dropdown-link>
+                                                    </button>
+                                                @endif
+
+
+                                                <button dusk="reply_to_message_button"
+                                                    wire:click="setReply('{{ encrypt($message->id) }}')"class="w-full text-start">
                                                     <x-wirechat::dropdown-link>
-                                                        @lang('wirechat::chat.actions.delete_for_everyone.label')
+                                                        @lang('wirechat::chat.actions.reply.label')
                                                     </x-wirechat::dropdown-link>
                                                 </button>
-                                            @endif
 
 
-                                            {{-- Dont show delete for me if is group --}}
-                                            @if (!$isGroup) 
-                                            <button dusk="delete_message_for_me" wire:click="deleteForMe('{{ encrypt($message->id) }}')"
-                                                wire:confirm="{{ __('wirechat::chat.actions.delete_for_me.confirmation_message') }}" class="w-full text-start">
-                                                <x-wirechat::dropdown-link>
-                                                    @lang('wirechat::chat.actions.delete_for_me.label')
-                                                </x-wirechat::dropdown-link>
-                                            </button>
-                                            @endif
+                                            </x-slot>
+                                        </x-wirechat::dropdown>
 
-
-                                            <button dusk="reply_to_message_button" wire:click="setReply('{{ encrypt($message->id) }}')"class="w-full text-start">
-                                                <x-wirechat::dropdown-link>
-                                                    @lang('wirechat::chat.actions.reply.label')
-                                                </x-wirechat::dropdown-link>
-                                            </button>
-
-                                      
-                                        </x-slot>
-                                    </x-wirechat::dropdown>
-
-                                </div>
+                                    </div>
                                 @endif
 
 
@@ -279,17 +272,26 @@
                                         @endif
                                         {{-- Attachemnt is Application/ --}}
                                         @if (str()->startsWith($attachment->mime_type, 'application/'))
-                                            @include('wirechat::livewire.chat.partials.file', [ 'attachment' => $attachment ])
+                                            @include('wirechat::livewire.chat.partials.file', [
+                                                'attachment' => $attachment,
+                                            ])
                                         @endif
 
                                         {{-- Attachemnt is Video/ --}}
                                         @if (str()->startsWith($attachment->mime_type, 'video/'))
-                                            <x-wirechat::video height="max-h-[400px]" :cover="false" source="{{ $attachment?->url }}" />
+                                            <x-wirechat::video height="max-h-[400px]" :cover="false"
+                                                source="{{ $attachment?->url }}" />
                                         @endif
 
                                         {{-- Attachemnt is image/ --}}
                                         @if (str()->startsWith($attachment->mime_type, 'image/'))
-                                            @include('wirechat::livewire.chat.partials.image', [ 'previousMessage' => $previousMessage, 'message' => $message, 'nextMessage' => $nextMessage, 'belongsToAuth' => $belongsToAuth, 'attachment' => $attachment ])
+                                            @include('wirechat::livewire.chat.partials.image', [
+                                                'previousMessage' => $previousMessage,
+                                                'message' => $message,
+                                                'nextMessage' => $nextMessage,
+                                                'belongsToAuth' => $belongsToAuth,
+                                                'attachment' => $attachment,
+                                            ])
                                         @endif
                                     @endif
 
@@ -306,7 +308,14 @@
                                     {{-- -------------------- --}}
 
                                     @if ($message->body && !$isEmoji)
-                                    @include('wirechat::livewire.chat.partials.message', [ 'previousMessage' => $previousMessage, 'message' => $message, 'nextMessage' => $nextMessage, 'belongsToAuth' => $belongsToAuth, 'isGroup' => $isGroup, 'attachment' => $attachment])
+                                        @include('wirechat::livewire.chat.partials.message', [
+                                            'previousMessage' => $previousMessage,
+                                            'message' => $message,
+                                            'nextMessage' => $nextMessage,
+                                            'belongsToAuth' => $belongsToAuth,
+                                            'isGroup' => $isGroup,
+                                            'attachment' => $attachment,
+                                        ])
                                     @endif
 
                                 </div>

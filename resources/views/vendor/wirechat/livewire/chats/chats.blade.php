@@ -30,7 +30,7 @@
                 $wire.loadMore();
             }
             "
-        class=" overflow-y-auto pb-2 mt-4  grow  h-full relative " style="contain:content">
+        class=" overflow-y-auto w-full pb-2 mt-4  grow  h-full relative " style="contain:content">
 
         {{-- loading indicator --}}
 
