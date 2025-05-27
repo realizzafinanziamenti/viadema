@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Customer;
 
 use App\Models\Customer;
-use App\Traits\HandlesDeletions;
+use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,7 +14,7 @@ use Masmerise\Toaster\Toaster;
 
 class CustomerIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesDeletions;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions;
 
     public Customer|null $selectedCustomer = null;
     public $search = '';
@@ -25,7 +25,7 @@ class CustomerIndex extends Component
      */
     public function selectCustomerForDelete(int $id)
     {
-        $this->selectEntityForDelete(
+        $this->selectEntityForAction(
             id: $id,
             modelClass: Customer::class,
             property: 'selectedCustomer',
