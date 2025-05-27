@@ -88,10 +88,10 @@
                     <div class="shrink-0 p-1 pe-2 flex flex-col items-end">
                         {{--  --}}
                         <span class="font-medium  text-sm shrink-0 text-gray-custom-5 dark:text-gray-50">
-                            @if ($lastMessage->created_at->diffInMinutes(now()) < 1)
+                            @if ($lastMessage?->created_at?->diffInMinutes(now()) < 1)
                                 @lang('wirechat::chats.labels.now')
                             @else
-                                {{ $lastMessage->created_at->shortAbsoluteDiffForHumans() }}
+                                {{ $lastMessage?->created_at?->shortAbsoluteDiffForHumans() }}
                             @endif
                         </span>
 

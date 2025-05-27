@@ -1,16 +1,13 @@
-
 <div x-data dusk="new_group_modal">
 
     <div
-        class="relative w-full h-[410px] border  items-center justify-center border-[var(--wc-light-border)] dark:border-[var(--wc-dark-border)] overflow-auto bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)] dark:text-white sm:max-w-lg sm:rounded-lg">
+        class="relative w-full min-h-[410px] border p-10 items-center justify-center overflow-auto bg-white sm:max-w-lg sm:rounded-lg">
 
         {{--  Group Details --}}
-        <section x-show="$wire.showAddMembers==false" 
-            x-transition:enter="ease-out duration-300"
+        <section x-show="$wire.showAddMembers==false" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 -translate-x-full" x-transition:enter-end="opacity-100 translate-x-0"
             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0"
-            x-transition:leave-end="opacity-0 -translate-x-full"
-            >
+            x-transition:leave-end="opacity-0 -translate-x-full">
 
             <form wire:submit="validateDetails()" class="flex flex-col  h-full p-4">
 
@@ -21,8 +18,7 @@
                         @if ($photo)
                             <div class="relative  w-28 h-28 overflow-clip rounded-full">
                                 <x-wirechat::avatar :src="$photo->temporaryUrl()" class="w-28 h-28" />
-                                <button
-                                    type="button"
+                                <button type="button"
                                     class="bottom-0 inset-x-0 bg-white/40 text-red-800 flex items-center justify-center  absolute "
                                     wire:click="deletePhoto">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -34,17 +30,20 @@
                             </div>
                         @else
                             <label class="cursor-pointer">
-                                <x-wirechat::avatar wire:loading.class="animate-pulse" wire:target="photo" :group="true" class="w-28 h-28" />
-                                <input wire:model="photo" dusk="add_photo_field" type="file" hidden accept=".jpg,.jpeg,.png,.webp">
+                                <x-wirechat::avatar wire:loading.class="animate-pulse" wire:target="photo"
+                                    :group="true" class="w-28 h-28" />
+                                <input wire:model="photo" dusk="add_photo_field" type="file" hidden
+                                    accept=".jpg,.jpeg,.png,.webp">
                             </label>
                         @endif
 
                         <div class=" my-auto">
 
-                            <label for="name">@lang('wirechat::new.group.inputs.name.label')</label>
+                            <label class="text-base font-semibold" for="name">@lang('wirechat::new.group.inputs.name.label')</label>
 
-                            <input id='name' type="text" wire:model='name' autofocus placeholder="{{__('wirechat::new.group.inputs.name.placeholder') }}"
-                                class=" w-full border-0 px-0  bg-inherit dark:text-white outline-hidden w-full focus:outline-hidden  focus:ring-0 hover:ring-0">
+                            <input id='name' type="text" wire:model='name' autofocus
+                                placeholder="{{ __('wirechat::new.group.inputs.name.placeholder') }}"
+                                class=" border-0 px-0 text-sm bg-inherit outline-hidden w-full focus:outline-hidden  focus:ring-0 hover:ring-0">
 
                             <span class="text-red-500 text-sm ">
                                 @error('name')
@@ -68,11 +67,12 @@
                 <main class="my-5">
                     <div class=" my-auto flex flex-col gap-y-2">
 
-                        <label class="my-2" for="description">@lang('wirechat::new.group.inputs.description.label')</label>
+                        <flux:label class="my-2 text-sm" for="description">@lang('wirechat::new.group.inputs.description.label')</flux:label>
 
-                        <textarea id='description' type="text" wire:model='description' placeholder="{{__('wirechat::new.group.inputs.description.placeholder')}}" rows="4"
-                            class=" w-full resize-none rounded-lg border-[var(--wc-light-border)]  dark:border-[var(--wc-dark-border)]   bg-inherit dark:text-white outline-hidden w-full focus:outline-hidden  focus:ring-0 hover:ring-0">
-                        </textarea>
+                        <flux:textarea id='description' type="text" wire:model='description' resize="none"
+                            placeholder="{{ __('wirechat::new.group.inputs.description.placeholder') }}" rows="4"
+                            class=" w-full resize-none rounded-lg text-sm bg-inherit outline-hidden focus:outline-hidden  focus:ring-0 hover:ring-0">
+                        </flux:textarea>
 
 
                         <span class="text-red-500 text-sm ">
@@ -87,16 +87,16 @@
 
                 <footer class="flex gap-4 justify-end mt-auto">
                     <x-wirechat::actions.close-modal>
-                        <button type="button" dusk="cancel_create_new_group_button"class="font-bold cursor-pointer hover:bg-[var(--wc-light-secondary)] dark:hover:bg-[var(--wc-dark-secondary)] p-3 px-4 rounded-xl ">
+                        <flux:button type="button" dusk="cancel_create_new_group_button" size="sm"
+                            class="px-10 bg-gray-custom-2! border-gray-custom-2! text-gray-custom-5! hover:bg-gray-custom-3-hover! hover:border-gray-custom-3-hover! hover:text-white!">
                             @lang('wirechat::new.group.actions.cancel.label')
-                        </button>
+                        </flux:button>
                     </x-wirechat::actions.close-modal>
 
-                    <button type="submit" :disabled="!($wire.name?.trim()?.length)" dusk="next_button"
-                        :class="{ 'cursor-not-allowed hover:bg-none dark:hover:bg-inherit opacity-70': !($wire.name?.trim()?.length) }"
-                        class="font-bold cursor-pointer transition hover:bg-[var(--wc-light-secondary)] dark:hover:bg-[var(--wc-dark-secondary)] p-3 px-4 rounded-xl ">
+                    <flux:button type="submit" dusk="next_button" size="sm" wire:loading.attr="disabled"
+                        class="px-10 text-white! bg-azure-custom! border-azure-custom! hover:bg-azure-custom-hover! hover:border-azure-custom-hover!">
                         @lang('wirechat::new.group.actions.next.label')
-                    </button>
+                    </flux:button>
                 </footer>
             </form>
 
@@ -122,51 +122,48 @@
 
                     </button>
 
-                    <h3 class="text-sm mx-auto font-semibold "><span>@lang('wirechat::new.group.labels.add_members')</span> {{count($selectedMembers)}} / {{$maxGroupMembers}}</h3>
+                    <h3 class="text-sm mx-auto font-semibold "><span>@lang('wirechat::new.group.labels.add_members')</span>
+                        {{ count($selectedMembers) }} / {{ $maxGroupMembers }}</h3>
 
-                    <button 
-                        wire:click="create"
-                        wire:loading.attr="disabled"
-                        wire:target='create'
-                        class="p-2 disabled:cursor-not-allowed  ml-0 text-gray-600 cursor-pointer dark:text-gray-300 dark:hover:bg-[var(--wc-dark-secondary)] dark:hover:text-white rounded-full hover:text-gray-800 hover:bg-[var(--wc-light-secondary)]">
+                    <flux:button wire:click="create" wire:loading.attr="disabled" wire:target='create' size="sm"
+                        class="p-2 disabled:cursor-not-allowed  ml-0 text-white! bg-azure-custom! border-azure-custom! hover:bg-azure-custom-hover! hover:border-azure-custom-hover! cursor-pointer ">
                         @lang('wirechat::new.group.actions.create.label')
 
-                    </button>
+                    </flux:button>
 
                 </div>
 
                 {{-- Member limit error --}}
-                <div
-                  x-data="{ showError:false }"
-                  x-on:show-member-limit-error.window="
+                <div x-data="{ showError: false }"
+                    x-on:show-member-limit-error.window="
                   showError=true;
                   setTimeout(()=>{ showError=false; },1500);
                   "
-                 class="text-red-500 text-sm mx-auto ">
-                   <span x-transition x-show="showError">
-                    @lang('wirechat::new.group.messages.members_limit_error',['count'=>$maxGroupMembers])
-                   </span>
+                    class="text-red-500 text-sm mx-auto ">
+                    <span x-transition x-show="showError">
+                        @lang('wirechat::new.group.messages.members_limit_error', ['count' => $maxGroupMembers])
+                    </span>
                 </div>
                 {{-- Search input --}}
-                <section class="flex flex-wrap items-center px-0 border-b border-[var(--wc-light-secondary)] dark:border-[var(--wc-dark-secondary)]">
-                    <input type="search" id="users-search-field" wire:model.live.debounce='search' autocomplete="off"
-                        placeholder="{{__('wirechat::new.group.inputs.search.placeholder')}}"
-                        class=" w-full border-0 w-auto dark:bg-[var(--wc-dark-primary)] outline-hidden focus:outline-hidden bg-[var(--wc-light-primary)] bg-none rounded-lg focus:ring-0 hover:ring-0">
+                <section
+                    class="flex flex-wrap items-center px-0 border-b border-[var(--wc-light-secondary)] dark:border-[var(--wc-dark-secondary)]">
+                    <flux:input type="search" id="users-search-field" wire:model.live.debounce='search'
+                        autocomplete="off" placeholder="{{ __('wirechat::new.group.inputs.search.placeholder') }}"
+                        class=" w-full border-0 w-auto dark:bg-[var(--wc-dark-primary)] outline-hidden focus:outline-hidden bg-[var(--wc-light-primary)] bg-none rounded-lg focus:ring-0 hover:ring-0" />
                 </section>
 
 
                 <section class="  overflow-x-hidden my-2  ">
-                    <ul
-                    style="
+                    <ul style="
                      -ms-overflow-style: none;
                      scrollbar-width: none;
                     "
-                     class="flex w-full overflow-x-auto gap-3">
+                        class="flex w-full overflow-x-auto gap-3">
 
                         @if ($selectedMembers)
 
                             @foreach ($selectedMembers as $key => $member)
-                                <li class="flex items-center text-nowrap min-w-fit px-2 py-1 text-sm font-medium text-gray-800  bg-[var(--wc-light-secondary)] dark:bg-[var(--wc-dark-secondary)] rounded-sm  dark:text-gray-300"
+                                <li class="flex items-center text-nowrap min-w-fit px-2 py-1 text-[13px] font-medium text-gray-800  bg-[var(--wc-light-secondary)] dark:bg-[var(--wc-dark-secondary)] rounded-sm  dark:text-gray-300"
                                     wire:key="selected-member-{{ $member->id }}">
                                     {{ $member->display_name }}
                                     <button type="button"
@@ -175,8 +172,9 @@
                                         aria-label="Remove">
                                         <svg class="w-2 h-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                             fill="none" viewBox="0 0 14 14">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                            <path stroke="currentColor" stroke-linecap="round"
+                                                stroke-linejoin="round" stroke-width="2"
+                                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                         </svg>
                                         <span class="sr-only">Remove badge</span>
 
@@ -198,15 +196,15 @@
             <div class="relative w-full">
                 {{-- <h5 class="text font-semibold text-gray-800 dark:text-gray-100">Recent Chats</h5> --}}
                 <section class="my-4 grid">
-                    @if (count($users)!=0)
+                    @if (count($users) != 0)
                         <ul class="overflow-auto flex flex-col">
                             @foreach ($users as $key => $user)
-                                <li class="flex cursor-pointer group gap-2 items-center p-2">
+                                <li class="flex cursor-pointer group text-sm gap-2 items-center p-2">
 
                                     <label
                                         wire:click="toggleMember('{{ $user->id }}',{{ json_encode(get_class($user)) }})"
                                         class="flex cursor-pointer gap-2 items-center w-full">
-                                        <x-wirechat::avatar  src="{{ $user->cover_url }}" class="w-10 h-10" />
+                                        <x-wirechat::avatar src="{{ $user->cover_url }}" class="w-10 h-10" />
 
                                         <p class="group-hover:underline transition-all truncate">
                                             {{ $user->display_name }}</p>
@@ -236,7 +234,7 @@
                         </ul>
                     @else
                         @if (!empty($search))
-                        <span class="m-auto">@lang('wirechat::new.group.messages.empty_search_result')</span>
+                            <span class="m-auto text-sm">@lang('wirechat::new.group.messages.empty_search_result')</span>
                         @endif
                     @endif
                 </section>
