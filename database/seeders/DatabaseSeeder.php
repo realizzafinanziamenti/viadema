@@ -13,19 +13,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // production seeding
         $this->call([
             RolesAndPermissionsSeeder::class,
             SuperAdminSeeder::class,
-            UserSeeder::class,
-            CustomerSeeder::class,
             CustomerTypeSeeder::class,
             FinancialTableSeeder::class,
             InstallmentSeeder::class,
             InsuranceSeeder::class,
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
-            PracticeSeeder::class,
-            EventSeeder::class,
         ]);
+
+        // development seeding
+        if (app()->environment('local', 'testing')) {
+            $this->call([
+                UserSeeder::class,
+                CustomerSeeder::class,
+                PracticeSeeder::class,
+                EventSeeder::class,
+            ]);
+        }
     }
 }
