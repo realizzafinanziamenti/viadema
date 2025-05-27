@@ -1,4 +1,4 @@
-<div id="group-info-modal" class="bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)]     min-h-screen">
+<div id="group-info-modal" class="bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)]  text-sm   min-h-screen">
 
 
     @php
@@ -8,13 +8,14 @@
         $group = $conversation?->group;
     @endphp
 
-    <section class="cursor-pointer flex gap-4 z-10  items-center p-5 sticky top-0 bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)]  ">
-        <button wire:click="$dispatch('closeChatDrawer')" class="focus:outline-hidden cursor-pointer"> <svg class="w-7 h-7"
-                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+    <section
+        class="cursor-pointer flex gap-4 z-10  items-center p-5 sticky top-0 bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)]  ">
+        <button wire:click="$dispatch('closeChatDrawer')" class="focus:outline-hidden cursor-pointer"> <svg class="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.3"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg> </button>
-        <h3>{{__('wirechat::chat.group.info.heading.label')}}</h3>
+        <h3>{{ __('wirechat::chat.group.info.heading.label') }}</h3>
     </section>
     {{-- Details --}}
     <header>
@@ -78,7 +79,9 @@
                         {{-- Left side input --}}
                         <div class="   max-w-[90%] grid h-auto">
                             <div x-show="!editing">
-                                <h4 dusk="form_group_name_when_not_editing" class="font-medium  break-all   whitespace-pre-line   text-2xl ">{{ $groupName }} </h4>
+                                <h4 dusk="form_group_name_when_not_editing"
+                                    class="font-medium  break-all   whitespace-pre-line   text-xl ">{{ $groupName }}
+                                </h4>
                             </div>
 
                             <input x-cloak maxlength="110" x-show="editing" id='groupName' type="text"
@@ -118,7 +121,8 @@
                     </form>
 
                     {{-- Members count --}}
-                    <p class="mx-auto">  {{ __('wirechat::chat.group.info.labels.members') }} {{  $totalParticipants }} </p>
+                    <p class="mx-auto"> {{ __('wirechat::chat.group.info.labels.members') }} {{ $totalParticipants }}
+                    </p>
 
                 </div>
 
@@ -132,7 +136,8 @@
                         <span class="col-span-11">
                             <div x-show="!editing">
                                 @if (empty($description))
-                                    <p class="text-sm" style="color: var(--wirechat-primary-color)">{{ __('wirechat::chat.group.info.labels.add_description') }}  </p>
+                                    <p class="text-sm" style="color: var(--wirechat-primary-color)">
+                                        {{ __('wirechat::chat.group.info.labels.add_description') }} </p>
                                 @else
                                     <p class="font-medium break-all   whitespace-pre-line ">{{ $description }}
                                     </p>
@@ -183,8 +188,9 @@
             {{-- Plain group information --}}
             <div @dusk="non_editable_group_information_section" class="flex  flex-col items-center gap-5 py-5 px-4  ">
                 <x-wirechat::avatar :src="$cover_url" class=" h-32 w-32 mx-auto" />
-                <h4 dusk="group_name" class="font-medium  break-all   whitespace-pre-line   text-2xl ">{{ $groupName }} </h4>
-                <p class="mx-auto">{{ __('wirechat::chat.group.info.labels.members') }}  {{ $totalParticipants }} </p>
+                <h4 dusk="group_name" class="font-medium  break-all   whitespace-pre-line   text-xl ">
+                    {{ $groupName }} </h4>
+                <p class="mx-auto">{{ __('wirechat::chat.group.info.labels.members') }} {{ $totalParticipants }} </p>
                 <p class="font-medium break-all   whitespace-pre-line ">{{ $description }} </p>
             </div>
         @endif
@@ -204,7 +210,8 @@
             conversation="{{ $conversation?->id }}" widget="{{ $this->isWidget() }}">
             {{-- Members count --}}
             <button class="cursor-pointer flex w-full justify-between items-center px-8 focus:outline-hidden ">
-                <span class="text-gray-600 dark:text-gray-300">{{ __('wirechat::chat.group.info.labels.members') }}  {{ $totalParticipants }}</span>
+                <span class="text-gray-600 dark:text-gray-300">{{ __('wirechat::chat.group.info.labels.members') }}
+                    {{ $totalParticipants }}</span>
                 {{-- Search icon --}}
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -242,9 +249,9 @@
     <footer class="flex flex-col justify-start w-full">
 
         @if ($authIsOwner)
-
             {{-- Delete group --}}
-            <button wire:confirm="{{ __('wirechat::chat.group.info.actions.delete_group.confirmation_message') }}" wire:click="deleteGroup"
+            <button wire:confirm="{{ __('wirechat::chat.group.info.actions.delete_group.confirmation_message') }}"
+                wire:click="deleteGroup"
                 class="cursor-pointer w-full py-5 px-8 hover:bg-[var(--wc-light-secondary)] dark:hover:bg-[var(--wc-dark-secondary)] transition text-start space-y-2   gap-3   text-red-500">
                 <div class="flex gap-3 items-center ">
 
@@ -278,8 +285,9 @@
                 </x-wirechat::actions.open-chat-drawer>
             </div>
         @else
-        {{-- Exit Group --}}
-            <button wire:confirm="{{ __('wirechat::chat.group.info.actions.exit_group.confirmation_message') }}" wire:click="exitConversation"
+            {{-- Exit Group --}}
+            <button wire:confirm="{{ __('wirechat::chat.group.info.actions.exit_group.confirmation_message') }}"
+                wire:click="exitConversation"
                 class="cursor-pointer w-full py-5 px-8 hover:bg-[var(--wc-light-secondary)] dark:hover:bg-[var(--wc-dark-secondary)] transition flex gap-3 items-center text-red-500">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                     class="bi bi-box-arrow-right w-5 h-5" viewBox="0 0 16 16">
