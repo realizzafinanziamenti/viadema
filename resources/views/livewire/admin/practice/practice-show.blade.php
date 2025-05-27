@@ -33,7 +33,7 @@
 
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
-                    <x-practice-status-badge :practice="$practice" />
+                    <x-practice-status-badge :practice="$practice" wire:click='openUpdatePracticeStatusModal' />
                 </div>
 
                 <div class="text-sm mb-2.5">
@@ -140,4 +140,7 @@
 
         </div>
     </div>
+
+    {{-- Update Practice Status Modal --}}
+    @include('partials.practice.update-practice-status-modal')
 </div>

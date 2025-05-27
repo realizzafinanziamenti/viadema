@@ -6,7 +6,8 @@ use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use App\Models\ProductType;
 use App\Traits\EnumHelper;
-use App\Traits\HandlesDeletions;
+use App\Traits\HandlesEntityActions;
+use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,7 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesDeletions, EnumHelper;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
@@ -31,12 +32,56 @@ class PracticeIndex extends Component
     public array $orderBySelect = [];
 
     /**
+     * This method is called when the user clicks the update status button.
+     * It sets the selected practice and opens the modal for updating the status.
+     */
+    public function selectPracticeForStatus(int $id)
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Practice::class,
+            property: 'selectedPractice',
+            modalName: 'update-practice-status',
+            notFoundMessage: 'Pratica non trovata'
+        );
+        $this->setPracticeStatus($this->selectedPractice->practice_status?->value);
+    }
+
+    /**
+     * This method is called when the user selects a practice status from the dropdown.
+     * It sets the selected practice status.
+     */
+    public function setPracticeStatus(?int $value = null): void
+    {
+        $this->setSelectValue('selectedPracticeStatus', $value);
+    }
+
+    /**
+     * This method is called when the user clicks the update button in the modal.
+     * It updates the practice status and resets the selected practice to null.
+     */
+    public function updatePracticeStatus(): void
+    {
+        Gate::authorize('update', $this->selectedPractice);
+
+        try {
+            $this->selectedPractice->update(['practice_status' => $this->selectedPracticeStatus]);
+            Toaster::success('Stato della pratica aggiornato con successo');
+        } catch (Exception $e) {
+            Toaster::error('Errore durante l\'aggiornamento dello stato della pratica');
+        }
+
+        $this->selectedPractice = null;
+        $this->dispatch('close-modal', 'update-practice-status');
+    }
+
+    /**
      * This method is called when the user clicks the delete button.
      * It sets the selected practice to be deleted.
      */
     public function selectPracticeForDelete(int $id): void
     {
-        $this->selectEntityForDelete(
+        $this->selectEntityForAction(
             id: $id,
             modelClass: Practice::class,
             property: 'selectedPractice',
@@ -104,9 +149,9 @@ class PracticeIndex extends Component
 
     public function applyFilters($query)
     {
-        if ($this->selectedPracticeStatus) {
-            $query->where('practice_status', $this->selectedPracticeStatus);
-        }
+        // if ($this->selectedPracticeStatus) {
+        //     $query->where('practice_status', $this->selectedPracticeStatus);
+        // }
 
         if ($this->startDate) {
             $query->whereDate('started_at', '>=', $this->startDate);
