@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Exception;
 use Masmerise\Toaster\Toaster;
 
-trait HandlesDeletions
+trait HandlesEntityActions
 {
-    public function selectEntityForDelete(
+    public function selectEntityForAction(
         int $id,
         string $modelClass,
         string $property = 'selectedEntity',
-        string $modalName = 'delete-modal',
+        string $modalName = 'modal',
         string $notFoundMessage = 'Elemento non trovato'
     ): void {
         try {
