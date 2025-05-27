@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <x-table class="mb-5">
+        <x-table class="mb-5 z-10">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
                 <x-table-header label="Id pratica" class="w-2/16" />
@@ -48,7 +48,7 @@
 
             {{-- Table body --}}
             @foreach ($practices as $practice)
-                <tr wire:key='{{ $practice->id }}' class="border-y border-collapse">
+                <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
                     <x-table-data label="{{ $practice->practice_code }}" />
                     <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
 
@@ -59,8 +59,9 @@
                     <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
-                    <x-table-data truncate>
-                        <x-practice-status-badge :practice="$practice" />
+                    <x-table-data>
+                        <x-practice-status-badge :practice="$practice"
+                            wire:click="selectPracticeForStatus({{ $practice->id }})" />
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
@@ -102,6 +103,9 @@
         {{-- Pagination buttons --}}
         {{ $practices->links() }}
     </x-card>
+
+    {{-- Update Practice Status Modal --}}
+    @include('partials.practice.update-practice-status-modal')
 
     {{-- Delete Practice Modal --}}
     <x-delete-modal name="delete-practice" header="Conferma Eliminazione Pratica" function="deletePractice"
