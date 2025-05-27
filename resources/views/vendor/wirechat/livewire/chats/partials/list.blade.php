@@ -1,6 +1,6 @@
 @use('Namu\WireChat\Facades\WireChat')
 
-<ul wire:loading.delay.long.remove wire:target="search" class="grid w-full spacey-y-2">
+<ul wire:loading.delay.long.remove wire:target="search" class="grid w-full overflow-x-hidden spacey-y-2">
     @foreach ($conversations as $key => $conversation)
         @php
             //$receiver =$conversation->getReceiver();
@@ -42,7 +42,7 @@
                     this.showUnreadStatus = false;
                 }
             }
-        }" id="conversation-{{ $conversation->id }}"
+        }" id="conversation-{{ $conversation->id }}" class="w-full truncate"
             wire:key="conversation-em-{{ $conversation->id }}-{{ $conversation->updated_at->timestamp }}"
             x-on:chat-opened.window="handleChatOpened($event)" x-on:chat-closed.window="handleChatClosed($event)">
             <a @if ($widget) tabindex="0"
@@ -62,11 +62,11 @@
                         group="{{ $conversation->isGroup() }}" :src="$group ? $group?->cover_url : $receiver?->cover_url ?? null" class="w-12 h-12" />
                 </div>
 
-                <aside class="flex gap-x-3 w-full">
-                    <div class="flex-1 relative overflow-hidden truncate w-full flex-nowrap p-1">
+                <aside class="flex gap-x-3 flex-1 truncate">
+                    <div class=" relative overflow-hidden truncate flex-1  p-1">
 
                         {{-- name --}}
-                        <div class="flex gap-1 mb-0.5 w-full items-center">
+                        <div class="flex gap-1 mb-0.5 w-full truncate items-center">
                             <h6 class="truncate font-medium text-black-custom text-sm dark:text-white">
                                 {{ $group ? $group?->name : $receiver?->display_name }}
                             </h6>
