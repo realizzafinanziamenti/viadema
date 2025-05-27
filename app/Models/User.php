@@ -8,6 +8,7 @@ use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,13 +16,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Namu\WireChat\Traits\Chatable;
 use Spatie\Permission\Traits\HasRoles;
 
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable;
 
     /**
      * The attributes that are mass assignable.
@@ -183,4 +185,43 @@ class User extends Authenticatable
         });
     }
     // END SCOPES
+
+
+    // WIRECHAT TRAITS AND METHODS
+    /**
+     * Returns the URL for the user's cover image for chats (avatar).
+     */
+    public function getCoverUrlAttribute(): ?string
+    {
+        return $this->profile_photo_path
+            ? asset("storage/{$this->profile_photo_path}")
+            : asset('images/placeholder-user.jpg');
+    }
+
+    /**
+     * Accessor Returns the display name for the user.
+     */
+    public function getDisplayNameAttribute(): ?string
+    {
+        return $this->full_name ?? 'user';
+    }
+
+    /**
+     * Search for users when creating a new chat or adding members to a group.
+     */
+    public function searchChatables(string $search): ?Collection
+    {
+        $search = trim($search);
+
+        $query = User::where('id', '!=', auth()->id())
+            ->where(function ($query) use ($search) {
+                $query->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->limit(20);
+
+        return $query->get();
+    }
+    // WIRECHAT TRAITS AND METHODS END
 }

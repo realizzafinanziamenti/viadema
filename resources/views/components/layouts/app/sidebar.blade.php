@@ -3,10 +3,12 @@
 
 <head>
     @include('partials.head')
+
+    @wirechatStyles
 </head>
 
-<body class="min-h-screen bg-gray-custom-1">
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] gap-3.5! px-0">
+<body class="min-h-screen bg-gray-custom-1 flex">
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] shrink-0 gap-3.5! px-0">
         {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
         {{-- Sidebar Logo --}}
@@ -104,51 +106,53 @@
         {{-- <div class="py-3"></div> --}}
     </flux:sidebar>
 
-    <flux:header class="flex justify-end px-4 text-white bg-azure-custom h-[78px] sm:px-6 lg:px-10 xl:px-20">
-        <div class="flex">
-            {{-- Circle Plus Button --}}
-            <button class="p-1 mx-2.5">
-                <x-icons.icon-akar-circle-plus />
-            </button>
+    <div class="flex flex-col w-full h-screen overflow-hidden">
+        {{-- Header --}}
+        <flux:header
+            class="flex justify-end px-4 text-white bg-azure-custom h-[78px] shrink-0 sm:px-6 lg:px-10 xl:px-20">
+            <div class="flex">
+                {{-- Circle Plus Button --}}
+                <button class="p-1 mx-2.5">
+                    <x-icons.icon-akar-circle-plus />
+                </button>
 
-            {{-- Chat Button --}}
-            <button class="p-1 mx-2.5">
-                <x-icons.icon-akar-chat-dots />
-            </button>
+                {{-- Chat Button --}}
+                <livewire:layout.chat-button />
 
-            {{-- Notification Button and Drawer --}}
-            <button class="p-1 mx-2.5">
-                <x-icons.icon-akar-bell />
-            </button>
-        </div>
+                {{-- Notification Button and Drawer --}}
+                <button class="p-1 mx-2.5">
+                    <x-icons.icon-akar-bell />
+                </button>
+            </div>
 
-        <!-- Profile button -->
-        <div class="ms-3.5">
-            <a href="#" wire:navigate
-                class="flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full">
-                <div class="flex items-center">
-                    <img class="object-cover w-10 h-10 bg-white rounded-full"
-                        src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
-                </div>
+            <!-- Profile button -->
+            <div class="ms-3.5">
+                <a href="#" wire:navigate
+                    class="flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full">
+                    <div class="flex items-center">
+                        <img class="object-cover w-10 h-10 bg-white rounded-full"
+                            src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
+                    </div>
 
-                <div class="flex flex-col items-start gap-1">
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
+                    <div class="flex flex-col items-start gap-1">
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
 
-                        <div x-data="{{ json_encode(['name' => auth()->user()->full_name]) }}" x-text="name" class="font-semibold"
-                            x-on:profile-updated.window="name = $event.detail.name">
-                        </div>
-                    </form>
+                            <div x-data="{{ json_encode(['name' => auth()->user()->full_name]) }}" x-text="name" class="font-semibold"
+                                x-on:profile-updated.window="name = $event.detail.name">
+                            </div>
+                        </form>
 
 
-                    <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role" x-on:profile-updated.window="role = $event.detail.role"
-                        class="font-extralight"></div>
-                </div>
-            </a>
-        </div>
-    </flux:header>
+                        <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role"
+                            x-on:profile-updated.window="role = $event.detail.role" class="font-extralight"></div>
+                    </div>
+                </a>
+            </div>
+        </flux:header>
 
-    {{ $slot }}
+        {{ $slot }}
+    </div>
 
     @fluxScripts
 
@@ -168,6 +172,8 @@
         }
     </style>
     {{-- END TOASTER --}}
+
+    @wirechatAssets
 </body>
 
 </html>

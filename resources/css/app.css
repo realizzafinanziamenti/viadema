@@ -7,6 +7,11 @@
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
+/* wirechat */
+@source '../../vendor/namu/wirechat/resources/views/**/*.blade.php';
+@source '../../vendor/namu/wirechat/src/Livewire/**/*.php';
+/* wirechat */
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -25,6 +30,7 @@
     --color-azure-custom: #019EB1;
     --color-azure-custom-hover: #037886;
     --color-azure-custom-light: #8DD4DC;
+    --color-azure-chat-bg: #f2fafb;
     --color-pink-custom: #E56399;
     --color-red-custom: #d30000;
     --color-red-custom-light: #fae6e6;
