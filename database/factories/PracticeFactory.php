@@ -25,23 +25,32 @@ class PracticeFactory extends Factory
      */
     public function definition(): array
     {
+        // Generazione date inserimento, inizio e stato pratica
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
         $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
         $practiceStatus = fake()->randomElement(PracticeStatus::cases());
-
+        // Stato della pratica: se è disbursed, allora paid_at sarà una data valida
         $paidAt = $practiceStatus === PracticeStatus::DISBURSED
             ? fake()->dateTimeBetween($startedAt, 'now')
             : null;
-
+        // Date relative al finanziamento
         $firstDueDate = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 month') : null;
         $lastDueDate = $firstDueDate ? fake()->dateTimeBetween($firstDueDate, '+4 years') : null;
         $extinguishedAt = $paidAt ? fake()->optional()->dateTimeBetween($paidAt, $lastDueDate ?? '+4 years') : null;
-        $renewableAt = $paidAt ? fake()->dateTimeBetween($paidAt, $lastDueDate ?? '+4 years') : null;
-
+        // Calcolo TAN, TEG e TAEG
         $tan = fake()->randomFloat(3, 1.000, 12.000);
         $teg = fake()->randomFloat(2, $tan + 0.2, $tan + 5.0);
         $taeg = fake()->randomFloat(2, $tan + 0.4, $tan + 6.0);
-
+        // Percentuali di rinnovo e alert
+        $renewabilityPercentage = 40.00;
+        $percentageAlert = 35.00;
+        // Numero rate fittizio (in reale lo prendi da Installment model)
+        $numeroRate = fake()->randomElement([60, 72, 120]);
+        $rateRenewability = ceil($numeroRate * ($renewabilityPercentage / 100));
+        $rateAlert = ceil($numeroRate * ($percentageAlert / 100));
+        $renewableAt = (clone $startedAt)->modify("+$rateRenewability months");
+        $alertDate = (clone $startedAt)->modify("+$rateAlert months");
+        // Importi finanziari
         $amountDisbursed = fake()->randomFloat(2, 1000, 25000);
         $totalAmount = $amountDisbursed + fake()->randomFloat(2, 500, 5000);
 
@@ -71,7 +80,12 @@ class PracticeFactory extends Factory
             'first_due_date' => $firstDueDate,
             'last_due_date' => $lastDueDate,
             'extinguished_at' => $extinguishedAt,
+
+            // Rinnovo
+            'renewabilty_percentage' => $renewabilityPercentage,
             'renewable_at' => $renewableAt,
+            'percentage_alert' => $percentageAlert,
+            'alert_date' => $alertDate,
 
             // Stato e altri dati
             'practice_status' => $practiceStatus->value,
