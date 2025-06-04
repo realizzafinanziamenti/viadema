@@ -29,7 +29,7 @@ class Installment extends Model
     {
         return $this->belongsToMany(ProductType::class, 'installment_product_default')
             ->using(InstallmentProductDefault::class)
-            ->withPivot('renewable_percentage', 'percentage_alert', 'alert_months')
+            ->withPivot('renewability_percentage', 'percentage_alert', 'alert_months')
             ->withTimestamps();
     }
 }

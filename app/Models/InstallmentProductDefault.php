@@ -12,7 +12,7 @@ class InstallmentProductDefault extends Pivot
     protected $fillable = [
         'installment_id',
         'product_type_id',
-        'renewable_percentage',
+        'renewability_percentage',
         'percentage_alert',
         'alert_months',
     ];
@@ -22,7 +22,7 @@ class InstallmentProductDefault extends Pivot
     protected function casts(): array
     {
         return [
-            'renewable_percentage' => 'decimal:2',
+            'renewability_percentage' => 'decimal:2',
             'percentage_alert' => 'decimal:2',
             'alert_months' => 'integer',
         ];

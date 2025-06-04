@@ -34,7 +34,7 @@ class InstallmentProductDefaultSeeder extends Seeder
             foreach ($installments as $installment) {
                 $defaults[] = [
                     'installment_id' => $installments->id,
-                    'renewable_percentage' => 40.00,
+                    'renewability_percentage' => 40.00,
                     'percentage_alert' => $installment->value === 60 ? 10.00 : 35.00,
                 ];
             }

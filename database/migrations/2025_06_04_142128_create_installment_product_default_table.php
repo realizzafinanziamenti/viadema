@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('installment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();
-            $table->decimal('renewable_percentage', 5, 2)->default(40.00); // Percentuale di rinnovo su ammortamento
+            $table->decimal('renewability_percentage', 5, 2)->default(40.00); // Percentuale di rinnovo su ammortamento
             $table->decimal('percentage_alert', 5, 2)->default(35.00);           // Percentuale di alert su rinnovo
             $table->integer('alert_months')->default(0);                                 // Numero di mesi per l'alert
 
