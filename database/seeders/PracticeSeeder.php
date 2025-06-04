@@ -27,11 +27,17 @@ class PracticeSeeder extends Seeder
         $customers = Customer::all();
         $financialTables = FinancialTable::all();
         $insurances = Insurance::all();
-        $installments = Installment::all();
         $customerTypes = CustomerType::all();
 
         foreach ($productTypes as $productType) {
+            // Recupera le rate valide per il tipo di prodotto
+            $validInstallments = Installment::whereHas('productTypes', function ($query) use ($productType) {
+                $query->where('product_type_id', $productType->id);
+            })->get();
+
             for ($i = 0; $i < 100; $i++) {
+                $installment = $validInstallments->random();
+
                 Practice::factory()->create([
                     'product_type_id' => $productType->id,
                     'product_subtype_id' => $productSubtypes->random()->id,
@@ -39,7 +45,7 @@ class PracticeSeeder extends Seeder
                     'customer_id' => $customers->random()->id,
                     'financial_table_id' => $financialTables->random()->id,
                     'insurance_id' => $insurances->random()->id,
-                    'installment_id' => $installments->random()->id,
+                    'installment_id' => $installment->id,
                     'customer_type_id' => $customerTypes->random()->id,
                 ]);
             }

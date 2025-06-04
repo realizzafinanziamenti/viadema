@@ -7,10 +7,13 @@ use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
+use App\Models\InstallmentProductDefault;
 use App\Models\Insurance;
+use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,31 +28,15 @@ class PracticeFactory extends Factory
      */
     public function definition(): array
     {
-        // Generazione date inserimento, inizio e stato pratica
+        // Generazione date inserimento e inizio
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
         $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
-        $practiceStatus = fake()->randomElement(PracticeStatus::cases());
-        // Stato della pratica: se è disbursed, allora paid_at sarà una data valida
-        $paidAt = $practiceStatus === PracticeStatus::DISBURSED
-            ? fake()->dateTimeBetween($startedAt, 'now')
-            : null;
-        // Date relative al finanziamento
-        $firstDueDate = $paidAt ? fake()->dateTimeBetween($paidAt, '+1 month') : null;
-        $lastDueDate = $firstDueDate ? fake()->dateTimeBetween($firstDueDate, '+4 years') : null;
-        $extinguishedAt = $paidAt ? fake()->optional()->dateTimeBetween($paidAt, $lastDueDate ?? '+4 years') : null;
+
         // Calcolo TAN, TEG e TAEG
         $tan = fake()->randomFloat(3, 1.000, 12.000);
         $teg = fake()->randomFloat(2, $tan + 0.2, $tan + 5.0);
         $taeg = fake()->randomFloat(2, $tan + 0.4, $tan + 6.0);
-        // Percentuali di rinnovo e alert
-        $renewabilityPercentage = 40.00;
-        $percentageAlert = 35.00;
-        // Numero rate fittizio (in reale lo prendi da Installment model)
-        $numeroRate = fake()->randomElement([60, 72, 120]);
-        $rateRenewability = ceil($numeroRate * ($renewabilityPercentage / 100));
-        $rateAlert = ceil($numeroRate * ($percentageAlert / 100));
-        $renewableAt = (clone $startedAt)->modify("+$rateRenewability months");
-        $alertDate = (clone $startedAt)->modify("+$rateAlert months");
+
         // Importi finanziari
         $amountDisbursed = fake()->randomFloat(2, 1000, 25000);
         $totalAmount = $amountDisbursed + fake()->randomFloat(2, 500, 5000);
@@ -76,24 +63,61 @@ class PracticeFactory extends Factory
             // Date
             'inserted_at' => $insertedAt,
             'started_at' => $startedAt,
-            'paid_at' => $paidAt,
-            'first_due_date' => $firstDueDate,
-            'last_due_date' => $lastDueDate,
-            'extinguished_at' => $extinguishedAt,
-
-            // Rinnovo
-            'renewabilty_percentage' => $renewabilityPercentage,
-            'renewable_at' => $renewableAt,
-            'percentage_alert' => $percentageAlert,
-            'alert_date' => $alertDate,
+            'paid_at' => null,
+            'first_due_date' => null,
+            'last_due_date' => null,
+            'extinguished_at' => null,
 
             // Stato e altri dati
-            'practice_status' => $practiceStatus->value,
-            'days_transformation' => fake()->optional()->numberBetween(0, 90),
-            'sum_dec_plus_35' => fake()->optional()->randomFloat(2, 100, 5000),
+            'practice_status' => fake()->randomElement(PracticeStatus::cases())->value,
             'previous_finance' => fake()->optional()->company(),
             'practice_code' => strtoupper(fake()->bothify('PR#??##')),
             'notes' => fake()->optional()->sentence(),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterMaking(function (Practice $practice) {
+            $this->setDefaults($practice);
+        })->afterCreating(function (Practice $practice) {
+            $this->setDefaults($practice);
+            $practice->save();
+        });
+    }
+
+    protected function setDefaults(Practice $practice)
+    {
+        if ($practice->product_type_id && $practice->installment_id) {
+            $default = InstallmentProductDefault::where('product_type_id', $practice->product_type_id)
+                ->where('installment_id', $practice->installment_id)
+                ->first();
+
+            if ($default) {
+                $practice->renewability_percentage = $default->renewability_percentage;
+                $practice->percentage_alert = $default->percentage_alert;
+
+                $installment = Installment::find($practice->installment_id);
+
+                if ($installment) {
+                    // Calcolo rate e date
+                    $totalRate = $installment->value;
+                    $rinnovoRate = ceil($totalRate * ($default->renewability_percentage / 100));
+                    $alertRate = ceil($totalRate * ($default->percentage_alert / 100));
+
+                    $practice->renewable_at = Carbon::parse($practice->started_at)->addMonths($rinnovoRate);
+                    $practice->alert_date = Carbon::parse($practice->started_at)->addMonths($alertRate);
+
+                    $practice->first_due_date = Carbon::parse($practice->started_at)->addMonth();
+                    $practice->last_due_date = (clone $practice->first_due_date)->addMonths($totalRate - 1);
+                }
+            }
+
+            // if practice_status is DISBURSED, set paid_at and optionally extinguished_at
+            if ($practice->practice_status == PracticeStatus::DISBURSED->value) {
+                $practice->paid_at = Carbon::parse($practice->started_at)->addDays(fake()->numberBetween(5, 30));
+                $practice->extinguished_at = (clone $practice->paid_at)->addMonths(fake()->numberBetween(6, 24));
+            }
+        }
     }
 }

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Installment;
 use App\Models\InstallmentProductDefault;
 use App\Models\ProductType;
-use Demo\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -29,17 +28,18 @@ class InstallmentProductDefaultSeeder extends Seeder
         foreach ($products as $slug) {
             $productType = ProductType::where('slug', $slug)->first();
 
-            $defaults = [];
-
-            foreach ($installments as $installment) {
-                $defaults[] = [
-                    'installment_id' => $installments->id,
-                    'renewability_percentage' => 40.00,
-                    'percentage_alert' => $installment->value === 60 ? 10.00 : 35.00,
-                ];
+            if (!$productType) {
+                continue;
             }
 
-            $productType->installmentProductDefaults()->createMany($defaults);
+            foreach ($installments as $installment) {
+                InstallmentProductDefault::create([
+                    'product_type_id' => $productType->id,
+                    'installment_id' => $installment->id,
+                    'renewability_percentage' => 40.00,
+                    'percentage_alert' => $installment->value === 60 ? 10.00 : 35.00,
+                ]);
+            }
         }
     }
 }
