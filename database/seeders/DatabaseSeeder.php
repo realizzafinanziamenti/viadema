@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             InsuranceSeeder::class,
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
+            InstallmentProductDefaultSeeder::class,
         ]);
 
         // development seeding
