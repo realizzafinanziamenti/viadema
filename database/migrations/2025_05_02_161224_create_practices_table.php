@@ -39,7 +39,12 @@ return new class extends Migration
             $table->date('first_due_date')->nullable();                // data prima rata / data d'inizio
             $table->date('last_due_date')->nullable();                 // data ultima rata / data di liquidazione
             $table->date('extinguished_at')->nullable();               // data estinzione anticipata
-            $table->date('renewable_at')->nullable();                  // data rinnovabilità (calcolata)
+
+            // Rinnovo
+            $table->decimal('renewability_percentage', 5, 2)->default(40.00);              // percentuale di rinnovo su ammortamento
+            $table->date('renewable_at')->nullable();                                                   // data rinnovabilità (calcolata da percentuale rinnovo)
+            $table->decimal('percentage_alert', 5, 2)->default(35.00);                          // percentuale di alert su rinnovo
+            $table->date('alert_date')->nullable();                                                          // data alert (calcolata da percentuale alert)
 
             // Stato e flag
             $table->tinyInteger('practice_status');                         // stato pratica

@@ -41,7 +41,12 @@ class Practice extends Model
         'first_due_date',         // data prima rata
         'last_due_date',          // data ultima rata
         'extinguished_at',        // data estinzione anticipata
+
+        // Rinnovo
+        'renewability_percentage',  // percentuale di rinnovo su ammortamento
         'renewable_at',           // data rinnovabilità (calcolata)
+        'percentage_alert',       // percentuale di alert su rinnovo
+        'alert_date',             // data alert (calcolata)
 
         // Stato e flag
         'practice_status',        // stato pratica
@@ -68,7 +73,11 @@ class Practice extends Model
         'first_due_date' => 'date',
         'last_due_date' => 'date',
         'extinguished_at' => 'date',
+
+        'renewability_percentage' => 'decimal:2',
         'renewable_at' => 'date',
+        'percentage_alert' => 'decimal:2',
+        'alert_date' => 'date',
 
         'practice_status' => PracticeStatus::class,
         'days_transformation' => 'integer',
