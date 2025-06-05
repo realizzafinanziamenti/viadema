@@ -9,12 +9,14 @@ use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
+use App\Models\InstallmentProductDefault;
 use App\Models\Insurance;
 use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use App\Traits\InteractsWithDropdowns;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -70,6 +72,7 @@ class PracticeCreate extends Component
     public function setProductType(?int $value = null): void
     {
         $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
+        $this->initializeInstallments();
     }
 
     /**
@@ -102,6 +105,74 @@ class PracticeCreate extends Component
     public function setInstallment(?int $value = null): void
     {
         $this->setFormSelectValue('installmentId', $value, 'practiceForm');
+        $this->recalculateLastInstallmentDate();
+        $this->setRenewabilityAndAlertPercentage();
+        $this->recalculateRenewabilityDate();
+    }
+
+    /*/
+    * Update first installment date callback function and recalculate last installment and renewability date
+    */
+    public function updateFirstInstallmentDate(): void
+    {
+        if ($this->practiceForm->firstInstallmentDate) {
+            $this->recalculateLastInstallmentDate();
+            $this->recalculateRenewabilityDate();
+        } else {
+            $this->practiceForm->lastInstallmentDate = null;
+            $this->practiceForm->renewabilityDate = null;
+        }
+    }
+
+    /**
+     * Recalculate the last installment date based on the first installment date and the selected installment
+     */
+    public function recalculateLastInstallmentDate(): void
+    {
+        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->installmentId) {
+            $installment = Installment::find($this->practiceForm->installmentId);
+
+            if ($installment) {
+                $totalInstallments = $installment->value;
+
+                $firstDate = \Carbon\Carbon::parse($this->practiceForm->firstInstallmentDate);
+                $lastDate = $firstDate->copy()->addMonths($totalInstallments - 1);
+
+                $this->practiceForm->lastInstallmentDate = $lastDate->format('Y-m-d');
+            }
+        }
+    }
+
+    /**
+     * Set renewability and alert percentage based on the selected product type and installment
+     */
+    public function setRenewabilityAndAlertPercentage(): void
+    {
+        if ($this->practiceForm->productTypeId && $this->practiceForm->installmentId) {
+            $default = InstallmentProductDefault::where('product_type_id', $this->practiceForm->productTypeId)
+                ->where('installment_id', $this->practiceForm->installmentId)
+                ->first();
+
+            if ($default) {
+                $this->practiceForm->renewabilityPercentage = $default->renewability_percentage;
+                $this->practiceForm->percentageAlert = $default->percentage_alert;
+            }
+        }
+    }
+
+    /**
+     * Recalculate the renewability date based on the first installment date and renewability percentage
+     */
+    public function recalculateRenewabilityDate(): void
+    {
+        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->renewabilityPercentage) {
+            $firstInstallmentDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
+            $monthsToAdd = (int) $this->practiceForm->renewabilityPercentage;
+            $renewabilityDate = $firstInstallmentDate->addMonths($monthsToAdd)->format('Y-m-d');
+
+
+            $this->practiceForm->renewabilityDate = $renewabilityDate;
+        }
     }
 
     /**
@@ -214,13 +285,26 @@ class PracticeCreate extends Component
             ->pluck('name', 'id')
             ->toArray();
 
-        $this->installments = Installment::orderBy('value')
-            ->pluck('value', 'id')
-            ->toArray();
-
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
+    }
+
+    /**
+     * Initialize installments based on product type
+     */
+    protected function initializeInstallments(): void
+    {
+        if ($this->practiceForm->productTypeId) {
+            $productType = ProductType::with('installments')->find($this->practiceForm->productTypeId);
+
+            $this->installments = $productType->installments
+                ->sortBy('value')
+                ->pluck('value', 'id')
+                ->toArray();
+        } else {
+            $this->installments = [];
+        }
     }
 
     public function mount()
