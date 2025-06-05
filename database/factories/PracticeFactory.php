@@ -30,7 +30,7 @@ class PracticeFactory extends Factory
     {
         // Generazione date inserimento e inizio
         $insertedAt = fake()->dateTimeBetween('-1 year', 'now');
-        $startedAt = fake()->dateTimeBetween($insertedAt, 'now');
+        $firstInstallmentDate = fake()->dateTimeBetween($insertedAt, 'now');
 
         // Calcolo TAN, TEG e TAEG
         $tan = fake()->randomFloat(3, 1.000, 12.000);
@@ -62,11 +62,10 @@ class PracticeFactory extends Factory
 
             // Date
             'inserted_at' => $insertedAt,
-            'started_at' => $startedAt,
-            'paid_at' => null,
-            'first_due_date' => null,
-            'last_due_date' => null,
-            'extinguished_at' => null,
+            'first_installment_date' => $firstInstallmentDate,
+            'last_installment_date' => null,
+            'early_settlement_date' => null,
+            'disbursement_date' => null,
 
             // Stato e altri dati
             'practice_status' => fake()->randomElement(PracticeStatus::cases())->value,
@@ -88,35 +87,23 @@ class PracticeFactory extends Factory
 
     protected function setDefaults(Practice $practice)
     {
-        if ($practice->product_type_id && $practice->installment_id) {
+        if ($practice->product_type_id && $practice->installment_id && $practice->first_installment_date) {
+
+            // Recupera valori di default delle percentuali di rinnovo e alert basati sul tipo di prodotto e rata
             $default = InstallmentProductDefault::where('product_type_id', $practice->product_type_id)
                 ->where('installment_id', $practice->installment_id)
                 ->first();
 
             if ($default) {
+                // Imposta le date di rinnovo e alert
                 $practice->renewability_percentage = $default->renewability_percentage;
                 $practice->percentage_alert = $default->percentage_alert;
-
-                $installment = Installment::find($practice->installment_id);
-
-                if ($installment) {
-                    // Calcolo rate e date
-                    $totalRate = $installment->value;
-                    $rinnovoRate = ceil($totalRate * ($default->renewability_percentage / 100));
-                    $alertRate = ceil($totalRate * ($default->percentage_alert / 100));
-
-                    $practice->renewable_at = Carbon::parse($practice->started_at)->addMonths($rinnovoRate);
-                    $practice->alert_date = Carbon::parse($practice->started_at)->addMonths($alertRate);
-
-                    $practice->first_due_date = Carbon::parse($practice->started_at)->addMonth();
-                    $practice->last_due_date = (clone $practice->first_due_date)->addMonths($totalRate - 1);
-                }
             }
 
-            // if practice_status is DISBURSED, set paid_at and optionally extinguished_at
+            // se stato pratica DISBURSED (Liquidata), calcola le date di liquidazione e estinzione anticipata
             if ($practice->practice_status == PracticeStatus::DISBURSED->value) {
-                $practice->paid_at = Carbon::parse($practice->started_at)->addDays(fake()->numberBetween(5, 30));
-                $practice->extinguished_at = (clone $practice->paid_at)->addMonths(fake()->numberBetween(6, 24));
+                $practice->early_settlement_date = Carbon::parse($practice->first_installment_date)->addDays(fake()->numberBetween(5, 30));
+                $practice->disbursement_date = (clone $practice->early_settlement_date)->addMonths(fake()->numberBetween(6, 24));
             }
         }
     }
