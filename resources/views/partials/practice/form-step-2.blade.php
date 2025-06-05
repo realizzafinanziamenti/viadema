@@ -37,20 +37,21 @@
             <flux:error name="practiceForm.userId" />
         </div>
     </div>
-    {{-- Started At Date --}}
+    {{-- First Installment Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di inizio *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <flux:input type="date" size="sm" wire:model='practiceForm.startedAt' />
-            <flux:error name="practiceForm.startedAt" />
+            <flux:input type="date" size="sm" wire:change='updateFirstInstallmentDate'
+                wire:model='practiceForm.firstInstallmentDate' />
+            <flux:error name="practiceForm.firstInstallmentDate" />
         </div>
     </div>
-    {{-- Paid At Date --}}
+    {{-- Last Installment Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di fine</flux:label>
         <div class="flex flex-col gap-0.5">
-            <flux:input type="date" size="sm" wire:model='practiceForm.paidAt' />
-            <flux:error name="practiceForm.paidAt" />
+            <flux:input type="date" size="sm" readonly wire:model='practiceForm.lastInstallmentDate' />
+            <flux:error name="practiceForm.lastInstallmentDate" />
         </div>
     </div>
     {{-- Amount Disbursed --}}
@@ -67,7 +68,7 @@
         <flux:label>Rate *</flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$practiceForm->installmentId" placeholder='Seleziona rate'
-                setFunction="setInstallment" :has-error="$errors->has('practiceForm.installmentId')" />
+                setFunction="setInstallment" emptySelectableItems="Seleziona prima prodotto" :has-error="$errors->has('practiceForm.installmentId')" />
 
             <flux:error name="practiceForm.installmentId" />
         </div>
@@ -108,12 +109,31 @@
             <flux:error name="practiceForm.totalAmount" />
         </div>
     </div>
+    {{-- Renewability Percentage --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Percentuale rinnovabilità *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" wire:change='recalculateRenewabilityDate' min="0.00"
+                max="100.00" step=".01" size="sm" model="practiceForm.renewabilityPercentage"
+                symbol="%" />
+            <flux:error name="practiceForm.renewabilityPercentage" />
+        </div>
+    </div>
+    {{-- Percentage Alert --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Percentuale alert *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" max="100.00" step=".01" size="sm"
+                model="practiceForm.percentageAlert" symbol="%" />
+            <flux:error name="practiceForm.percentageAlert" />
+        </div>
+    </div>
     {{-- Renewed --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Rinnovo</flux:label>
+        <flux:label>Data rinnovabilità</flux:label>
         <div class="flex flex-col gap-0.5">
-            <flux:input type="date" size="sm" wire:model='practiceForm.renewableAt' />
-            <flux:error name="practiceForm.renewableAt" />
+            <flux:input type="date" size="sm" readonly wire:model='practiceForm.renewabilityDate' />
+            <flux:error name="practiceForm.renewabilityDate" />
         </div>
     </div>
     {{-- Customer Type --}}
