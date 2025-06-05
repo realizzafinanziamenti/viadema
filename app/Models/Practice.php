@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\PracticeStatus;
+use App\Observers\PracticeObserver;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy(PracticeObserver::class)]
 class Practice extends Model
 {
     use SoftDeletes, HasFactory;
@@ -36,15 +39,14 @@ class Practice extends Model
 
         // Date
         'inserted_at',            // inserimento sistema
-        'started_at',             // data decorrenza
-        'paid_at',                // data liquidazione
-        'first_due_date',         // data prima rata
-        'last_due_date',          // data ultima rata
-        'extinguished_at',        // data estinzione anticipata
+        'first_installment_date',         // data prima rata
+        'last_installment_date',          // data ultima rata
+        'early_settlement_date',                // data liquidazione
+        'disbursement_date',        // data estinzione anticipata
 
         // Rinnovo
         'renewability_percentage',  // percentuale di rinnovo su ammortamento
-        'renewable_at',           // data rinnovabilità (calcolata)
+        'renewability_date',           // data rinnovabilità (calcolata)
         'percentage_alert',       // percentuale di alert su rinnovo
         'alert_date',             // data alert (calcolata)
 
@@ -68,14 +70,13 @@ class Practice extends Model
         'taeg' => 'decimal:2',
 
         'inserted_at' => 'date',
-        'started_at' => 'date',
-        'paid_at' => 'date',
-        'first_due_date' => 'date',
-        'last_due_date' => 'date',
-        'extinguished_at' => 'date',
+        'first_installment_date' => 'date',
+        'last_installment_date' => 'date',
+        'early_settlement_date' => 'date',
+        'disbursement_date' => 'date',
 
         'renewability_percentage' => 'decimal:2',
-        'renewable_at' => 'date',
+        'renewability_date' => 'date',
         'percentage_alert' => 'decimal:2',
         'alert_date' => 'date',
 
@@ -157,27 +158,27 @@ class Practice extends Model
     // ACCESSORS
 
     /**
-     * Accessor to obtain formatted started at date.
+     * Accessor to obtain formatted first installment date.
      */
-    protected function formattedStartedAt(): Attribute
+    protected function formattedFirstInstallmentDate(): Attribute
     {
-        return Attribute::get(fn() => $this->started_at?->format('d/m/y'));
+        return Attribute::get(fn() => $this->first_installment_date?->format('d/m/y'));
     }
 
     /**
-     * Accessor to obtain formatted paid at date.
+     * Accessor to obtain formatted early settlement date.
      */
-    protected function formattedPaidAt(): Attribute
+    protected function formattedEarlySettlementDate(): Attribute
     {
-        return Attribute::get(fn() => $this->paid_at?->format('d/m/y'));
+        return Attribute::get(fn() => $this->early_settlement_date?->format('d/m/y'));
     }
 
     /**
-     * Accessor to obtain formatted extinguished at date.
+     * Accessor to obtain formatted disbursement date.
      */
-    protected function formattedExtinguishedAt(): Attribute
+    protected function formattedDisbursementDate(): Attribute
     {
-        return Attribute::get(fn() => $this->extinguished_at?->format('d/m/y'));
+        return Attribute::get(fn() => $this->disbursement_date?->format('d/m/y'));
     }
 
     /**
@@ -243,15 +244,15 @@ class Practice extends Model
             ->when(
                 $expired === true,
                 fn($q) => $q
-                    ->whereNotNull('extinguished_at')
-                    ->where('extinguished_at', '<=', $now)
+                    ->whereNotNull('disbursement_date')
+                    ->where('disbursement_date', '<=', $now)
             )
             ->when(
                 $expired === false,
                 fn($q) => $q
                     ->where(function ($q) use ($now) {
-                        $q->whereNull('extinguished_at')
-                            ->orWhere('extinguished_at', '>', $now);
+                        $q->whereNull('disbursement_date')
+                            ->orWhere('disbursement_date', '>', $now);
                     })
             );
     }
