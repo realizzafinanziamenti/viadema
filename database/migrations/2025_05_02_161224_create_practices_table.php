@@ -36,8 +36,8 @@ return new class extends Migration
             $table->date('inserted_at')->nullable();                        // inserimento sistema
             $table->date('first_installment_date')->nullable();                // data prima rata / data d'inizio
             $table->date('last_installment_date')->nullable();                 // data ultima rata / data di liquidazione
-            $table->date('early_settlement_date')->nullable();                            // data liquidazione
-            $table->date('disbursement_date')->nullable();               // data estinzione anticipata
+            $table->date('early_settlement_date')->nullable();             // data estinzione anticipata
+            $table->date('disbursement_date')->nullable();               // data liquidazione
 
             // Rinnovo
             $table->decimal('renewability_percentage', 5, 2)->default(40.00);              // percentuale di rinnovo su ammortamento
