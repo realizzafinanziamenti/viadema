@@ -56,7 +56,7 @@
                         <x-table-data truncate class="font-bold!" label="{{ $practice->productType?->name }}" />
                     @endif
 
-                    <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
+                    <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
