@@ -35,25 +35,7 @@ class PracticeObserver
             'renewability_percentage',
             'percentage_alert'
         ])) {
-            if ($practice->installment_id && $practice->first_installment_date) {
-                $installment = Installment::find($practice->installment_id);
-
-                if ($installment) {
-                    $totalInstallments = $installment->value;
-                    $firstDate = Carbon::parse($practice->first_installment_date);
-
-                    // Calcolo della data ultima rata
-                    $practice->last_installment_date = $firstDate->copy()->addMonths($totalInstallments - 1);
-
-                    // Calcolo delle rate di rinnovo e alert
-                    $renewabilityInstallments = ceil($totalInstallments * ($practice->renewability_percentage / 100));
-                    $alertInstallments = ceil($totalInstallments * ($practice->percentage_alert / 100));
-
-                    // Calcolo delle date di rinnovo e alert
-                    $practice->renewability_date = $firstDate->copy()->addMonths($renewabilityInstallments);
-                    $practice->alert_date = $firstDate->copy()->addMonths($alertInstallments);
-                }
-            }
+            $this->calculateDates($practice);
         }
     }
 
