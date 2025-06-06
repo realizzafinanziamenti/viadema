@@ -72,7 +72,8 @@ class PracticeCreate extends Component
     public function setProductType(?int $value = null): void
     {
         $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
-        $this->initializeInstallments();
+        $this->setRenewabilityAndAlertPercentage();
+        $this->recalculateRenewabilityDate();
     }
 
     /**
@@ -277,6 +278,10 @@ class PracticeCreate extends Component
             ->pluck('name', 'id')
             ->toArray();
 
+        $this->installments = Installment::orderBy('value')
+            ->pluck('value', 'id')
+            ->toArray();
+
         $this->financialTables = FinancialTable::orderBy('percentage')
             ->pluck('percentage', 'id')
             ->toArray();
@@ -288,23 +293,6 @@ class PracticeCreate extends Component
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
-    }
-
-    /**
-     * Initialize installments based on product type
-     */
-    protected function initializeInstallments(): void
-    {
-        if ($this->practiceForm->productTypeId) {
-            $productType = ProductType::with('installments')->find($this->practiceForm->productTypeId);
-
-            $this->installments = $productType->installments
-                ->sortBy('value')
-                ->pluck('value', 'id')
-                ->toArray();
-        } else {
-            $this->installments = [];
-        }
     }
 
     public function mount()
