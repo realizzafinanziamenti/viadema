@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy(PracticeObserver::class)]
@@ -149,9 +150,9 @@ class Practice extends Model
     /**
      * Get the events associated with the practice.
      */
-    public function events(): HasMany
+    public function events(): HasOne
     {
-        return $this->hasMany(Event::class);
+        return $this->hasOne(Event::class);
     }
 
     /**
