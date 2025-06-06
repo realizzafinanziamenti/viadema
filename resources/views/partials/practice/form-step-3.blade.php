@@ -26,12 +26,12 @@
     {{-- Started At Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di inizio</flux:label>
-        <x-display-input value="{{ $practiceForm->startedAt }}" />
+        <x-display-input value="{{ $practiceForm->firstInstallmentDate }}" />
     </div>
     {{-- Paid At Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di fine</flux:label>
-        <x-display-input value="{{ $practiceForm->paidAt }}" />
+        <x-display-input value="{{ $practiceForm->lastInstallmentDate }}" />
     </div>
     {{-- Amount Disbursed --}}
     <div class="flex flex-col gap-1.5">
@@ -63,10 +63,20 @@
         <flux:label>Totale dovuto</flux:label>
         <x-display-input value="{{ $practiceForm->totalAmount }}" />
     </div>
+    {{-- Renewability Percentage --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Percentuale rinnovabilità *</flux:label>
+        <x-display-input value="{{ $practiceForm->renewabilityPercentage }}" />
+    </div>
+    {{-- Percentage Alert --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Percentuale alert *</flux:label>
+        <x-display-input value="{{ $practiceForm->percentageAlert }}" />
+    </div>
     {{-- Renewed --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Rinnovo</flux:label>
-        <x-display-input value="{{ $practiceForm->renewableAt }}" />
+        <x-display-input value="{{ $practiceForm->renewabilityDate }}" />
     </div>
     {{-- Customer Type --}}
     <div class="flex flex-col gap-1.5">
