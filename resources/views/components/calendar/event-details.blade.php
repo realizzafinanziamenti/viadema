@@ -8,6 +8,14 @@
         <div class="mb-2.5">
             <span class="text-gray-custom-4">Titolo: </span>
             <span>{{ $event?->title }}</span>
+
+            {{-- Link to practice --}}
+            @if ($event?->practice)
+                <div class="mb-2.5">
+                    <a href="{{ route('practice.show', $event?->practice?->id) }}" wire:navigate
+                        class="text-xs underline text-blue-custom hover:text-blue-custom-hover">Link pratica</a>
+                </div>
+            @endif
         </div>
         {{-- Start Date --}}
         <div class="mb-2.5">
