@@ -150,7 +150,7 @@ class Practice extends Model
     /**
      * Get the events associated with the practice.
      */
-    public function events(): HasOne
+    public function event(): HasOne
     {
         return $this->hasOne(Event::class);
     }
