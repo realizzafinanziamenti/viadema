@@ -111,9 +111,9 @@ class PracticeCreate extends Component
         $this->recalculateRenewabilityDate();
     }
 
-    /*/
-    * Update first installment date callback function and recalculate last installment and renewability date
-    */
+    /**
+     * Update first installment date callback function and recalculate last installment and renewability date
+     */
     public function updateFirstInstallmentDate(): void
     {
         if ($this->practiceForm->firstInstallmentDate) {
@@ -137,7 +137,7 @@ class PracticeCreate extends Component
                 $totalInstallments = $installment->value;
 
                 $firstDate = \Carbon\Carbon::parse($this->practiceForm->firstInstallmentDate);
-                $lastDate = $firstDate->copy()->addMonths($totalInstallments - 1);
+                $lastDate = $firstDate->copy()->addMonthsNoOverflow($totalInstallments - 1);
 
                 $this->practiceForm->lastInstallmentDate = $lastDate->format('Y-m-d');
             }
@@ -169,7 +169,7 @@ class PracticeCreate extends Component
         if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->renewabilityPercentage) {
             $firstInstallmentDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
             $monthsToAdd = (int) $this->practiceForm->renewabilityPercentage;
-            $renewabilityDate = $firstInstallmentDate->addMonths($monthsToAdd)->format('Y-m-d');
+            $renewabilityDate = $firstInstallmentDate->addMonthsNoOverflow($monthsToAdd)->format('Y-m-d');
 
 
             $this->practiceForm->renewabilityDate = $renewabilityDate;
