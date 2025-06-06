@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EventType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,8 @@ class Event extends Model
      */
     protected $fillable = [
         'user_id',
+        'practice_id',
+        'event_type',
         'title',
         'description',
         'start_date',
@@ -35,6 +38,7 @@ class Event extends Model
      * @return array<string, string>
      */
     protected $casts = [
+        'event_type' => EventType::class,
         'start_date' => 'date:Y-m-d',
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
@@ -49,6 +53,14 @@ class Event extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the practice that owns the events.
+     */
+    public function practice(): BelongsTo
+    {
+        return $this->belongsTo(Practice::class);
     }
 
     // END RELATIONSHIPS

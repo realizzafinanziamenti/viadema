@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\EventType;
+use App\Models\Event;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -38,6 +40,8 @@ class EventFactory extends Factory
 
         return [
             'user_id' => fake()->randomElement($userIds),
+            'practice_id' => null,
+            'event_type' => EventType::GENERAL->value,
             'title' => fake()->sentence(),
             'description' => fake()->paragraph(),
             'start_date' => fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d'),
