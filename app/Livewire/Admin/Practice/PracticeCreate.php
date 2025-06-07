@@ -131,14 +131,14 @@ class PracticeCreate extends Component
     public function recalculateLastInstallmentDate(): void
     {
         if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->installmentId) {
-            $installment = Installment::find($this->practiceForm->installmentId);
+            // Get the total number of installments for the selected installment
+            $totalInstallments = $this->installments[$this->practiceForm->installmentId] ?? null;
 
-            if ($installment) {
-                $totalInstallments = $installment->value;
-
-                $firstDate = \Carbon\Carbon::parse($this->practiceForm->firstInstallmentDate);
+            if ($totalInstallments) {
+                // Calculate the last installment date based on the first installment date and total installments
+                $firstDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
                 $lastDate = $firstDate->copy()->addMonthsNoOverflow($totalInstallments - 1);
-
+                // Set the last installment date in the practice form
                 $this->practiceForm->lastInstallmentDate = $lastDate->format('Y-m-d');
             }
         }
@@ -166,13 +166,20 @@ class PracticeCreate extends Component
      */
     public function recalculateRenewabilityDate(): void
     {
-        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->renewabilityPercentage) {
+        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->renewabilityPercentage && $this->practiceForm->installmentId) {
+            // Parse the first installment date
             $firstInstallmentDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
-            $monthsToAdd = (int) $this->practiceForm->renewabilityPercentage;
-            $renewabilityDate = $firstInstallmentDate->addMonthsNoOverflow($monthsToAdd)->format('Y-m-d');
+            // Get the total number of installments for the selected installment
+            $totalInstallments = $this->installments[$this->practiceForm->installmentId] ?? null;
 
-
-            $this->practiceForm->renewabilityDate = $renewabilityDate;
+            if ($totalInstallments) {
+                // Calculate the renewability installments based on the renewability percentage
+                $renewabilityInstallments = ceil($totalInstallments * ($this->practiceForm->renewabilityPercentage / 100));
+                // Add the renewability installments to the first installment date
+                $renewabilityDate = $firstInstallmentDate->addMonthsNoOverflow($renewabilityInstallments)->format('Y-m-d');
+                // Set the renewability date in the practice form
+                $this->practiceForm->renewabilityDate = $renewabilityDate;
+            }
         }
     }
 
