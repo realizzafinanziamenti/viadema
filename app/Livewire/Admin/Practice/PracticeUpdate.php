@@ -14,6 +14,7 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +23,7 @@ use Livewire\Component;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns;
+    use InteractsWithDropdowns, HandlesPracticeInstallments;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
@@ -73,8 +74,8 @@ class PracticeUpdate extends Component
     public function setProductType(?int $value = null): void
     {
         $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
-        $this->setRenewabilityAndAlertPercentage();
-        $this->recalculateRenewabilityDate();
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**
@@ -107,9 +108,9 @@ class PracticeUpdate extends Component
     public function setInstallment(?int $value = null): void
     {
         $this->setFormSelectValue('installmentId', $value, 'practiceForm');
-        $this->recalculateLastInstallmentDate();
-        $this->setRenewabilityAndAlertPercentage();
-        $this->recalculateRenewabilityDate();
+        $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**
@@ -118,69 +119,11 @@ class PracticeUpdate extends Component
     public function updateFirstInstallmentDate(): void
     {
         if ($this->practiceForm->firstInstallmentDate) {
-            $this->recalculateLastInstallmentDate();
-            $this->recalculateRenewabilityDate();
+            $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+            $this->recalculateRenewabilityDate($this->practiceForm);
         } else {
             $this->practiceForm->lastInstallmentDate = null;
             $this->practiceForm->renewabilityDate = null;
-        }
-    }
-
-    /**
-     * Recalculate the last installment date based on the first installment date and the selected installment
-     */
-    public function recalculateLastInstallmentDate(): void
-    {
-        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->installmentId) {
-            // Get the total number of installments for the selected installment
-            $totalInstallments = $this->installments[$this->practiceForm->installmentId] ?? null;
-
-            if ($totalInstallments) {
-                // Calculate the last installment date based on the first installment date and total installments
-                $firstDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
-                $lastDate = $firstDate->copy()->addMonthsNoOverflow($totalInstallments - 1);
-                // Set the last installment date in the practice form
-                $this->practiceForm->lastInstallmentDate = $lastDate->format('Y-m-d');
-            }
-        }
-    }
-
-    /**
-     * Set renewability and alert percentage based on the selected product type and installment
-     */
-    public function setRenewabilityAndAlertPercentage(): void
-    {
-        if ($this->practiceForm->productTypeId && $this->practiceForm->installmentId) {
-            $default = InstallmentProductDefault::where('product_type_id', $this->practiceForm->productTypeId)
-                ->where('installment_id', $this->practiceForm->installmentId)
-                ->first();
-
-            if ($default) {
-                $this->practiceForm->renewabilityPercentage = $default->renewability_percentage;
-                $this->practiceForm->percentageAlert = $default->percentage_alert;
-            }
-        }
-    }
-
-    /**
-     * Recalculate the renewability date based on the first installment date and renewability percentage
-     */
-    public function recalculateRenewabilityDate(): void
-    {
-        if ($this->practiceForm->firstInstallmentDate && $this->practiceForm->renewabilityPercentage && $this->practiceForm->installmentId) {
-            // Parse the first installment date
-            $firstInstallmentDate = Carbon::parse($this->practiceForm->firstInstallmentDate);
-            // Get the total number of installments for the selected installment
-            $totalInstallments = $this->installments[$this->practiceForm->installmentId] ?? null;
-
-            if ($totalInstallments) {
-                // Calculate the renewability installments based on the renewability percentage
-                $renewabilityInstallments = ceil($totalInstallments * ($this->practiceForm->renewabilityPercentage / 100));
-                // Add the renewability installments to the first installment date
-                $renewabilityDate = $firstInstallmentDate->addMonthsNoOverflow($renewabilityInstallments)->format('Y-m-d');
-                // Set the renewability date in the practice form
-                $this->practiceForm->renewabilityDate = $renewabilityDate;
-            }
         }
     }
 
