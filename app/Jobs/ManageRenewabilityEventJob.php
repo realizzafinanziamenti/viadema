@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Enums\EventAction;
 use App\Enums\EventType;
+use App\Models\Event;
 use App\Models\Practice;
 use Carbon\Carbon;
 use Exception;
@@ -17,7 +19,7 @@ class ManageRenewabilityEventJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public Practice $practice, public string $action)
+    public function __construct(public Practice $practice, public EventAction $action)
     {
         //
     }
@@ -31,11 +33,11 @@ class ManageRenewabilityEventJob implements ShouldQueue
             $event = $this->practice->event;
 
             switch ($this->action) {
-                case 'create':
+                case EventAction::CREATE:
                     $this->createRenewabilityEvent($this->practice);
                     break;
 
-                case 'update':
+                case EventAction::UPDATE:
                     if ($event) {
                         $event->update(['start_date' => $this->practice->renewability_date]);
                     } else {
@@ -45,7 +47,7 @@ class ManageRenewabilityEventJob implements ShouldQueue
                     }
                     break;
 
-                case 'delete':
+                case EventAction::DELETE:
                     if ($event) {
                         $event->delete();
                     }

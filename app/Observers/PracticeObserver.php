@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\EventAction;
 use App\Enums\EventType;
 use App\Jobs\ManageRenewabilityEventJob;
 use App\Models\Installment;
@@ -19,7 +20,7 @@ class PracticeObserver
     {
         // Create an event for renewability date
         if ($practice->renewability_date) {
-            dispatch(new ManageRenewabilityEventJob($practice, 'create'))->afterCommit();
+            dispatch(new ManageRenewabilityEventJob($practice, EventAction::CREATE))->afterCommit();
         }
     }
 
@@ -30,7 +31,7 @@ class PracticeObserver
     {
         // Update the event if the renewability date has changed
         if ($practice->isDirty('renewability_date')) {
-            dispatch(new ManageRenewabilityEventJob($practice, 'update'))->afterCommit();
+            dispatch(new ManageRenewabilityEventJob($practice, EventAction::UPDATE))->afterCommit();
         }
     }
 
@@ -55,7 +56,7 @@ class PracticeObserver
     public function deleted(Practice $practice): void
     {
         // Delete the associated event if it exists
-        dispatch(new ManageRenewabilityEventJob($practice, 'delete'))->afterCommit();
+        dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
     }
 
     /**
