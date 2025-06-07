@@ -26,12 +26,14 @@
     {{-- Started At Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di inizio</flux:label>
-        <x-display-input value="{{ $practiceForm->firstInstallmentDate }}" />
+        <x-display-input
+            value="{{ \Carbon\Carbon::parse($practiceForm->firstInstallmentDate)->format('d/m/y') ?? '' }}" />
     </div>
     {{-- Paid At Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di fine</flux:label>
-        <x-display-input value="{{ $practiceForm->lastInstallmentDate }}" />
+        <x-display-input
+            value="{{ \Carbon\Carbon::parse($practiceForm->lastInstallmentDate)->format('d/m/y') ?? '' }}" />
     </div>
     {{-- Amount Disbursed --}}
     <div class="flex flex-col gap-1.5">
@@ -76,7 +78,7 @@
     {{-- Renewed --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Rinnovo</flux:label>
-        <x-display-input value="{{ $practiceForm->renewabilityDate }}" />
+        <x-display-input value="{{ \Carbon\Carbon::parse($practiceForm->renewabilityDate)->format('d/m/y') ?? '' }}" />
     </div>
     {{-- Customer Type --}}
     <div class="flex flex-col gap-1.5">
