@@ -20,7 +20,15 @@ class PracticeObserver
     {
         // Create an event for renewability date
         if ($practice->renewability_date) {
-            dispatch(new ManageRenewabilityEventJob($practice, EventAction::CREATE))->afterCommit();
+            dispatch(new ManageRenewabilityEventJob($practice, EventAction::CREATE))
+                ->afterCommit();
+        }
+
+        // Schedule a job to send an alert notification
+        if ($practice->alert_date) {
+            dispatch(new SendPracticeRenewabilityAlertJob($practice))
+                ->delay($practice->alert_date)
+                ->afterCommit();
         }
     }
 
@@ -31,7 +39,14 @@ class PracticeObserver
     {
         // Update the event if the renewability date has changed
         if ($practice->isDirty('renewability_date')) {
-            dispatch(new ManageRenewabilityEventJob($practice, EventAction::UPDATE))->afterCommit();
+            dispatch(new ManageRenewabilityEventJob($practice, EventAction::UPDATE))
+                ->afterCommit();
+        }
+
+        if ($practice->alert_date) {
+            dispatch(new SendPracticeRenewabilityAlertJob($practice))
+                ->delay($practice->alert_date)
+                ->afterCommit();
         }
     }
 
