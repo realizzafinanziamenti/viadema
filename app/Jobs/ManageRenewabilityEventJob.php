@@ -75,7 +75,9 @@ class ManageRenewabilityEventJob implements ShouldQueue
         } catch (Exception $e) {
             Log::error('Errore gestione evento pratica', [
                 'practice_id' => $this->practice->id,
-                'action' => $this->action,
+                'practice_code' => $this->practice->practice_code,
+                'user_id' => $this->practice->user_id,
+                'action' => $this->action->value,
                 'exception' => $e->getMessage(),
             ]);
         }
