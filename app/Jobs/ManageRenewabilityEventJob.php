@@ -7,6 +7,7 @@ use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\Practice;
 use Carbon\Carbon;
+use DateTime;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,6 +23,24 @@ class ManageRenewabilityEventJob implements ShouldQueue
     public function __construct(public Practice $practice, public EventAction $action)
     {
         //
+    }
+
+    /**
+     * Calculate the number of seconds to wait before retrying the job.
+     *
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [1, 5, 10];
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     */
+    public function retryUntil(): DateTime
+    {
+        return now()->addMinutes(30);
     }
 
     /**
@@ -73,8 +92,8 @@ class ManageRenewabilityEventJob implements ShouldQueue
             'event_type' => EventType::RENEWABILITY_PRACTICE->value,
             'title' => 'Rinnovo pratica ' . $practice->practice_code,
             'start_date' => $practice->renewability_date,
-            'start_time' => Carbon::parse($practice->renewability_date)->format('H:i:s'),
-            'end_time' => Carbon::parse($practice->renewability_date)->addHour()->format('H:i:s'),
+            'start_time' => '08:00:00',
+            'end_time' => '22:00:00',
         ]);
     }
 }
