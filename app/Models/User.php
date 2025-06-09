@@ -186,6 +186,14 @@ class User extends Authenticatable
     }
     // END SCOPES
 
+    // NOTIFICATIONS
+    /**
+     * The channels the user receives notification broadcasts on.
+     */
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'users.' . $this->id;
+    }
 
     // WIRECHAT TRAITS AND METHODS
     /**
