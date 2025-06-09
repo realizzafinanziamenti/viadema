@@ -116,7 +116,7 @@ class PracticeUpdate extends Component
     /**
      * Update first installment date callback function and recalculate last installment and renewability date
      */
-    public function updateFirstInstallmentDate(): void
+    public function updatedPracticeFormFirstInstallmentDate(): void
     {
         if ($this->practiceForm->firstInstallmentDate) {
             $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
@@ -125,6 +125,14 @@ class PracticeUpdate extends Component
             $this->practiceForm->lastInstallmentDate = null;
             $this->practiceForm->renewabilityDate = null;
         }
+    }
+
+    /**
+     * Update practice form renewability percentage and recalculate renewability date
+     */
+    public function updatedPracticeFormRenewabilityPercentage(): void
+    {
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**

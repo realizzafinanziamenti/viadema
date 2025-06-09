@@ -1,7 +1,6 @@
-@props(['model', 'symbol' => '', 'placeholder' => null, 'size' => 'sm', 'type' => 'text', 'disabled' => false])
+@props(['symbol' => '', 'placeholder' => null, 'size' => 'sm', 'type' => 'text', 'disabled' => false])
 
-<flux:input type="{{ $type }}" size="{{ $size }}" wire:model="{{ $model }}"
-    :placeholder="$placeholder" :disabled="$disabled"
+<flux:input type="{{ $type }}" size="{{ $size }}" :placeholder="$placeholder" :disabled="$disabled"
     {{ $attributes->merge(['step' => '', 'min' => '', 'max' => '']) }}>
     @if ($symbol)
         <x-slot:iconLeading>
