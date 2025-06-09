@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Enums\EventAction;
 use App\Enums\EventType;
 use App\Jobs\ManageRenewabilityEventJob;
+use App\Jobs\SendPracticeRenewabilityAlertJob;
 use App\Models\Installment;
 use App\Models\Practice;
 use Carbon\Carbon;
