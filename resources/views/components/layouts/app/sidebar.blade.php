@@ -120,9 +120,7 @@
                 <livewire:layout.chat-button />
 
                 {{-- Notification Button and Drawer --}}
-                <button class="p-1 mx-2.5">
-                    <x-icons.icon-akar-bell />
-                </button>
+                <livewire:layout.notification-button />
             </div>
 
             <!-- Profile button -->
