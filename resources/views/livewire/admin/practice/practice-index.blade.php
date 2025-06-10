@@ -49,7 +49,7 @@
             {{-- Table body --}}
             @foreach ($practices as $practice)
                 <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
-                    <x-table-data class="inline-flex items-center gap-2">
+                    <x-table-data truncate class="inline-flex items-center gap-2">
                         @if ($practice->renewability_date <= now())
                             <x-icons.icon-akar-circle-alert class="text-red-custom" />
                         @elseif ($practice->renewability_date > now() && $practice->alert_date <= now())

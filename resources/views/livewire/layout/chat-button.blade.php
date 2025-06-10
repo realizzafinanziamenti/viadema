@@ -1,4 +1,4 @@
-<button class="p-1 mx-2.5 relative">
+<button class="p-1 mx-2.5 relative cursor-pointer">
     <a href="/admin/chats" wire:navigate>
         <x-icons.icon-akar-chat-dots />
     </a>
