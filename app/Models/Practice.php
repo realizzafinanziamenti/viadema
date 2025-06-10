@@ -78,9 +78,9 @@ class Practice extends Model
         'disbursement_date' => 'date',
 
         'renewability_percentage' => 'decimal:2',
-        'renewability_date' => 'date',
+        'renewability_date' => 'datetime',
         'percentage_alert' => 'decimal:2',
-        'alert_date' => 'date',
+        'alert_date' => 'datetime',
 
         'practice_status' => PracticeStatus::class,
         'days_transformation' => 'integer',

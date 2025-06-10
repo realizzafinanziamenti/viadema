@@ -41,9 +41,9 @@ return new class extends Migration
 
             // Rinnovo
             $table->decimal('renewability_percentage', 5, 2)->default(40.00);              // percentuale di rinnovo su ammortamento
-            $table->date('renewability_date')->nullable();                                                   // data rinnovabilità (calcolata da percentuale rinnovo)
+            $table->dateTime('renewability_date')->nullable();                                                   // data rinnovabilità (calcolata da percentuale rinnovo)
             $table->decimal('percentage_alert', 5, 2)->default(35.00);                          // percentuale di alert su rinnovo
-            $table->date('alert_date')->nullable();                                                          // data alert (calcolata da percentuale alert)
+            $table->dateTime('alert_date')->nullable();                                                          // data alert (calcolata da percentuale alert)
 
             // Stato e flag
             $table->tinyInteger('practice_status');                         // stato pratica
