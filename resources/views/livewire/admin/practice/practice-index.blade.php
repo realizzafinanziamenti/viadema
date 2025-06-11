@@ -74,8 +74,8 @@
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
-                        @if ($practice->teamMember)
-                            <x-user-table-data :user="$practice->teamMember" />
+                        @if ($practice->user)
+                            <x-user-table-data :user="$practice->user" />
                         @endif
                     </x-table-data>
 

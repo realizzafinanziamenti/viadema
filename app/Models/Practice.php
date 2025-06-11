@@ -106,9 +106,9 @@ class Practice extends Model
     }
 
     /**
-     * Get the team member associated with the practice.
+     * Get the user associated with the practice.
      */
-    public function teamMember(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id')
             ->withTrashed();

@@ -38,7 +38,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>
-                    <span>{{ $practice->teamMember?->full_name }}</span>
+                    <span>{{ $practice->user?->full_name }}</span>
                 </div>
 
                 @if ($practice->note)
