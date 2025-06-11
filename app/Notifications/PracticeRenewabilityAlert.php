@@ -19,7 +19,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function __construct(public Practice $practice)
     {
-        $this->url = url('/practices/details/' . $this->practice->id);
+        $this->url = url('/admin/practices/details/' . $this->practice->id);
         $this->afterCommit();
     }
 
@@ -39,9 +39,9 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Avviso di Rinnovabilità Pratica')
+            ->subject('Avviso Scadenza Pratica')
             ->greeting('Ciao!')
-            ->line('Una pratica è prossima ad uno stato di rinnovabilità.')
+            ->line('Scadenza pratica ' . $this->practice->practice_code . ' imminente.')
             ->action('Vai alla pratica', $this->url);
     }
 
@@ -53,8 +53,10 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'La pratica ' . $this->practice->practice_code . ' è prossima ad uno stato di rinnovabilità.',
+            'title' => 'Avviso Scadenza Pratica',
+            'message' => 'Scadenza pratica ' . $this->practice->practice_code . ' imminente',
             'url' => $this->url,
+            'type' => 'practice-renewability-alert',
         ];
     }
 
