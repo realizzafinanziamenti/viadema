@@ -20,6 +20,9 @@ class NotificationButton extends Component
         ];
     }
 
+    /**
+     * Refresh notifications badge
+     */
     public function refreshNotificationsBadge()
     {
         $this->unreadNotificationsCount();
@@ -30,7 +33,7 @@ class NotificationButton extends Component
     }
 
     /**
-     * total notifications count
+     * unread notifications count
      */
     public function unreadNotificationsCount()
     {
