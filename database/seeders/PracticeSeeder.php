@@ -38,7 +38,7 @@ class PracticeSeeder extends Seeder
             for ($i = 0; $i < 100; $i++) {
                 $installment = $validInstallments->random();
 
-                Practice::factory()->create([
+                $practice = Practice::factory()->create([
                     'product_type_id' => $productType->id,
                     'product_subtype_id' => $productSubtypes->random()->id,
                     'user_id' => $users->random()->id,
@@ -48,6 +48,14 @@ class PracticeSeeder extends Seeder
                     'installment_id' => $installment->id,
                     'customer_type_id' => $customerTypes->random()->id,
                 ]);
+
+                // nel 20% dei casi, imposta la data dell'alert a 15-30 minuti nel futuro
+                if ($i % 5 === 0) {
+                    $practice->update([
+                        'alert_date' => now()->addMinutes(rand(10, 20)),
+                        'user_id' => 1, // superadmin user
+                    ]);
+                }
             }
         }
     }
