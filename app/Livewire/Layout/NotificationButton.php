@@ -15,9 +15,21 @@ class NotificationButton extends Component
     {
         $auth_id = auth()->user()->id;
         return [
-            "echo-private:users.{$auth_id},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => 'refreshNotificationsBadge',
-            "mark-all-as-read" => 'refreshNotificationsBadge',
+            "echo-private:users.{$auth_id},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => 'listenBroadcastNotification',
+            "refresh-notification-button" => 'refreshNotificationsBadge',
         ];
+    }
+
+    /**
+     * Load unread notifications count
+     */
+    public function listenBroadcastNotification()
+    {
+        $this->unreadNotificationsCount();
+
+        if ($this->unreadNotificationsCount > 0) {
+            $this->dispatch('play-notification-sound');
+        }
     }
 
     /**
@@ -26,10 +38,6 @@ class NotificationButton extends Component
     public function refreshNotificationsBadge()
     {
         $this->unreadNotificationsCount();
-
-        if ($this->unreadNotificationsCount > 0) {
-            $this->dispatch('play-notification-sound');
-        }
     }
 
     /**
