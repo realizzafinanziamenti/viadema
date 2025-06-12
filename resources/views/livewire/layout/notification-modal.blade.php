@@ -20,12 +20,7 @@
         document.body.classList.remove('overflow-y-hidden');
     }
 })"
-    x-on:open-modal.window="
-    if ($event.detail === 'notification-modal') {
-            show = true;
-            $wire.refreshNotifications();
-        }
-    "
+    x-on:open-modal.window="$event.detail == 'notification-modal' ? show = true : null "
     x-on:close-modal.window="$event.detail == 'notification-modal' ? show = false : null" x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false" x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()" x-show="show"
@@ -38,7 +33,7 @@
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
     </div>
 
-    <div x-show="show" class="mb-6 bg-white rounded-xl shadow-lg transform transition-all w-full max-w-lg"
+    <div x-show="show" class="mb-6 bg-white rounded-3xl shadow-lg transform transition-all w-full max-w-lg"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
@@ -55,7 +50,7 @@
 
                     @if ($unreadNotificationsCount > 0)
                         <div
-                            class="w-4 h-4 flex items-center justify-center bg-orange-custom text-white rounded-full text-sm">
+                            class="w-5 h-5 flex items-center justify-center bg-orange-custom font-semibold text-white rounded-full text-xs">
                             {{ $unreadNotificationsCount }}</div>
                     @endif
                 </div>
@@ -73,18 +68,18 @@
 
             {{-- BODY --}}
             {{-- Mark all notifications as read button --}}
-            <div class="p-5">
+            <div class="p-6">
                 @if ($notifications->count() > 0)
                     <div class="flex items-center justify-end mb-3">
-                        <button wire:click="markAllNotificationsAsRead"
-                            class="text-sm font-semibold text-gray-custom-5 underline hover:text-gray-custom-3 cursor-pointer">Cancella
+                        <button wire:click="deleteAllNotifications"
+                            class="text-[13px] font-semibold text-gray-custom-5 underline hover:text-gray-custom-3 cursor-pointer">Cancella
                             tutte</button>
                     </div>
                 @endif
 
-                <div class="max-h-[520px] overflow-y-auto scrollbar-none hover:scrollbar-thin">
+                <div class="max-h-[390px] overflow-y-auto scrollbar-none hover:scrollbar-thin">
                     @if ($notifications->isEmpty())
-                        <div class="text-center text-gray-500">
+                        <div class="mb-1.5 font-semibold text-gray-custom-4">
                             Nessuna notifica
                         </div>
                     @else
@@ -115,8 +110,10 @@
 
                             {{-- Calcolo se la prossima notifica è di un giorno diverso --}}
                             @php
+                                $isLast = $index === count($notifications) - 1;
+
                                 $isLastOfDay =
-                                    !isset($notifications[$index + 1]) ||
+                                    !$isLast &&
                                     $notification->created_at->toDateString() !==
                                         $notifications[$index + 1]->created_at->toDateString();
                             @endphp
@@ -135,6 +132,7 @@
                                     };
                                 @endphp
 
+                                {{-- Left --}}
                                 <div class="flex-1 flex flex-col gap-1">
                                     <div class="font-bold text-sm {{ $titleCss }} truncate">
                                         {{ $notification->data['title'] }}
@@ -143,6 +141,7 @@
                                     <div class="truncate">{{ $notification->data['message'] }}</div>
                                 </div>
 
+                                {{-- Right --}}
                                 <div class="shrink-0">
                                     <span class="text-[11px] text-gray-custom-4">
                                         {{ $notification->created_at->diffForHumans() }}
@@ -153,18 +152,28 @@
                         @endforeach
                     @endif
 
+                    {{-- Footer --}}
+                    @if ($notificationsCount > $notifications->count())
+                        <div class="flex justify-center items-center mb-1 mt-3">
+                            <button wire:click="increaseLimit"
+                                class="text-sm font-semibold text-gray-custom-5 underline hover:text-gray-custom-3 cursor-pointer">Carica
+                                altro</button>
+
+                            <div wire:loading wire:target="increaseLimit" class="ml-2 text-gray-custom-5">
+                                <svg class="animate-spin h-5 w-5 text-gray-custom-5" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2.93 6.364A8.003 8.003 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3.93-1.574z">
+                                    </path>
+                                </svg>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
-                {{-- Footer --}}
-                @if ($notificationsCount > $notifications->count())
-                    <div class="flex justify-center mt-2">
-                        <button wire:click="increaseLimit"
-                            class="text-sm font-semibold text-gray-custom-5 underline hover:text-gray-custom-3 cursor-pointer">Carica
-                            altro</button>
-                    </div>
-                @endif
             </div>
-
         </div>
     </div>
 </div>

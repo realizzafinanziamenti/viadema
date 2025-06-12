@@ -6,11 +6,11 @@ use Livewire\Component;
 
 class NotificationModal extends Component
 {
-    public bool $show = true;
+    public bool $show = false;
     public $notifications;
     public int $unreadNotificationsCount = 0;
     public int $notificationsCount = 0;
-    public int $notificationLimit = 15;
+    public int $notificationLimit = 10;
 
     /**
      * Listeners
@@ -89,7 +89,7 @@ class NotificationModal extends Component
 
         if ($notification) {
             $this->markNotificationAsRead($notification);
-
+            $this->dispatch('close-modal', 'notification-modal');
             $this->redirect($notification->data['url'], navigate: true);
         }
     }
@@ -109,25 +109,25 @@ class NotificationModal extends Component
                 // Controlla se l'elemento corrente è quello che deve essere aggiornato
                 return $n->id === $id ? $n->fresh() : $n; // Aggiorna solo l'elemento specifico dal db con fresh
             });
+
+            // Dispatch an event to update the notification button
+            $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
         }
     }
 
     /**
      * Mark all notifications as read
      */
-    public function markAllNotificationsAsRead()
+    public function deleteAllNotifications()
     {
-        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
-
+        auth()->user()->notifications()->delete();
+        $this->notifications = collect();
         $this->unreadNotificationsCount = 0;
-
-        $this->notifications = $this->notifications->map(function ($n) {
-            $n->read_at = now();
-            return $n;
-        });
+        $this->notificationsCount = 0;
 
         // Dispatch an event to update the notification button
-        $this->dispatch('mark-all-as-read')->to(NotificationButton::class);
+        $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
+        $this->dispatch('close-modal', 'notification-modal');
     }
 
     public function mount()
