@@ -67,7 +67,7 @@
         <flux:label>Rate *</flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$practiceForm->installmentId" placeholder='Seleziona rate'
-                setFunction="setInstallment" emptySelectableItems="Seleziona prima prodotto" :has-error="$errors->has('practiceForm.installmentId')" />
+                setFunction="setInstallment" :has-error="$errors->has('practiceForm.installmentId')" />
 
             <flux:error name="practiceForm.installmentId" />
         </div>
