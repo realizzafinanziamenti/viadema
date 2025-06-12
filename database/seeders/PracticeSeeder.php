@@ -27,21 +27,35 @@ class PracticeSeeder extends Seeder
         $customers = Customer::all();
         $financialTables = FinancialTable::all();
         $insurances = Insurance::all();
-        $installments = Installment::all();
         $customerTypes = CustomerType::all();
 
         foreach ($productTypes as $productType) {
+            // Recupera le rate valide per il tipo di prodotto
+            $validInstallments = Installment::whereHas('productTypes', function ($query) use ($productType) {
+                $query->where('product_type_id', $productType->id);
+            })->get();
+
             for ($i = 0; $i < 100; $i++) {
-                Practice::factory()->create([
+                $installment = $validInstallments->random();
+
+                $practice = Practice::factory()->create([
                     'product_type_id' => $productType->id,
                     'product_subtype_id' => $productSubtypes->random()->id,
                     'user_id' => $users->random()->id,
                     'customer_id' => $customers->random()->id,
                     'financial_table_id' => $financialTables->random()->id,
                     'insurance_id' => $insurances->random()->id,
-                    'installment_id' => $installments->random()->id,
+                    'installment_id' => $installment->id,
                     'customer_type_id' => $customerTypes->random()->id,
                 ]);
+
+                // nel 20% dei casi, imposta la data dell'alert a 15-30 minuti nel futuro
+                if ($i % 5 === 0) {
+                    $practice->update([
+                        'alert_date' => now()->addMinutes(rand(10, 20)),
+                        'user_id' => 1, // superadmin user
+                    ]);
+                }
             }
         }
     }

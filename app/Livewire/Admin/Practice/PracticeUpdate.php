@@ -8,19 +8,22 @@ use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
+use App\Models\InstallmentProductDefault;
 use App\Models\Insurance;
 use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns;
+    use InteractsWithDropdowns, HandlesPracticeInstallments;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
@@ -71,6 +74,8 @@ class PracticeUpdate extends Component
     public function setProductType(?int $value = null): void
     {
         $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**
@@ -103,6 +108,31 @@ class PracticeUpdate extends Component
     public function setInstallment(?int $value = null): void
     {
         $this->setFormSelectValue('installmentId', $value, 'practiceForm');
+        $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
+    }
+
+    /**
+     * Update first installment date callback function and recalculate last installment and renewability date
+     */
+    public function updatedPracticeFormFirstInstallmentDate(): void
+    {
+        if ($this->practiceForm->firstInstallmentDate) {
+            $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+            $this->recalculateRenewabilityDate($this->practiceForm);
+        } else {
+            $this->practiceForm->lastInstallmentDate = null;
+            $this->practiceForm->renewabilityDate = null;
+        }
+    }
+
+    /**
+     * Update practice form renewability percentage and recalculate renewability date
+     */
+    public function updatedPracticeFormRenewabilityPercentage(): void
+    {
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**

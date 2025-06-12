@@ -181,7 +181,7 @@ class PracticeIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Practice::with('customer', 'teamMember', 'productType')
+        $query = Practice::with('customer', 'user', 'productType')
             ->filterByProductType($this->type)
             ->isExpired($this->expired)
             ->orderByDesc('updated_at');

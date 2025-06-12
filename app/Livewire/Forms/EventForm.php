@@ -15,7 +15,7 @@ class EventForm extends Form
 {
     public ?Event $event;
     public string $title = '';
-    public string $description = '';
+    public ?string $description = null;
     public ?string $startDate = null;
     public ?string $startTime = null;
     public ?string $endTime = null;
@@ -25,7 +25,7 @@ class EventForm extends Form
     {
         return [
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:65535',
             'startDate' => 'required|date|after_or_equal:today',
             'startTime' => 'required|date_format:H:i|after_or_equal:08:00|before_or_equal:21:00',
             'endTime' => 'required|date_format:H:i|after:startTime|after_or_equal:08:30|before_or_equal:22:00',
@@ -63,9 +63,9 @@ class EventForm extends Form
         $this->event = $event;
         $this->title = $event->title;
         $this->description = $event->description;
-        $this->startDate = $event->start_date->format('Y-m-d');
-        $this->startTime = $event->start_time->format('H:i');
-        $this->endTime = $event->end_time->format('H:i');
+        $this->startDate = $event->start_date?->format('Y-m-d');
+        $this->startTime = $event->start_time?->format('H:i');
+        $this->endTime = $event->end_time?->format('H:i');
         $this->repeatUntil = null;
     }
 

@@ -9,19 +9,22 @@ use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
+use App\Models\InstallmentProductDefault;
 use App\Models\Insurance;
 use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class PracticeCreate extends Component
 {
-    use InteractsWithDropdowns;
+    use InteractsWithDropdowns, HandlesPracticeInstallments;
 
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
@@ -70,6 +73,8 @@ class PracticeCreate extends Component
     public function setProductType(?int $value = null): void
     {
         $this->setFormSelectValue('productTypeId', $value, 'practiceForm');
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**
@@ -102,6 +107,31 @@ class PracticeCreate extends Component
     public function setInstallment(?int $value = null): void
     {
         $this->setFormSelectValue('installmentId', $value, 'practiceForm');
+        $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+        $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+        $this->recalculateRenewabilityDate($this->practiceForm);
+    }
+
+    /**
+     * Update first installment date callback function and recalculate last installment and renewability date
+     */
+    public function updatedPracticeFormFirstInstallmentDate(): void
+    {
+        if ($this->practiceForm->firstInstallmentDate) {
+            $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+            $this->recalculateRenewabilityDate($this->practiceForm);
+        } else {
+            $this->practiceForm->lastInstallmentDate = null;
+            $this->practiceForm->renewabilityDate = null;
+        }
+    }
+
+    /**
+     * Update practice form renewability percentage and recalculate renewability date
+     */
+    public function updatedPracticeFormRenewabilityPercentage(): void
+    {
+        $this->recalculateRenewabilityDate($this->practiceForm);
     }
 
     /**
@@ -206,16 +236,16 @@ class PracticeCreate extends Component
             ->pluck('name', 'id')
             ->toArray();
 
+        $this->installments = Installment::orderBy('value')
+            ->pluck('value', 'id')
+            ->toArray();
+
         $this->financialTables = FinancialTable::orderBy('percentage')
             ->pluck('percentage', 'id')
             ->toArray();
 
         $this->insurances = Insurance::orderBy('name')
             ->pluck('name', 'id')
-            ->toArray();
-
-        $this->installments = Installment::orderBy('value')
-            ->pluck('value', 'id')
             ->toArray();
 
         $this->customerTypes = CustomerType::orderBy('name')

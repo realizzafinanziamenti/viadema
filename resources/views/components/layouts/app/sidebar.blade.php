@@ -8,7 +8,8 @@
 </head>
 
 <body class="min-h-screen bg-gray-custom-1 flex">
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white w-[264px] shrink-0 gap-3.5! px-0">
+    <flux:sidebar stashable
+        class="border-e border-zinc-200 bg-white w-[264px] shrink-0 gap-3.5! px-0 h-screen overflow-y-auto">
         {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
 
         {{-- Sidebar Logo --}}
@@ -120,9 +121,7 @@
                 <livewire:layout.chat-button />
 
                 {{-- Notification Button and Drawer --}}
-                <button class="p-1 mx-2.5">
-                    <x-icons.icon-akar-bell />
-                </button>
+                <livewire:layout.notification-button />
             </div>
 
             <!-- Profile button -->
@@ -150,6 +149,9 @@
                 </a>
             </div>
         </flux:header>
+
+        {{-- Notification Modal --}}
+        <livewire:layout.notification-modal />
 
         {{ $slot }}
     </div>

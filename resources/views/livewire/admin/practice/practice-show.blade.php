@@ -21,13 +21,13 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Data di apertura: </span>
-                    <span>{{ $practice->formatted_started_at }}</span>
+                    <span>{{ $practice->formatted_first_installment_date }}</span>
                 </div>
 
-                @if ($practice->paid_at)
+                @if ($practice->early_settlement_date)
                     <div class="text-sm mb-2.5">
                         <span class="text-gray-custom-4">Data di fine: </span>
-                        <span>{{ $practice->formatted_paid_at }}</span>
+                        <span>{{ $practice->formatted_early_settlement_date }}</span>
                     </div>
                 @endif
 
@@ -38,7 +38,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>
-                    <span>{{ $practice->teamMember?->full_name }}</span>
+                    <span>{{ $practice->user?->full_name }}</span>
                 </div>
 
                 @if ($practice->note)

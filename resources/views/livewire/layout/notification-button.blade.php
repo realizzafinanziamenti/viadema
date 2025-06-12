@@ -1,12 +1,11 @@
-<button class="p-1 mx-2.5 relative cursor-pointer">
-    <a href="/admin/chats" wire:navigate>
-        <x-icons.icon-akar-chat-dots />
-    </a>
+{{-- Bell Icon Button --}}
+<button class="p-1 mx-2.5 relative cursor-pointer" x-on:click="$dispatch('open-modal', 'notification-modal')">
+    <x-icons.icon-akar-bell />
 
-    @if ($showNotificationBadge)
-        <a href="/admin/chats" wire:navigate
-            class="absolute right-0 bottom-[19px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
-        </a>
+    @if ($unreadNotificationsCount > 0)
+        <div
+            class="absolute right-[3px] bottom-[19px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
+        </div>
     @endif
 
     <audio id="notificationSound">

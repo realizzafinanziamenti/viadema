@@ -49,14 +49,23 @@
             {{-- Table body --}}
             @foreach ($practices as $practice)
                 <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
-                    <x-table-data label="{{ $practice->practice_code }}" />
+                    <x-table-data truncate class="inline-flex items-center gap-2">
+                        @if ($practice->renewability_date <= now())
+                            <x-icons.icon-akar-circle-alert class="text-red-custom" />
+                        @elseif ($practice->renewability_date > now() && $practice->alert_date <= now())
+                            <x-icons.icon-akar-circle-alert class="text-orange-custom" />
+                        @endif
+
+                        <div>{{ $practice->practice_code }}</div>
+                    </x-table-data>
+
                     <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
 
                     @if (!$productType)
                         <x-table-data truncate class="font-bold!" label="{{ $practice->productType?->name }}" />
                     @endif
 
-                    <x-table-data truncate label="{{ $practice->formatted_started_at }}" />
+                    <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
@@ -65,8 +74,8 @@
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
-                        @if ($practice->teamMember)
-                            <x-user-table-data :user="$practice->teamMember" />
+                        @if ($practice->user)
+                            <x-user-table-data :user="$practice->user" />
                         @endif
                     </x-table-data>
 
