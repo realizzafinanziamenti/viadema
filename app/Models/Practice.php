@@ -248,22 +248,14 @@ class Practice extends Model
      */
     public function scopeIsExpired($query, bool $expired): Builder
     {
-        $now = now();
-
         return $query
             ->when(
                 $expired === true,
-                fn($q) => $q
-                    ->whereNotNull('disbursement_date')
-                    ->where('disbursement_date', '<=', $now)
+                fn($q) => $q->where('practice_status', PracticeStatus::DISBURSED->value)
             )
             ->when(
                 $expired === false,
-                fn($q) => $q
-                    ->where(function ($q) use ($now) {
-                        $q->whereNull('disbursement_date')
-                            ->orWhere('disbursement_date', '>', $now);
-                    })
+                fn($q) => $q->where('practice_status', '!=', PracticeStatus::DISBURSED->value)
             );
     }
 
