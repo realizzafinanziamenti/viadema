@@ -34,7 +34,7 @@ class PracticeIndex extends Component
     public ?bool $expired = false;
     public Practice|null $selectedPractice = null;
     public array $practiceStatuses = [];
-    public ?int $selectedPracticeStatus = null;
+    public ?string $selectedPracticeStatus = null;
     public string $search = '';
     // Team Member Filter
     public string $teamMemberSearch = '';
@@ -70,8 +70,8 @@ class PracticeIndex extends Component
     public ?int $tempSelectedCustomerTypeForFilter = null;
     // Practice Status Filter
     public array $practiceStatusesForFilter = [];
-    public ?int $selectedPracticeStatusForFilter = null;
-    public ?int $tempSelectedPracticeStatusForFilter = null;
+    public ?string $selectedPracticeStatusForFilter = null;
+    public ?string $tempSelectedPracticeStatusForFilter = null;
     // Inserted At Date filters
     public ?string $insertedAtDateMin = null;
     public ?string $tempInsertedAtDateMin = null;
@@ -136,7 +136,7 @@ class PracticeIndex extends Component
             'tempSelectedInsuranceForFilter' => ['nullable', 'integer', 'exists:insurances,id'],
             'tempSelectedInstallmentForFilter' => ['nullable', 'integer', 'exists:installments,id'],
             'tempSelectedCustomerTypeForFilter' => ['nullable', 'integer', 'exists:customer_types,id'],
-            'tempSelectedPracticeStatusForFilter' => ['nullable', 'integer', new ExceptEnumValues(PracticeStatus::class, [PracticeStatus::DISBURSED->value])],
+            'tempSelectedPracticeStatusForFilter' => ['nullable', 'string', new ExceptEnumValues(PracticeStatus::class, [PracticeStatus::DISBURSED->value])],
             'tempInsertedAtDateMin' => ['nullable', 'date', 'before_or_equal:tempInsertedAtDateMax'],
             'tempInsertedAtDateMax' => ['nullable', 'date', 'after_or_equal:tempInsertedAtDateMin'],
             'tempFirstInstallmentDateMin' => ['nullable', 'date', 'before_or_equal:tempFirstInstallmentDateMax'],
@@ -298,7 +298,7 @@ class PracticeIndex extends Component
      * This method is called when the user selects a practice status from the dropdown.
      * It sets the selected practice status.
      */
-    public function setPracticeStatus(?int $value = null): void
+    public function setPracticeStatus(?string $value = null): void
     {
         $this->setSelectValue('selectedPracticeStatus', $value);
     }
@@ -307,7 +307,7 @@ class PracticeIndex extends Component
      * This method is called when the user selects a practice status for filtering.
      * It sets the selected practice status for filter.
      */
-    public function setPracticeStatusForFilter(?int $value = null): void
+    public function setPracticeStatusForFilter(?string $value = null): void
     {
         $this->setSelectValue('tempSelectedPracticeStatusForFilter', $value);
     }
@@ -417,6 +417,20 @@ class PracticeIndex extends Component
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
+    }
+
+    /**
+     * This method is called when the component is mounted.
+     * It initializes the selects and sets the disbursement date if expired.
+     */
+    protected function setDisbursementDateIfExpired(): void
+    {
+        if ($this->expired === true) {
+            $this->disbursementDateMin = now()->subYear()->format('Y-m-d');
+            $this->tempDisbursementDateMin = $this->disbursementDateMin;
+            $this->disbursementDateMax = now()->format('Y-m-d');
+            $this->tempDisbursementDateMax = $this->disbursementDateMax;
+        }
     }
 
     /**
@@ -657,6 +671,8 @@ class PracticeIndex extends Component
         // the expired status based on the request parameter
         // This allows the component to be used with or without the expired filter
         $this->expired = $request->boolean('expired');
+        $this->setDisbursementDateIfExpired();
+
         $this->initializeSelects();
     }
 
