@@ -2,14 +2,14 @@
 
 namespace App\Enums;
 
-enum PracticeStatus: int
+enum PracticeStatus: string
 {
-    case UNDER_REVIEW = 1;
-    case REJECTED = 2;
-    case APPROVED = 3;
-    case SUSPENDED = 4;
-    case PENDING = 5;
-    case DISBURSED = 6;
+    case UNDER_REVIEW = 'under_review';
+    case REJECTED = 'rejected';
+    case APPROVED = 'approved';
+    case SUSPENDED = 'suspended';
+    case PENDING = 'pending';
+    case DISBURSED = 'disbursed';
 
     /**
      * Check if the current status is the same as the given status

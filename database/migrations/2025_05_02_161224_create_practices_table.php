@@ -46,7 +46,7 @@ return new class extends Migration
             $table->dateTime('alert_date')->nullable();                                                          // data alert (calcolata da percentuale alert)
 
             // Stato e flag
-            $table->tinyInteger('practice_status');                         // stato pratica
+            $table->string('practice_status');                         // stato pratica
             $table->integer('days_transformation')->nullable();        // Trasformazione GG (differenza giorni?)
             $table->decimal('sum_dec_plus_35', 10, 2)->nullable();     // somma dec + 35% (se utile davvero)
 

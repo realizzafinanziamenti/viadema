@@ -19,7 +19,7 @@ class PracticeShow extends Component
 
     public Practice $practice;
     public array $practiceStatuses = [];
-    public int|null $selectedPracticeStatus = null;
+    public ?string $selectedPracticeStatus = null;
 
     /**
      * This method is called when the user clicks the update status button.
@@ -34,7 +34,7 @@ class PracticeShow extends Component
      * This method is called when the user selects a practice status from the dropdown.
      * It sets the selected practice status.
      */
-    public function setPracticeStatus(?int $value = null): void
+    public function setPracticeStatus(?string $value = null): void
     {
         $this->setSelectValue('selectedPracticeStatus', $value);
     }

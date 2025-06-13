@@ -101,9 +101,9 @@ class PracticeFactory extends Factory
             }
 
             // se stato pratica DISBURSED (Liquidata), calcola le date di liquidazione e estinzione anticipata
-            if ($practice->practice_status == PracticeStatus::DISBURSED->value) {
-                $practice->early_settlement_date = Carbon::parse($practice->first_installment_date)->addDays(fake()->numberBetween(5, 30));
-                $practice->disbursement_date = (clone $practice->early_settlement_date)->addMonths(fake()->numberBetween(6, 24));
+            if ($practice->practice_status === PracticeStatus::DISBURSED) {
+                $practice->early_settlement_date = $practice->first_installment_date?->copy()->addDays(fake()->numberBetween(5, 30));
+                $practice->disbursement_date = $practice->early_settlement_date?->copy()->addMonths(fake()->numberBetween(6, 24));
             }
         }
     }

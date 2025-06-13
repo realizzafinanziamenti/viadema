@@ -47,7 +47,7 @@
             @if (count($selectableItems) > 0)
                 @foreach ($selectableItems as $key => $value)
                     <x-dropdown-button size="{{ $size }}"
-                        wire:click="{{ $setFunction }}({{ $key }})">
+                        wire:click="{{ $setFunction }}('{{ $key }}')">
                         {{ $value }}
                     </x-dropdown-button>
                 @endforeach

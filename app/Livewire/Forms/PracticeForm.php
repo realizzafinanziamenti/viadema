@@ -64,7 +64,7 @@ class PracticeForm extends Form
             'renewabilityDate' => ['required', 'date'],
             'renewabilityPercentage' => ['nullable', 'numeric', 'between:0,100'],
             'percentageAlert' => ['nullable', 'numeric', 'between:0,100'],
-            'practiceStatus' => ['required', 'integer', new Enum(PracticeStatus::class)],
+            'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
             'previousFinance' => ['nullable', 'string', 'max:255'],
             'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
             'notes' => ['nullable', 'string', 'max:65535'],
