@@ -57,7 +57,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Importo *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
                 wire:model="practiceForm.amountDisbursed" symbol="€" />
             <flux:error name="practiceForm.amountDisbursed" />
         </div>
@@ -76,7 +76,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Rata mensile *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
                 wire:model="practiceForm.rateAmount" symbol="€" />
             <flux:error name="practiceForm.rateAmount" />
         </div>
@@ -85,7 +85,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Taeg fisso *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
                 wire:model="practiceForm.taeg" symbol="%" />
             <flux:error name="practiceForm.taeg" />
         </div>
@@ -94,7 +94,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Tan fisso *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
                 wire:model="practiceForm.tan" symbol="%" />
             <flux:error name="practiceForm.tan" />
         </div>
@@ -103,7 +103,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Totale dovuto</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
                 wire:model="practiceForm.totalAmount" symbol="€" />
             <flux:error name="practiceForm.totalAmount" />
         </div>

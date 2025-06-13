@@ -48,4 +48,17 @@ enum PracticeStatus: int
             self::DISBURSED => 'disbursed',
         };
     }
+
+    /**
+     * Get all statuses except DISBURSED
+     *
+     * @return PracticeStatus[]
+     */
+    public static function labelsWithoutDisbursed(): array
+    {
+        return collect(self::cases())
+            ->reject(fn(self $status) => $status === self::DISBURSED)
+            ->mapWithKeys(fn(self $status) => [$status->value => $status->getLabelText()])
+            ->toArray();
+    }
 }

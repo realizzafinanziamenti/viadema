@@ -4,15 +4,17 @@
         <div class="flex flex-col gap-1.5">
             <flux:label>Collaboratore</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$tempSelectedTeamMemberForFilter" searchable search="teamMemberSearch"
-                placeholder='Seleziona collaboratore' setFunction="setTeamMember" />
+                placeholder='Seleziona collaboratore' setFunction="setTeamMember" :has-error="$errors->has('tempSelectedTeamMemberForFilter')" />
+            <flux:error name="tempSelectedTeamMemberForFilter" />
         </div>
 
         {{-- Practice Status --}}
         @if ($expired === false)
             <div class="flex flex-col gap-1.5">
                 <flux:label>Stato pratica</flux:label>
-                <x-dropdown-select size="sm" :selectable-items="$practiceStatuses" :selected="$tempSelectedPracticeStatusForFilter" placeholder='Seleziona stato'
-                    setFunction="setPracticeStatusForFilter" />
+                <x-dropdown-select size="sm" :selectable-items="$practiceStatusesForFilter" :selected="$tempSelectedPracticeStatusForFilter" placeholder='Seleziona stato'
+                    setFunction="setPracticeStatusForFilter" :has-error="$errors->has('tempSelectedPracticeStatusForFilter')" />
+                <flux:error name="tempSelectedPracticeStatusForFilter" />
             </div>
         @endif
 
@@ -21,7 +23,8 @@
             <div class="flex flex-col gap-1.5">
                 <flux:label>Prodotto</flux:label>
                 <x-dropdown-select size="sm" :selectable-items="$productTypes" :selected="$tempSelectedProductTypeForFilter" placeholder='Seleziona prodotto'
-                    setFunction="setProductType" />
+                    setFunction="setProductType" :has-error="$errors->has('tempSelectedProductTypeForFilter')" />
+                <flux:error name="tempSelectedProductTypeForFilter" />
             </div>
         @endif
 
@@ -29,35 +32,40 @@
         <div class="flex flex-col gap-1.5">
             <flux:label>Tipo prodotto</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$productSubtypes" :selected="$tempSelectedProductSubtypeForFilter" placeholder='Seleziona tipo prodotto'
-                setFunction="setProductSubtype" />
+                setFunction="setProductSubtype" :has-error="$errors->has('tempSelectedProductSubtypeForFilter')" />
+            <flux:error name="tempSelectedProductSubtypeForFilter" />
         </div>
 
         {{-- Customer --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Cliente</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$customers" :selected="$tempSelectedCustomerForFilter" searchable search="customerSearch"
-                placeholder='Seleziona cliente' setFunction="setCustomer" />
+                placeholder='Seleziona cliente' setFunction="setCustomer" :has-error="$errors->has('tempSelectedCustomerForFilter')" />
+            <flux:error name="tempSelectedCustomerForFilter" />
         </div>
 
         {{-- Customer Type --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Tipologia cliente</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$customerTypes" :selected="$tempSelectedCustomerTypeForFilter"
-                placeholder='Seleziona tipologia cliente' setFunction="setCustomerType" />
+                placeholder='Seleziona tipologia cliente' setFunction="setCustomerType" :has-error="$errors->has('tempSelectedCustomerTypeForFilter')" />
+            <flux:error name="tempSelectedCustomerTypeForFilter" />
         </div>
 
         {{-- Insurance --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Assicurazione</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$insurances" :selected="$tempSelectedInsuranceForFilter"
-                placeholder='Seleziona assicurazione' setFunction="setInsurance" />
+                placeholder='Seleziona assicurazione' setFunction="setInsurance" :has-error="$errors->has('tempSelectedInsuranceForFilter')" />
+            <flux:error name="tempSelectedInsuranceForFilter" />
         </div>
 
         {{-- Installment --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Rate</flux:label>
             <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$tempSelectedInstallmentForFilter" placeholder='Seleziona rate'
-                setFunction="setInstallment" />
+                setFunction="setInstallment" :has-error="$errors->has('tempSelectedInstallmentForFilter')" />
+            <flux:error name="tempSelectedInstallmentForFilter" />
         </div>
 
         {{-- Inserted At Date --}}
@@ -142,13 +150,13 @@
             <flux:label>Importo</flux:label>
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempAmountDisbursedMin" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempAmountDisbursedMin" symbol="€" />
                     <flux:error name="tempAmountDisbursedMin" />
                 </div>
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempAmountDisbursedMax" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempAmountDisbursedMax" symbol="€" />
                     <flux:error name="tempAmountDisbursedMax" />
                 </div>
             </div>
@@ -159,13 +167,13 @@
             <flux:label>Totale dovuto</flux:label>
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTotalAmountMin" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempTotalAmountMin" symbol="€" />
                     <flux:error name="tempTotalAmountMin" />
                 </div>
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTotalAmountMax" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempTotalAmountMax" symbol="€" />
                     <flux:error name="tempTotalAmountMax" />
                 </div>
             </div>
@@ -176,13 +184,13 @@
             <flux:label>Rata mensile</flux:label>
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempRateAmountMin" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempRateAmountMin" symbol="€" />
                     <flux:error name="tempRateAmountMin" />
                 </div>
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempRateAmountMax" symbol="€" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                        size="sm" wire:model="tempRateAmountMax" symbol="€" />
                     <flux:error name="tempRateAmountMax" />
                 </div>
             </div>
@@ -193,13 +201,13 @@
             <flux:label>Tan</flux:label>
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTanMin" symbol="%" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="tempTanMin" symbol="%" />
                     <flux:error name="tempTanMin" />
                 </div>
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTanMax" symbol="%" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="tempTanMax" symbol="%" />
                     <flux:error name="tempTanMax" />
                 </div>
             </div>
@@ -210,13 +218,13 @@
             <flux:label>Taeg</flux:label>
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTaegMin" symbol="%" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="tempTaegMin" symbol="%" />
                     <flux:error name="tempTaegMin" />
                 </div>
                 <div class="col-span-1">
-                    <x-forms.input-with-symbol type="number" min="0.00" step=".01" size="sm"
-                        wire:model="tempTaegMax" symbol="%" />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="tempTaegMax" symbol="%" />
                     <flux:error name="tempTaegMax" />
                 </div>
             </div>

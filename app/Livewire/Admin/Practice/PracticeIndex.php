@@ -12,12 +12,14 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Rules\ExceptEnumValues;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
@@ -31,6 +33,7 @@ class PracticeIndex extends Component
     public ?ProductType $type = null;
     public ?bool $expired = false;
     public Practice|null $selectedPractice = null;
+    public array $practiceStatuses = [];
     public ?int $selectedPracticeStatus = null;
     public string $search = '';
     // Team Member Filter
@@ -66,7 +69,7 @@ class PracticeIndex extends Component
     public ?int $selectedCustomerTypeForFilter = null;
     public ?int $tempSelectedCustomerTypeForFilter = null;
     // Practice Status Filter
-    public array $practiceStatuses = [];
+    public array $practiceStatusesForFilter = [];
     public ?int $selectedPracticeStatusForFilter = null;
     public ?int $tempSelectedPracticeStatusForFilter = null;
     // Inserted At Date filters
@@ -121,6 +124,111 @@ class PracticeIndex extends Component
     public ?float $tempTaegMax = null;
     // Order by select
     public array $orderBySelect = [];
+
+    protected function rules(): array
+    {
+        return [
+            'tempSelectedTeamMemberForFilter' => ['nullable', 'integer', 'exists:users,id'],
+            'tempSelectedCustomerForFilter' => ['nullable', 'integer', 'exists:customers,id'],
+            'tempSelectedProductTypeForFilter' => ['nullable', 'integer', 'exists:product_types,id'],
+            'tempSelectedProductSubtypeForFilter' => ['nullable', 'integer', 'exists:product_subtypes,id'],
+            'tempSelectedFinancialTableForFilter' => ['nullable', 'integer', 'exists:financial_tables,id'],
+            'tempSelectedInsuranceForFilter' => ['nullable', 'integer', 'exists:insurances,id'],
+            'tempSelectedInstallmentForFilter' => ['nullable', 'integer', 'exists:installments,id'],
+            'tempSelectedCustomerTypeForFilter' => ['nullable', 'integer', 'exists:customer_types,id'],
+            'tempSelectedPracticeStatusForFilter' => ['nullable', 'integer', new ExceptEnumValues(PracticeStatus::class, [PracticeStatus::DISBURSED->value])],
+            'tempInsertedAtDateMin' => ['nullable', 'date', 'before_or_equal:tempInsertedAtDateMax'],
+            'tempInsertedAtDateMax' => ['nullable', 'date', 'after_or_equal:tempInsertedAtDateMin'],
+            'tempFirstInstallmentDateMin' => ['nullable', 'date', 'before_or_equal:tempFirstInstallmentDateMax'],
+            'tempFirstInstallmentDateMax' => ['nullable', 'date', 'after_or_equal:tempFirstInstallmentDateMin'],
+            'tempLastInstallmentDateMin' => ['nullable', 'date', 'before_or_equal:tempLastInstallmentDateMax'],
+            'tempLastInstallmentDateMax' => ['nullable', 'date', 'after_or_equal:tempLastInstallmentDateMin'],
+            'tempRenewabilityDateMin' => ['nullable', 'date', 'before_or_equal:tempRenewabilityDateMax'],
+            'tempRenewabilityDateMax' => ['nullable', 'date', 'after_or_equal:tempRenewabilityDateMin'],
+            'tempDisbursementDateMin' => ['nullable', 'date', 'before_or_equal:tempDisbursementDateMax'],
+            'tempDisbursementDateMax' => ['nullable', 'date', 'after_or_equal:tempDisbursementDateMin'],
+            'tempAmountDisbursedMin' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'lte:tempAmountDisbursedMax'],
+            'tempAmountDisbursedMax' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'gte:tempAmountDisbursedMin'],
+            'tempTotalAmountMin' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'lte:tempTotalAmountMax'],
+            'tempTotalAmountMax' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'gte:tempTotalAmountMin'],
+            'tempRateAmountMin' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'lte:tempRateAmountMax'],
+            'tempRateAmountMax' => ['nullable', 'numeric', 'min:0', 'max:99999999.99', 'gte:tempRateAmountMin'],
+            'tempTanMin' => ['nullable', 'numeric', 'min:0', 'max:10000', 'lte:tempTanMax'],
+            'tempTanMax' => ['nullable', 'numeric', 'min:0', 'max:10000', 'gte:tempTanMin'],
+            'tempTaegMin' => ['nullable', 'numeric', 'min:0', 'max:10000', 'lte:tempTaegMax'],
+            'tempTaegMax' => ['nullable', 'numeric', 'min:0', 'max:10000', 'gte:tempTaegMin'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'tempSelectedTeamMemberForFilter.exists' => 'Il membro del team selezionato non esiste.',
+            'tempSelectedCustomerForFilter.exists' => 'Il cliente selezionato non esiste.',
+            'tempSelectedProductTypeForFilter.exists' => 'Il tipo di prodotto selezionato non esiste.',
+            'tempSelectedProductSubtypeForFilter.exists' => 'Il sottotipo di prodotto selezionato non esiste.',
+            'tempSelectedFinancialTableForFilter.exists' => 'La tabella finanziaria selezionata non esiste.',
+            'tempSelectedInsuranceForFilter.exists' => 'L\'assicurazione selezionata non esiste.',
+            'tempSelectedInstallmentForFilter.exists' => 'L\'installment selezionata non esiste.',
+            'tempSelectedCustomerTypeForFilter.exists' => 'La tipologia cliente selezionata non esiste.',
+            'tempSelectedPracticeStatusForFilter.enum' => 'Lo stato della pratica selezionato non è valido.',
+            'tempInsertedAtDateMin.before_or_equal' => 'La data minima di inserimento deve essere prima o uguale alla data massima.',
+            'tempInsertedAtDateMax.after_or_equal' => 'La data massima di inserimento deve essere dopo o uguale alla data minima.',
+            'tempFirstInstallmentDateMin.before_or_equal' => 'La data minima della prima rata deve essere prima o uguale alla data massima.',
+            'tempFirstInstallmentDateMax.after_or_equal' => 'La data massima della prima rata deve essere dopo o uguale alla data minima.',
+            'tempLastInstallmentDateMin.before_or_equal' => 'La data minima dell\'ultima rata deve essere prima o uguale alla data massima.',
+            'tempLastInstallmentDateMax.after_or_equal' => 'La data massima dell\'ultima rata deve essere dopo o uguale alla data minima.',
+            'tempRenewabilityDateMin.before_or_equal' => 'La data minima di rinnovabilità deve essere prima o uguale alla data massima.',
+            'tempRenewabilityDateMax.after_or_equal' => 'La data massima di rinnovabilità deve essere dopo o uguale alla data minima.',
+            'tempDisbursementDateMin.before_or_equal' => 'La data minima di liquidazione deve essere prima o uguale alla data massima.',
+            'tempDisbursementDateMax.after_or_equal' => 'La data massima di liquidazione deve essere dopo o uguale alla data minima.',
+            'tempAmountDisbursedMin.lte' => 'L\'importo finanziato minimo deve essere minore o uguale all\'importo finanziato massimo.',
+            'tempAmountDisbursedMax.gte' => 'L\'importo finanziato massimo deve essere maggiore o uguale all\'importo finanziato minimo.',
+            'tempTotalAmountMin.lte' => 'Il montante minimo deve essere minore o uguale al montante massimo.',
+            'tempTotalAmountMax.gte' => 'Il montante massimo deve essere maggiore o uguale al montante minimo.',
+            'tempRateAmountMin.lte' => 'L\'importo rata minimo deve essere minore o uguale all\'importo rata massimo.',
+            'tempRateAmountMax.gte' => 'L\'importo rata massimo deve essere maggiore o uguale all\'importo rata minimo.',
+            'tempTanMin.lte' => 'Il TAN minimo deve essere minore o uguale al TAN massimo.',
+            'tempTanMax.gte' => 'Il TAN massimo deve essere maggiore o uguale al TAN minimo.',
+            'tempTaegMin.lte' => 'Il TAEG minimo deve essere minore o uguale al TAEG massimo.',
+            'tempTaegMax.gte' => 'Il TAEG massimo deve essere maggiore o uguale al TAEG minimo.',
+        ];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return [
+            'tempSelectedTeamMemberForFilter' => 'membro del team',
+            'tempSelectedCustomerForFilter' => 'cliente',
+            'tempSelectedProductTypeForFilter' => 'tipo di prodotto',
+            'tempSelectedProductSubtypeForFilter' => 'sottotipo di prodotto',
+            'tempSelectedFinancialTableForFilter' => 'tabella finanziaria',
+            'tempSelectedInsuranceForFilter' => 'assicurazione',
+            'tempSelectedInstallmentForFilter' => 'numero rate',
+            'tempSelectedCustomerTypeForFilter' => 'tipologia cliente',
+            'tempSelectedPracticeStatusForFilter' => 'stato pratica',
+            'tempInsertedAtDateMin' => 'data inserimento minima',
+            'tempInsertedAtDateMax' => 'data inserimento massima',
+            'tempFirstInstallmentDateMin' => 'data prima rata minima',
+            'tempFirstInstallmentDateMax' => 'data prima rata massima',
+            'tempLastInstallmentDateMin' => 'data ultima rata minima',
+            'tempLastInstallmentDateMax' => 'data ultima rata massima',
+            'tempRenewabilityDateMin' => 'data rinnovabilità minima',
+            'tempRenewabilityDateMax' => 'data rinnovabilità massima',
+            'tempDisbursementDateMin' => 'data liquidazione minima',
+            'tempDisbursementDateMax' => 'data liquidazione massima',
+            'tempAmountDisbursedMin' => 'importo finanziato minimo',
+            'tempAmountDisbursedMax' => 'importo finanziato massimo',
+            'tempTotalAmountMin' => 'montante minimo',
+            'tempTotalAmountMax' => 'montante massimo',
+            'tempRateAmountMin' => 'importo rata minimo',
+            'tempRateAmountMax' => 'importo rata massimo',
+            'tempTanMin' => 'TAN minimo',
+            'tempTanMax' => 'TAN massimo',
+            'tempTaegMin' => 'TAEG minimo',
+            'tempTaegMax' => 'TAEG massimo',
+        ];
+    }
 
     /**
      * Set team member for customer form
@@ -284,6 +392,7 @@ class PracticeIndex extends Component
     protected function initializeSelects(): void
     {
         $this->practiceStatuses = $this->getEnumOptions(PracticeStatus::class);
+        $this->practiceStatusesForFilter = PracticeStatus::labelsWithoutDisbursed();
 
         $this->productTypes = ProductType::orderBy('name')
             ->pluck('name', 'id')
@@ -312,10 +421,22 @@ class PracticeIndex extends Component
 
     /**
      * This method is called when the user clicks the filter button.
+     * It opens the filter modal and resets the validation errors.
+     */
+    public function openFilterModal(): void
+    {
+        $this->resetValidation();
+        $this->dispatch('open-modal', 'filter-modal');
+    }
+
+    /**
+     * This method is called when the user clicks the filter button.
      * It resets the page and closes the filter modal.
      */
     public function filter(): void
     {
+        $this->validate();
+
         $this->selectedTeamMemberForFilter = $this->tempSelectedTeamMemberForFilter;
         $this->selectedCustomerForFilter = $this->tempSelectedCustomerForFilter;
         $this->selectedProductTypeForFilter = $this->tempSelectedProductTypeForFilter;
@@ -421,6 +542,12 @@ class PracticeIndex extends Component
         $this->dispatch('close-modal', 'filter-modal');
     }
 
+    /**
+     * Apply filters to the query based on the selected filters.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function applyFilters($query)
     {
         if ($this->selectedPracticeStatusForFilter && $this->expired === false) {
