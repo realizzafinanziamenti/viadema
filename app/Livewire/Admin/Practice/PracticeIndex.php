@@ -69,37 +69,52 @@ class PracticeIndex extends Component
     public array $practiceStatuses = [];
     public ?int $selectedPracticeStatusForFilter = null;
     public ?int $tempSelectedPracticeStatusForFilter = null;
-    // Date filters
+    // Inserted At Date filters
+    public ?string $insertedAtDateMin = null;
+    public ?string $tempInsertedAtDateMin = null;
+    public ?string $insertedAtDateMax = null;
+    public ?string $tempInsertedAtDateMax = null;
+    // First Installment Date filters
     public ?string $firstInstallmentDateMin = null;
     public ?string $tempFirstInstallmentDateMin = null;
     public ?string $firstInstallmentDateMax = null;
     public ?string $tempFirstInstallmentDateMax = null;
+    // Last Installment Date filters
     public ?string $lastInstallmentDateMin = null;
     public ?string $tempLastInstallmentDateMin = null;
     public ?string $lastInstallmentDateMax = null;
     public ?string $tempLastInstallmentDateMax = null;
+    // Renewability Date filters
     public ?string $renewabilityDateMin = null;
     public ?string $tempRenewabilityDateMin = null;
     public ?string $renewabilityDateMax = null;
     public ?string $tempRenewabilityDateMax = null;
-    // amounts filters
+    // Disbursement Date filters
+    public ?string $disbursementDateMin = null;
+    public ?string $tempDisbursementDateMin = null;
+    public ?string $disbursementDateMax = null;
+    public ?string $tempDisbursementDateMax = null;
+    // Amount Disbursed filters
     public ?float $amountDisbursedMin = null;
     public ?float $tempAmountDisbursedMin = null;
     public ?float $amountDisbursedMax = null;
     public ?float $tempAmountDisbursedMax = null;
+    // Total Amount filters
     public ?float $totalAmountMin = null;
     public ?float $tempTotalAmountMin = null;
     public ?float $totalAmountMax = null;
     public ?float $tempTotalAmountMax = null;
+    // Rate Amount filters
     public ?float $rateAmountMin = null;
     public ?float $tempRateAmountMin = null;
     public ?float $rateAmountMax = null;
     public ?float $tempRateAmountMax = null;
-    // financial rates filters
+    // Tan Min filters
     public ?float $tanMin = null;
     public ?float $tempTanMin = null;
     public ?float $tanMax = null;
     public ?float $tempTanMax = null;
+    // Taeg Min filters
     public ?float $taegMin = null;
     public ?float $tempTaegMin = null;
     public ?float $taegMax = null;
@@ -310,12 +325,16 @@ class PracticeIndex extends Component
         $this->selectedInstallmentForFilter = $this->tempSelectedInstallmentForFilter;
         $this->selectedCustomerTypeForFilter = $this->tempSelectedCustomerTypeForFilter;
         $this->selectedPracticeStatusForFilter = $this->tempSelectedPracticeStatusForFilter;
+        $this->insertedAtDateMin = $this->tempInsertedAtDateMin;
+        $this->insertedAtDateMax = $this->tempInsertedAtDateMax;
         $this->firstInstallmentDateMin = $this->tempFirstInstallmentDateMin;
         $this->firstInstallmentDateMax = $this->tempFirstInstallmentDateMax;
         $this->lastInstallmentDateMin = $this->tempLastInstallmentDateMin;
         $this->lastInstallmentDateMax = $this->tempLastInstallmentDateMax;
         $this->renewabilityDateMin = $this->tempRenewabilityDateMin;
         $this->renewabilityDateMax = $this->tempRenewabilityDateMax;
+        $this->disbursementDateMin = $this->tempDisbursementDateMin;
+        $this->disbursementDateMax = $this->tempDisbursementDateMax;
         $this->amountDisbursedMin = $this->tempAmountDisbursedMin;
         $this->amountDisbursedMax = $this->tempAmountDisbursedMax;
         $this->totalAmountMin = $this->tempTotalAmountMin;
@@ -356,6 +375,10 @@ class PracticeIndex extends Component
             'tempSelectedCustomerTypeForFilter',
             'selectedPracticeStatusForFilter',
             'tempSelectedPracticeStatusForFilter',
+            'insertedAtDateMin',
+            'tempInsertedAtDateMin',
+            'insertedAtDateMax',
+            'tempInsertedAtDateMax',
             'firstInstallmentDateMin',
             'tempFirstInstallmentDateMin',
             'firstInstallmentDateMax',
@@ -368,6 +391,10 @@ class PracticeIndex extends Component
             'tempRenewabilityDateMin',
             'renewabilityDateMax',
             'tempRenewabilityDateMax',
+            'disbursementDateMin',
+            'tempDisbursementDateMin',
+            'disbursementDateMax',
+            'tempDisbursementDateMax',
             'amountDisbursedMin',
             'tempAmountDisbursedMin',
             'amountDisbursedMax',
@@ -396,7 +423,7 @@ class PracticeIndex extends Component
 
     public function applyFilters($query)
     {
-        if ($this->selectedPracticeStatusForFilter) {
+        if ($this->selectedPracticeStatusForFilter && $this->expired === false) {
             $query->where('practice_status', $this->selectedPracticeStatusForFilter);
         }
         if ($this->selectedTeamMemberForFilter) {
@@ -423,6 +450,12 @@ class PracticeIndex extends Component
         if ($this->selectedCustomerTypeForFilter) {
             $query->where('customer_type_id', $this->selectedCustomerTypeForFilter);
         }
+        if ($this->insertedAtDateMin) {
+            $query->whereDate('inserted_at', '>=', $this->insertedAtDateMin);
+        }
+        if ($this->insertedAtDateMax) {
+            $query->whereDate('inserted_at', '<=', $this->insertedAtDateMax);
+        }
         if ($this->firstInstallmentDateMin) {
             $query->whereDate('first_installment_date', '>=', $this->firstInstallmentDateMin);
         }
@@ -440,6 +473,12 @@ class PracticeIndex extends Component
         }
         if ($this->renewabilityDateMax) {
             $query->whereDate('renewability_date', '<=', $this->renewabilityDateMax);
+        }
+        if ($this->disbursementDateMin && $this->expired === true) {
+            $query->whereDate('disbursement_date', '>=', $this->disbursementDateMin);
+        }
+        if ($this->disbursementDateMax && $this->expired === true) {
+            $query->whereDate('disbursement_date', '<=', $this->disbursementDateMax);
         }
         if ($this->amountDisbursedMin) {
             $query->where('amount_disbursed', '>=', $this->amountDisbursedMin);
