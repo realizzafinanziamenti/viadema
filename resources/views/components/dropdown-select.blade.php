@@ -23,7 +23,9 @@
     <x-slot name="trigger">
         <x-dropdown-trigger-button size="{{ $size }}"
             class="{{ $width }} {{ $hasError ? ' border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
-            {{ $label }}
+            <span class="truncate">
+                {{ $label }}
+            </span>
 
             @if ($selected)
                 <flux:icon.x-mark wire:click.stop="{{ $setFunction }}"
