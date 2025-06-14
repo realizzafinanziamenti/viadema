@@ -404,7 +404,12 @@ class PracticeIndex extends Component
         $this->practiceStatuses = $this->getEnumOptions(PracticeStatus::class);
         $this->practiceStatusesForFilter = PracticeStatus::labelsWithoutDisbursed();
 
-        $this->orderBySelect = PracticeOrderBy::options();
+        // Set the initial order by select options based on whether the practice is expired or not
+        if ($this->expired === false) {
+            $this->orderBySelect = PracticeOrderBy::options($excluded = [PracticeOrderBy::DISBURSEMENT_DATE_DESC, PracticeOrderBy::DISBURSEMENT_DATE_ASC]);
+        } else {
+            $this->orderBySelect = PracticeOrderBy::options($excluded = [PracticeOrderBy::RENEWABILITY_DATE_DESC, PracticeOrderBy::RENEWABILITY_DATE_ASC]);
+        }
 
         $this->productTypes = ProductType::orderBy('name')
             ->pluck('name', 'id')

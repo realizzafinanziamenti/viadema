@@ -9,6 +9,8 @@ enum PracticeOrderBy: string
     case CREATED_AT_ASC = 'created_at|asc';
     case RENEWABILITY_DATE_DESC = 'renewability_date|desc';
     case RENEWABILITY_DATE_ASC = 'renewability_date|asc';
+    case DISBURSEMENT_DATE_DESC = 'disbursement_date|desc';
+    case DISBURSEMENT_DATE_ASC = 'disbursement_date|asc';
 
     /**
      * Get the field of the current practice order by
@@ -37,6 +39,8 @@ enum PracticeOrderBy: string
             self::CREATED_AT_ASC => 'Data di creazione (più vecchia)',
             self::RENEWABILITY_DATE_DESC => 'Data di rinnovabilità (più recente)',
             self::RENEWABILITY_DATE_ASC => 'Data di rinnovabilità (più vecchia)',
+            self::DISBURSEMENT_DATE_DESC => 'Data di liquidazione (più recente)',
+            self::DISBURSEMENT_DATE_ASC => 'Data di liquidazione (più vecchia)',
         };
     }
 
@@ -45,9 +49,10 @@ enum PracticeOrderBy: string
      * This is useful for generating dropdowns or select inputs.
      * [value => label]
      */
-    public static function options(): array
+    public static function options(array $excluded = []): array
     {
         return collect(self::cases())
+            ->reject(fn($case) => in_array($case, $excluded))
             ->mapWithKeys(fn($case) => [$case->value => $case->getLabelText()])
             ->toArray();
     }
