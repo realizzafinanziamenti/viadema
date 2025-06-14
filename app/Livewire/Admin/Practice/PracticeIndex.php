@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Practice;
 
+use App\Enums\PracticeOrderBy;
 use App\Enums\PracticeStatus;
 use App\Models\Customer;
 use App\Models\CustomerType;
@@ -124,6 +125,7 @@ class PracticeIndex extends Component
     public ?float $tempTaegMax = null;
     // Order by select
     public array $orderBySelect = [];
+    public PracticeOrderBy $selectedOrderBy = PracticeOrderBy::UPDATED_AT_DESC;
 
     protected function rules(): array
     {
@@ -228,6 +230,14 @@ class PracticeIndex extends Component
             'tempTaegMin' => 'TAEG minimo',
             'tempTaegMax' => 'TAEG massimo',
         ];
+    }
+
+    /**
+     * Set the selected order by value.
+     */
+    public function setOrderBy(?string $value = null): void
+    {
+        $this->selectedOrderBy = PracticeOrderBy::tryFrom($value) ?? PracticeOrderBy::UPDATED_AT_DESC;
     }
 
     /**
@@ -393,6 +403,8 @@ class PracticeIndex extends Component
     {
         $this->practiceStatuses = $this->getEnumOptions(PracticeStatus::class);
         $this->practiceStatusesForFilter = PracticeStatus::labelsWithoutDisbursed();
+
+        $this->orderBySelect = PracticeOrderBy::options();
 
         $this->productTypes = ProductType::orderBy('name')
             ->pluck('name', 'id')
@@ -682,7 +694,7 @@ class PracticeIndex extends Component
         $query = Practice::with('customer', 'user', 'productType')
             ->filterByProductType($this->type)
             ->isExpired($this->expired)
-            ->orderByDesc('updated_at');
+            ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction());
 
         $query = $query->filterBySearch($this->search);
         $query = $this->applyFilters($query);

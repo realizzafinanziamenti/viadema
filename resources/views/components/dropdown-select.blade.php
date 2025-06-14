@@ -28,7 +28,7 @@
             </span>
 
             @if ($selected)
-                <flux:icon.x-mark wire:click.stop="{{ $setFunction }}"
+                <flux:icon.x-mark wire:click.stop="{{ $setFunction }}(null)"
                     class="cursor-pointer hover:text-red-600 size-3.5" />
             @else
                 <flux:icon.chevron-down class="size-3" />
