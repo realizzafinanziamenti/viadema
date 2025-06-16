@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('mime_type');
             $table->unsignedBigInteger('file_size');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
