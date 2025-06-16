@@ -15,16 +15,18 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\AcceptedFileTypes;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Spatie\LivewireFilepond\WithFilePond;
 
 class PracticeCreate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFilePond;
 
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;

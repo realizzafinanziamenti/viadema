@@ -4,7 +4,9 @@ namespace App\Livewire\Forms;
 
 use App\Enums\PracticeStatus;
 use App\Models\Practice;
+use App\Traits\AcceptedFileTypes;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -14,6 +16,8 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeForm extends Form
 {
+    use AcceptedFileTypes;
+
     public ?Practice $practice = null;
 
     public $productTypeId = null;
@@ -40,6 +44,7 @@ class PracticeForm extends Form
     public $previousFinance = null;
     public $practiceCode = null;
     public $notes = null;
+    public array $attachments = [];
 
     protected function rules(): array
     {
@@ -68,6 +73,8 @@ class PracticeForm extends Form
             'previousFinance' => ['nullable', 'string', 'max:255'],
             'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
             'notes' => ['nullable', 'string', 'max:65535'],
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
         ];
     }
 
@@ -98,6 +105,8 @@ class PracticeForm extends Form
             'previousFinance' => "finanziaria estinta",
             'practiceCode' => "ID pratica",
             'notes' => "note",
+            'attachments' => 'allegati',
+            'attachments.*' => 'file allegato'
         ];
     }
 
@@ -144,30 +153,44 @@ class PracticeForm extends Form
         $this->validate();
 
         try {
-            $practice = Practice::create([
-                'product_type_id' => $this->productTypeId,
-                'product_subtype_id' => $this->productSubtypeId,
-                'user_id' => $this->userId,
-                'customer_id' => $this->customerId,
-                'financial_table_id' => $this->financialTableId,
-                'insurance_id' => $this->insuranceId,
-                'installment_id' => $this->installmentId,
-                'customer_type_id' => $this->customerTypeId,
-                'amount_disbursed' => $this->amountDisbursed,
-                'total_amount' => $this->totalAmount,
-                'rate_amount' => $this->rateAmount,
-                'tan' => $this->tan,
-                'taeg' => $this->taeg,
-                'inserted_at' => now(),
-                'first_installment_date' => $this->firstInstallmentDate,
-                'last_installment_date' => $this->lastInstallmentDate,
-                'renewability_date' => $this->renewabilityDate,
-                'renewability_percentage' => $this->renewabilityPercentage,
-                'percentage_alert' => $this->percentageAlert,
-                'practice_status' => $this->practiceStatus,    // default to UNDER_REVIEW
-                'practice_code' => $this->practiceCode,
-                'notes' => $this->notes
-            ]);
+            $practice = DB::transaction(function () {
+                $practice = Practice::create([
+                    'product_type_id' => $this->productTypeId,
+                    'product_subtype_id' => $this->productSubtypeId,
+                    'user_id' => $this->userId,
+                    'customer_id' => $this->customerId,
+                    'financial_table_id' => $this->financialTableId,
+                    'insurance_id' => $this->insuranceId,
+                    'installment_id' => $this->installmentId,
+                    'customer_type_id' => $this->customerTypeId,
+                    'amount_disbursed' => $this->amountDisbursed,
+                    'total_amount' => $this->totalAmount,
+                    'rate_amount' => $this->rateAmount,
+                    'tan' => $this->tan,
+                    'taeg' => $this->taeg,
+                    'inserted_at' => now(),
+                    'first_installment_date' => $this->firstInstallmentDate,
+                    'last_installment_date' => $this->lastInstallmentDate,
+                    'renewability_date' => $this->renewabilityDate,
+                    'renewability_percentage' => $this->renewabilityPercentage,
+                    'percentage_alert' => $this->percentageAlert,
+                    'practice_status' => $this->practiceStatus,    // default to UNDER_REVIEW
+                    'practice_code' => $this->practiceCode,
+                    'notes' => $this->notes
+                ]);
+
+                foreach ($this->attachments as $attachment) {
+                    $practice->attachments()->create([
+                        'file_name' => $attachment->getClientOriginalName(),
+                        'file_path' => $attachment->store('attachments', 'public'),
+                        'mime_type' => $attachment->getClientMimeType(),
+                        'file_size' => $attachment->getSize()
+                    ]);
+                }
+
+                return $practice;
+            });
+
 
             $this->reset();
 

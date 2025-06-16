@@ -103,7 +103,7 @@
             margin-bottom: 0 !important;
         }
 
-        .filepond--drop-label {
+        .filepond--panel-root {
             border: 1px !important;
             border-style: dashed !important;
             border-color: var(--color-gray-custom-3) !important;

@@ -1,6 +1,15 @@
 {{-- Customer Details --}}
 @include('partials.practice.customer-preview-fields')
 
+{{-- Attachments --}}
+<div class="mt-6 flex flex-col gap-1.5">
+    <flux:label>Allegati</flux:label>
+
+    @foreach ($practiceForm->attachments as $attachment)
+        <x-display-input value="{{ $attachment->getClientOriginalName() }}" />
+    @endforeach
+</div>
+
 {{-- Practice Details --}}
 <div class="grid grid-cols-2 gap-6 mt-6">
     {{-- Practice Code --}}
