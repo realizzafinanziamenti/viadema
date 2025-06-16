@@ -7,7 +7,7 @@ trait InteractsWithDropdowns
     /**
      * Set value for select input.
      */
-    protected function setSelectValue(string $valueProp, ?int $value): void
+    protected function setSelectValue(string $valueProp, string|int|null $value): void
     {
         $this->{$valueProp} = $value;
 
@@ -20,7 +20,7 @@ trait InteractsWithDropdowns
     /**
      * Set value and form value for select input.
      */
-    protected function setFormSelectValue(string $formProp, ?int $value, string $form = 'form'): void
+    protected function setFormSelectValue(string $formProp, string|int|null $value, string $form = 'form'): void
     {
         $this->{$form}->{$formProp} = $value;
 

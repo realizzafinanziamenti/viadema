@@ -10,8 +10,14 @@
     <x-card>
         {{-- Filters and Create Button --}}
         <div class="flex items-center justify-between gap-4 mb-5">
-            <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+            <div class="flex items-center gap-4">
+                <flux:input class="w-sm! 2xl:w-lg!" wire:model.live.debounce.500ms='search'
+                    icon:trailing="magnifying-glass"
+                    placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+
+                <x-dropdown-select width="w-52" :selectable-items="$orderBySelect" :selected="$selectedOrderBy->value" placeholder='Ordina per'
+                    setFunction="setOrderBy" :has-error="$errors->has('tempSelectedTeamMemberForFilter')" />
+            </div>
 
             <div class="flex items-center gap-4">
                 <x-buttons.filter-modal-button />
@@ -121,32 +127,5 @@
         message="Sei sicuro di voler eliminare la pratica di <strong>{{ $selectedPractice?->customer?->full_name }}</strong>?" />
 
     {{-- Filter Modal --}}
-    <x-modals.filter-modal header="Filtra pratiche">
-        <div class="flex flex-col gap-4">
-            <div class="flex flex-col gap-1.5">
-                <flux:label>Ordine elenco</flux:label>
-                <x-dropdown-select model="selectedPracticeStatus" :selectable-items="$practiceStatuses" placeholder="Ordina per" />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-                <flux:label>Stato pratica</flux:label>
-                <x-dropdown-select model="selectedPracticeStatus" :selectable-items="$practiceStatuses" placeholder="Filtra per stato" />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-                <flux:label>Data apertura</flux:label>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-1">
-                        <flux:input type="date" wire:model='startDate' />
-                        <flux:error name="startDate" />
-                    </div>
-
-                    <div class="col-span-1">
-                        <flux:input type="date" wire:model='endDate' />
-                        <flux:error name="endDate" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </x-modals.filter-modal>
+    @include('partials.practice.practice-filters-modal')
 </div>

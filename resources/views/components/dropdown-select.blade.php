@@ -23,10 +23,12 @@
     <x-slot name="trigger">
         <x-dropdown-trigger-button size="{{ $size }}"
             class="{{ $width }} {{ $hasError ? ' border-red-600 focus:border-red-600 focus:ring-red-500' : '' }}">
-            {{ $label }}
+            <span class="truncate">
+                {{ $label }}
+            </span>
 
             @if ($selected)
-                <flux:icon.x-mark wire:click.stop="{{ $setFunction }}"
+                <flux:icon.x-mark wire:click.stop="{{ $setFunction }}(null)"
                     class="cursor-pointer hover:text-red-600 size-3.5" />
             @else
                 <flux:icon.chevron-down class="size-3" />
@@ -45,7 +47,7 @@
             @if (count($selectableItems) > 0)
                 @foreach ($selectableItems as $key => $value)
                     <x-dropdown-button size="{{ $size }}"
-                        wire:click="{{ $setFunction }}({{ $key }})">
+                        wire:click="{{ $setFunction }}('{{ $key }}')">
                         {{ $value }}
                     </x-dropdown-button>
                 @endforeach
