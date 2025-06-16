@@ -69,4 +69,8 @@
             </div>
         </form>
     </x-modal>
+
+    {{-- Delete Practice Modal --}}
+    <x-delete-modal name="delete-attachment" header="Conferma Eliminazione Allegato" function="deleteAttachment"
+        message="Sei sicuro di voler eliminare l'allegato' <strong>{{ $selectedAttachment?->file_name }}</strong>?" />
 </div>

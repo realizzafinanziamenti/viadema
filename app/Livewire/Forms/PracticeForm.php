@@ -182,7 +182,7 @@ class PracticeForm extends Form
                 foreach ($this->attachments as $attachment) {
                     $practice->attachments()->create([
                         'file_name' => $attachment->getClientOriginalName(),
-                        'file_path' => $attachment->store('attachments', 'public'),
+                        'file_path' => $attachment->store('practice-attachments', 'public'),
                         'mime_type' => $attachment->getClientMimeType(),
                         'file_size' => $attachment->getSize()
                     ]);
@@ -211,30 +211,41 @@ class PracticeForm extends Form
         $this->validate();
 
         try {
-            $this->practice->update([
-                'product_type_id' => $this->productTypeId,
-                'product_subtype_id' => $this->productSubtypeId,
-                'user_id' => $this->userId,
-                'customer_id' => $this->customerId,
-                'financial_table_id' => $this->financialTableId,
-                'insurance_id' => $this->insuranceId,
-                'installment_id' => $this->installmentId,
-                'customer_type_id' => $this->customerTypeId,
-                'amount_disbursed' => $this->amountDisbursed,
-                'total_amount' => $this->totalAmount,
-                'rate_amount' => $this->rateAmount,
-                'tan' => $this->tan,
-                'taeg' => $this->taeg,
-                'inserted_at' => $this->practice->inserted_at,
-                'first_installment_date' => $this->firstInstallmentDate,
-                'last_installment_date' => $this->lastInstallmentDate,
-                'renewability_date' => $this->renewabilityDate,
-                'renewability_percentage' => $this->renewabilityPercentage,
-                'percentage_alert' => $this->percentageAlert,
-                'practice_status' => $this->practiceStatus,
-                'practice_code' => $this->practiceCode,
-                'notes' => $this->notes
-            ]);
+            DB::transaction(function () {
+                $this->practice->update([
+                    'product_type_id' => $this->productTypeId,
+                    'product_subtype_id' => $this->productSubtypeId,
+                    'user_id' => $this->userId,
+                    'customer_id' => $this->customerId,
+                    'financial_table_id' => $this->financialTableId,
+                    'insurance_id' => $this->insuranceId,
+                    'installment_id' => $this->installmentId,
+                    'customer_type_id' => $this->customerTypeId,
+                    'amount_disbursed' => $this->amountDisbursed,
+                    'total_amount' => $this->totalAmount,
+                    'rate_amount' => $this->rateAmount,
+                    'tan' => $this->tan,
+                    'taeg' => $this->taeg,
+                    'inserted_at' => $this->practice->inserted_at,
+                    'first_installment_date' => $this->firstInstallmentDate,
+                    'last_installment_date' => $this->lastInstallmentDate,
+                    'renewability_date' => $this->renewabilityDate,
+                    'renewability_percentage' => $this->renewabilityPercentage,
+                    'percentage_alert' => $this->percentageAlert,
+                    'practice_status' => $this->practiceStatus,
+                    'practice_code' => $this->practiceCode,
+                    'notes' => $this->notes
+                ]);
+
+                foreach ($this->attachments as $attachment) {
+                    $this->practice->attachments()->create([
+                        'file_name' => $attachment->getClientOriginalName(),
+                        'file_path' => $attachment->store('practice-attachments', 'public'),
+                        'mime_type' => $attachment->getClientMimeType(),
+                        'file_size' => $attachment->getSize()
+                    ]);
+                }
+            });
 
             Toaster::success('Pratica aggiornata con successo');
             return $this->practice;
