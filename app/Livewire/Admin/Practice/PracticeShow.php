@@ -3,15 +3,19 @@
 namespace App\Livewire\Admin\Practice;
 
 use App\Enums\PracticeStatus;
+use App\Models\Attachment;
 use App\Models\Practice;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PracticeShow extends Component
 {
@@ -20,6 +24,7 @@ class PracticeShow extends Component
     public Practice $practice;
     public array $practiceStatuses = [];
     public ?string $selectedPracticeStatus = null;
+    public ?Attachment $selectedAttachment = null;
 
     /**
      * This method is called when the user clicks the update status button.
@@ -64,6 +69,59 @@ class PracticeShow extends Component
     protected function initializePracticeStatuses(): void
     {
         $this->practiceStatuses = $this->getEnumOptions(PracticeStatus::class);
+    }
+
+    /**
+     * This method is called when the user clicks the download button for an attachment.
+     * It retrieves the attachment by ID and returns a download response.
+     */
+    public function download(int $id): ?StreamedResponse
+    {
+        Gate::authorize('view', $this->practice);
+
+        try {
+            $attachment = Attachment::findOrFail($id);
+            return Storage::download($attachment->file_path, $attachment->file_name);
+        } catch (Exception $e) {
+            Toaster::error('File non trovato o errore: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * This method is called when the user clicks the delete button.
+     * It sets the selected attachment to be deleted.
+     */
+    public function selectAttachmentForDelete(int $id): void
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Attachment::class,
+            property: 'selectedAttachment',
+            modalName: 'delete-attachment',
+            notFoundMessage: 'Allegato non trovato'
+        );
+    }
+
+    /**
+     * This method is called when the user confirms the deletion of an attachment.
+     * It deletes the selected attachment and shows a success message.
+     */
+    public function deleteAttachment(): void
+    {
+        Gate::authorize('delete', $this->practice);
+
+        try {
+            DB::transaction(function () {
+                Storage::disk('public')->delete($this->selectedAttachment->file_path);
+                $this->selectedAttachment->delete();
+            });
+
+            Toaster::success('Allegato eliminato con successo');
+            $this->dispatch('close-modal', 'delete-attachment');
+        } catch (Exception $e) {
+            Toaster::error('Errore durante l\'eliminazione dell\'allegato: ' . $e->getMessage());
+        }
     }
 
     public function mount($id)

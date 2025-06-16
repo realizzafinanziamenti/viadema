@@ -136,6 +136,12 @@
             {{-- Documentation --}}
             <x-card>
                 <x-card-header class="mb-6" label="Documenti" />
+
+                <div class="flex flex-col gap-2.5">
+                    @foreach ($practice->attachments as $attachment)
+                        <x-display-file :attachment="$attachment" />
+                    @endforeach
+                </div>
             </x-card>
 
         </div>
@@ -143,4 +149,8 @@
 
     {{-- Update Practice Status Modal --}}
     @include('partials.practice.update-practice-status-modal')
+
+    {{-- Delete Practice Modal --}}
+    <x-delete-modal name="delete-attachment" header="Conferma Eliminazione Allegato" function="deleteAttachment"
+        message="Sei sicuro di voler eliminare l'allegato' <strong>{{ $selectedAttachment?->file_name }}</strong>?" />
 </div>
