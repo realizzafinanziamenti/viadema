@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy(PracticeObserver::class)]
@@ -161,6 +162,14 @@ class Practice extends Model
     public function customerType(): BelongsTo
     {
         return $this->belongsTo(CustomerType::class);
+    }
+
+    /**
+     * Get the attachments associated with the practice.
+     */
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 
     // END RELATIONSHIPS
