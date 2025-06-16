@@ -83,46 +83,28 @@
                             Nessuna notifica
                         </div>
                     @else
+                        @php
+                            $lastTimeRange = null;
+                        @endphp
+
                         @foreach ($notifications as $index => $notification)
-                            {{-- Delimita le notifiche per data --}}
-                            @if (
-                                $index === 0 || // Mostra la prima intestazione sempre
-                                    ($index > 0 &&
-                                        $notification->created_at->toDateString() !== $notifications[$index - 1]->created_at->toDateString()))
-                                <div class="mb-1.5 font-bold text-sm text-gray-custom-4">
-                                    @if ($notification->created_at->isToday())
-                                        Oggi
-                                    @elseif ($notification->created_at->isYesterday())
-                                        Ieri
-                                    @elseif ($notification->created_at->greaterThanOrEqualTo(\Carbon\Carbon::now()->subWeek()))
-                                        Ultima settimana
-                                    @elseif ($notification->created_at->greaterThanOrEqualTo(\Carbon\Carbon::now()->subMonth()))
-                                        Ultimo mese
-                                    @elseif ($notification->created_at->greaterThanOrEqualTo(\Carbon\Carbon::now()->subMonths(3)))
-                                        Ultimi 3 mesi
-                                    @elseif ($notification->created_at->greaterThanOrEqualTo(\Carbon\Carbon::now()->subYear()))
-                                        Ultimo anno
-                                    @else
-                                        Tutti
-                                    @endif
-                                </div>
-                            @endif
-
-                            {{-- Calcolo se la prossima notifica è di un giorno diverso --}}
                             @php
-                                $isLast = $index === count($notifications) - 1;
-
-                                $isLastOfDay =
-                                    !$isLast &&
-                                    $notification->created_at->toDateString() !==
-                                        $notifications[$index + 1]->created_at->toDateString();
+                                $currentLabel = $this->getTimeRangeLabel($notification->created_at);
                             @endphp
+
+                            {{-- Delimitatori per range temporale --}}
+                            @if ($currentLabel !== $lastTimeRange)
+                                <div class="mb-1.5 font-bold text-sm text-gray-custom-4">
+                                    {{ $currentLabel }}
+                                </div>
+                                @php $lastTimeRange = $currentLabel; @endphp
+                            @endif
 
                             {{-- Notifica --}}
                             <div wire:click="redirectTo('{{ $notification->id }}')"
                                 class="{{ $notification->read_at ? 'bg-white hover:bg-gray-custom-1' : 'bg-azure-custom-25 hover:bg-azure-custom-20' }}
                             text-gray-custom-5 text-[13px] px-3.5 py-2.5 flex justify-between gap-4 cursor-pointer
-                            {{ $isLastOfDay ? 'mb-4' : 'mb-2' }}">
+                            {{ $this->isLastOfRange($index) ? 'mb-4' : 'mb-2' }}">
 
                                 {{-- Title custom css based on notification type --}}
                                 @php

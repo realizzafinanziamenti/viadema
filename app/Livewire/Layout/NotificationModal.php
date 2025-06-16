@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Layout;
 
+use Carbon\Carbon;
 use Livewire\Component;
 
 class NotificationModal extends Component
@@ -78,6 +79,49 @@ class NotificationModal extends Component
 
         // Unisce le nuove notifiche a quelle già esistenti
         $this->notifications = $this->notifications->merge($newNotifications);
+    }
+
+    /**
+     * Get the label for the time range of a notification
+     */
+    public function getTimeRangeLabel(Carbon $date): string
+    {
+        if ($date->isToday()) {
+            return 'Oggi';
+        } elseif ($date->isYesterday()) {
+            return 'Ieri';
+        } elseif ($date->isTomorrow()) {
+            return 'Domani';
+        } elseif ($date->isFuture()) {
+            return 'Prossimamente';
+        } elseif ($date->greaterThanOrEqualTo(now()->subWeek())) {
+            return 'Ultima settimana';
+        } elseif ($date->greaterThanOrEqualTo(now()->subMonth())) {
+            return 'Ultimo mese';
+        } elseif ($date->greaterThanOrEqualTo(now()->subMonths(3))) {
+            return 'Ultimi 3 mesi';
+        } elseif ($date->greaterThanOrEqualTo(now()->subYear())) {
+            return 'Ultimo anno';
+        } else {
+            return 'Tutti';
+        }
+    }
+
+    /**
+     * Check if the notification is the last of its time range
+     */
+    public function isLastOfRange(int $index): bool
+    {
+        $notifications = $this->notifications;
+
+        if (!isset($notifications[$index + 1])) {
+            return true;
+        }
+
+        $currentLabel = $this->getTimeRangeLabel($notifications[$index]->created_at);
+        $nextLabel = $this->getTimeRangeLabel($notifications[$index + 1]->created_at);
+
+        return $currentLabel !== $nextLabel;
     }
 
     /**
