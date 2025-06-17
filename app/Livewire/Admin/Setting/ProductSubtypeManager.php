@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Setting;
 use App\Models\ProductSubtype;
 use App\Traits\HandlesEntityActions;
 use Exception;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
@@ -34,6 +35,8 @@ class ProductSubtypeManager extends Component
      */
     public function createProductSubtype(): void
     {
+        Gate::authorize('create', ProductSubtype::class);
+
         $this->validate([
             'name' => [
                 'required',
@@ -53,7 +56,6 @@ class ProductSubtypeManager extends Component
         $this->name = null;
         $this->dispatch('close-modal', 'create-product-subtype');
     }
-
 
     /**
      * This method is called when the user clicks the update button.
@@ -78,7 +80,7 @@ class ProductSubtypeManager extends Component
      */
     public function updateProductSubtype(): void
     {
-        // Gate::authorize('update', $this->selectedProductSubtype);
+        Gate::authorize('update', $this->selectedProductSubtype);
 
         $this->validate([
             'name' => [
@@ -121,7 +123,7 @@ class ProductSubtypeManager extends Component
      */
     public function deleteProductSubtype(): void
     {
-        // Gate::authorize('delete', $this->selectedProductSubtype);
+        Gate::authorize('delete', $this->selectedProductSubtype);
 
         $this->deleteSelectedEntity(
             property: 'selectedProductSubtype',
