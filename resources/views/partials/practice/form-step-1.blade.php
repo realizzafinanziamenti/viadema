@@ -18,6 +18,34 @@
     </div>
 
     @include('partials.practice.customer-preview-fields')
+
+    {{-- Attachments --}}
+    <div class="flex flex-col gap-6 col-span-2">
+        {{-- Old Attachements for Uploaded Practice --}}
+        @if ($practice?->attachments)
+            <div class="flex flex-col gap-1.5">
+                <flux:label>Allegati esistenti</flux:label>
+
+                @foreach ($practice?->attachments as $attachment)
+                    <x-display-file :attachment="$attachment" value="{{ $attachment->file_name }}" />
+                @endforeach
+            </div>
+        @endif
+
+        {{-- New Attachments --}}
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Allegati</flux:label>
+            <x-filepond::upload wire:model="practiceForm.attachments" multiple max-files='10' max-file-size="10MB"
+                accepted-file-types="{{ $this->acceptedFileTypes() }}" allow-image-preview="false" />
+            <flux:error name="practiceForm.attachments" />
+
+            <div class="text-xs text-gray-custom-4">
+                <div>- Max 10MB per file</div>
+                <div>- Max 10 file per volta</div>
+                <div>- Formati accettati: jpg, png, pdf, doc, docx, xls, xlsm, xlsx, csv</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Next Step Buttons --}}

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Livewire\Forms\CustomerForm;
 use App\Livewire\Forms\PracticeForm;
+use App\Models\Attachment;
 use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
@@ -14,21 +15,28 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Traits\AcceptedFileTypes;
+use App\Traits\HandlesEntityActions;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Spatie\LivewireFilepond\WithFilePond;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFilePond, HandlesEntityActions;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
     public CustomerForm $customerForm;
     public ?Customer $selectedCustomer = null;
+    public ?Attachment $selectedAttachment = null;
     public array $productTypes = [];
     public array $productSubtypes = [];
     public array $financialTables = [];
@@ -247,6 +255,59 @@ class PracticeUpdate extends Component
         $practice = $this->practiceForm->update();
 
         $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+    }
+
+    /**
+     * This method is called when the user clicks the download button for an attachment.
+     * It retrieves the attachment by ID and returns a download response.
+     */
+    public function download(int $id): ?StreamedResponse
+    {
+        Gate::authorize('view', $this->practice);
+
+        try {
+            $attachment = Attachment::findOrFail($id);
+            return Storage::download($attachment->file_path, $attachment->file_name);
+        } catch (Exception $e) {
+            Toaster::error('File non trovato o errore: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * This method is called when the user clicks the delete button.
+     * It sets the selected attachment to be deleted.
+     */
+    public function selectAttachmentForDelete(int $id): void
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Attachment::class,
+            property: 'selectedAttachment',
+            modalName: 'delete-attachment',
+            notFoundMessage: 'Allegato non trovato'
+        );
+    }
+
+    /**
+     * This method is called when the user confirms the deletion of an attachment.
+     * It deletes the selected attachment and shows a success message.
+     */
+    public function deleteAttachment(): void
+    {
+        Gate::authorize('delete', $this->practice);
+
+        try {
+            DB::transaction(function () {
+                Storage::disk('public')->delete($this->selectedAttachment->file_path);
+                $this->selectedAttachment->delete();
+            });
+
+            Toaster::success('Allegato eliminato con successo');
+            $this->dispatch('close-modal', 'delete-attachment');
+        } catch (Exception $e) {
+            Toaster::error('Errore durante l\'eliminazione dell\'allegato: ' . $e->getMessage());
+        }
     }
 
     public function mount($id)

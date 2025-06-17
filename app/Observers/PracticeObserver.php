@@ -73,6 +73,10 @@ class PracticeObserver
     {
         // Delete the associated event if it exists
         dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
+
+        foreach ($practice->attachments as $attachment) {
+            $attachment->delete();
+        }
     }
 
     /**
@@ -88,7 +92,13 @@ class PracticeObserver
      */
     public function forceDeleted(Practice $practice): void
     {
-        //
+        // If the practice is force deleted, we can also delete the attachments
+        foreach ($practice->attachments as $attachment) {
+            $attachment->forceDelete();
+        }
+
+        // Optionally, you can also delete any related events or notifications
+        dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
     }
 
     /**
