@@ -28,6 +28,11 @@
                 </div>
             </div>
         @endforeach
+
+        {{-- Pagination --}}
+        <div class="mt-5">
+            {{ $productSubtypes->links() }}
+        </div>
     </x-card>
 
     {{-- Create Product Subtype Modal --}}

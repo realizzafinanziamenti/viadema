@@ -8,11 +8,13 @@ use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithoutUrlPagination;
+use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
 
 class ProductSubtypeManager extends Component
 {
-    use HandlesEntityActions;
+    use HandlesEntityActions, WithPagination, WithoutUrlPagination;
 
     public ?ProductSubtype $selectedProductSubtype = null;
     public ?string $name = null;
@@ -126,7 +128,7 @@ class ProductSubtypeManager extends Component
 
     public function render()
     {
-        $productSubtypes = ProductSubtype::orderBy('name')->get();
+        $productSubtypes = ProductSubtype::orderBy('name')->paginate(10);
 
         return view('livewire.admin.setting.product-subtype-manager', [
             'productSubtypes' => $productSubtypes,
