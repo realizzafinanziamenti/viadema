@@ -60,7 +60,7 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Rate: </span>
-                    <span>{{ $practice->installment?->value }}</span>
+                    <span>{{ $practice->installment?->value ?? ($practice->installment_value_label ?? 'N/D') }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
