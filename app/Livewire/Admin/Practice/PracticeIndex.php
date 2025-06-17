@@ -594,19 +594,61 @@ class PracticeIndex extends Component
             $query->where('product_type_id', $this->selectedProductTypeForFilter);
         }
         if ($this->selectedProductSubtypeForFilter) {
-            $query->where('product_subtype_id', $this->selectedProductSubtypeForFilter);
+            // Recupera la label del sottotipo di prodotto
+            $label = $this->productSubtypes[$this->selectedProductSubtypeForFilter] ?? null;
+
+            // Applica il filtro sia per l'ID che per la label (valori select modificabili)
+            $query->where(function ($q) use ($label) {
+                $q->where('product_subtype_id', $this->selectedProductSubtypeForFilter);
+
+                if ($label) {
+                    $q->orWhere('product_subtype_label', $label);
+                }
+            });
         }
         if ($this->selectedFinancialTableForFilter) {
-            $query->where('financial_table_id', $this->selectedFinancialTableForFilter);
+            $label = $this->financialTables[$this->selectedFinancialTableForFilter] ?? null;
+
+            $query->where(function ($q) use ($label) {
+                $q->where('financial_table_id', $this->selectedFinancialTableForFilter);
+
+                if ($label) {
+                    $q->orWhere('financial_table_percentage', $label);
+                }
+            });
         }
         if ($this->selectedInsuranceForFilter) {
-            $query->where('insurance_id', $this->selectedInsuranceForFilter);
+            $label = $this->insurances[$this->selectedInsuranceForFilter] ?? null;
+
+            $query->where(function ($q) use ($label) {
+                $q->where('insurance_id', $this->selectedInsuranceForFilter);
+
+                if ($label) {
+                    $q->orWhere('insurance_label', $label);
+                }
+            });
         }
         if ($this->selectedInstallmentForFilter) {
-            $query->where('installment_id', $this->selectedInstallmentForFilter);
+            $label = $this->installments[$this->selectedInstallmentForFilter] ?? null;
+
+            $query->where(function ($q) use ($label) {
+                $q->where('installment_id', $this->selectedInstallmentForFilter);
+
+                if ($label) {
+                    $q->orWhere('installment_value_label', $label);
+                }
+            });
         }
         if ($this->selectedCustomerTypeForFilter) {
-            $query->where('customer_type_id', $this->selectedCustomerTypeForFilter);
+            $label = $this->customerTypes[$this->selectedCustomerTypeForFilter] ?? null;
+
+            $query->where(function ($q) use ($label) {
+                $q->where('customer_type_id', $this->selectedCustomerTypeForFilter);
+
+                if ($label) {
+                    $q->orWhere('customer_type_label', $label);
+                }
+            });
         }
         if ($this->insertedAtDateMin) {
             $query->whereDate('inserted_at', '>=', $this->insertedAtDateMin);
