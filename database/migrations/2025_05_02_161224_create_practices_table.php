@@ -24,6 +24,13 @@ return new class extends Migration
             $table->foreignId('installment_id')->nullable()->constrained()->nullOnDelete();         // numero rate
             $table->foreignId('customer_type_id')->nullable()->constrained()->nullOnDelete();   // tipologia cliente
 
+            // Snapshot
+            $table->string('product_subtype_label')->nullable(); // snapshot del tipo di prodotto (es. Mutuo Under 36)
+            $table->decimal('financial_table_percentage', 5, 2)->nullable(); // snapshot della percentuale della tabella finanziaria (es. 0.50, 1.00, 1.50)
+            $table->string('insurance_label')->nullable(); // snapshot dell'assicurazione (es. Assicurazione Casa, Assicurazione Vita)
+            $table->unsignedInteger('installment_value')->nullable(); // snapshot del numero di rate (es. 12, 24, 36)
+            $table->string('customer_type_label')->nullable(); // snapshot della tipologia cliente (es. Privato, Azienda)
+
             // Importi finanziari
             $table->decimal('amount_disbursed', 10, 2)->nullable();     // finanziato/importo
             $table->decimal('total_amount', 10, 2)->nullable();             // montante

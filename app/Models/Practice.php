@@ -32,6 +32,13 @@ class Practice extends Model
         'installment_id',         // numero rate
         'customer_type_id',       // tipologia cliente
 
+        // Snapshot
+        'product_subtype_label',          // snapshot del tipo di prodotto (es. Mutuo Under 36)
+        'financial_table_percentage',     // snapshot della percentuale della tabella finanziaria (es. 0.50, 1.00, 1.50)
+        'insurance_label',              // snapshot dell'assicurazione (es. Assicurazione Casa, Assicurazione Vita)
+        'installment_value',              // snapshot del numero di rate (es. 12, 24, 36)
+        'customer_type_label',            // snapshot della tipologia cliente
+
         // Importi finanziari
         'amount_disbursed',       // finanziato
         'total_amount',           // montante
@@ -71,6 +78,9 @@ class Practice extends Model
         'tan' => 'decimal:3',
         'teg' => 'decimal:2',
         'taeg' => 'decimal:2',
+
+        'financial_table_percentage' => 'decimal:2',
+        'installment_value' => 'integer',
 
         'inserted_at' => 'date',
         'first_installment_date' => 'date',
