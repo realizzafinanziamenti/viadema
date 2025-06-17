@@ -3,21 +3,28 @@
         <x-card-header class="mb-6" label="Gestione tipo prodotti" />
 
         <div class="flex justify-end items-center mb-4">
-            <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo prodotto"
-                x-on:click="$dispatch('open-modal', 'create-product-subtype')" />
+            @can('create product subtypes')
+                <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo prodotto"
+                    x-on:click="$dispatch('open-modal', 'create-product-subtype')" />
+            @endcan
         </div>
 
         @foreach ($productSubtypes as $index => $subtype)
             <div
                 class="w-full flex justify-between items-center truncate py-2 px-3
-            text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
+                    text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
                 <span>{{ $subtype->name }}</span>
 
                 <div class="flex space-x-2">
-                    <x-table-action-button-edit wire:click="selectProductSubtypeForUpdate({{ $subtype->id }})"
-                        class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    <x-table-action-button-delete wire:click="selectProductSubtypeForDelete({{ $subtype->id }})"
-                        class="btn btn-danger">Elimina</x-table-action-button-delete>
+                    @can('update', $subtype)
+                        <x-table-action-button-edit wire:click="selectProductSubtypeForUpdate({{ $subtype->id }})"
+                            class="btn btn-primary">Modifica</x-table-action-button-edit>
+                    @endcan
+
+                    @can('delete', $subtype)
+                        <x-table-action-button-delete wire:click="selectProductSubtypeForDelete({{ $subtype->id }})"
+                            class="btn btn-danger">Elimina</x-table-action-button-delete>
+                    @endcan
                 </div>
             </div>
         @endforeach
