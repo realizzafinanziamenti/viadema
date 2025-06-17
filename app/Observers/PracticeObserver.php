@@ -10,7 +10,7 @@ use App\Models\Installment;
 use App\Models\Practice;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PracticeObserver
 {
@@ -63,6 +63,17 @@ class PracticeObserver
             'percentage_alert'
         ])) {
             $this->calculateDates($practice);
+        }
+
+        // Set snapshot values for the Practice model
+        if ($practice->isDirty([
+            'product_subtype_id',
+            'financial_table_id',
+            'insurance_id',
+            'installment_id',
+            'customer_type_id'
+        ])) {
+            $this->setSnapshotValues($practice);
         }
     }
 
@@ -133,5 +144,34 @@ class PracticeObserver
                 }
             }
         }
+    }
+
+    /**
+     * Set snapshot values for the Practice model based on related models.
+     *
+     * @param Practice $practice
+     */
+    public function setSnapshotValues(Practice $practice): void
+    {
+        // Set snapshot values based on the related models
+        $practice->product_subtype_label = $practice->productSubtype
+            ? Str::of($practice->productSubtype->name)->trim()
+            : null;
+
+        $practice->financial_table_percentage = $practice->financialTable
+            ? $practice->financialTable->percentage
+            : null;
+
+        $practice->insurance_label = $practice->insurance
+            ? Str::of($practice->insurance->name)->trim()
+            : null;
+
+        $practice->installment_value_label = $practice->installment
+            ? $practice->installment->value
+            : null;
+
+        $practice->customer_type_label = $practice->customerType
+            ? Str::of($practice->customerType->name)->trim()
+            : null;
     }
 }
