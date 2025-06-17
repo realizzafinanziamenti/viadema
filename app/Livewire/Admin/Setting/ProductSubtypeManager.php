@@ -17,15 +17,21 @@ class ProductSubtypeManager extends Component
     public ?ProductSubtype $selectedProductSubtype = null;
     public ?string $name = null;
 
+    protected function validationAttributes(): array
+    {
+        return [
+            'name' => 'nome',
+        ];
+    }
+
     /**
      * This method is called when the user clicks the create button.
      * It resets name, then opens the modal for creating a new ProductSubtype.
      */
     public function openCreateProductSubtypeModal(): void
     {
-        $this->name = null;
-        $this->selectedProductSubtype = null;
-        $this->resetErrorBag();
+        $this->reset(['name', 'selectedProductSubtype']);
+        $this->resetValidation();
         $this->dispatch('open-modal', 'create-product-subtype');
     }
 
@@ -37,14 +43,7 @@ class ProductSubtypeManager extends Component
     {
         Gate::authorize('create', ProductSubtype::class);
 
-        $this->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('product_subtypes', 'name'),
-            ],
-        ]);
+        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('product_subtypes', 'name')]]);
 
         try {
             ProductSubtype::create(['name' => $this->name]);
@@ -63,7 +62,7 @@ class ProductSubtypeManager extends Component
      */
     public function selectProductSubtypeForUpdate(int $id)
     {
-        $this->resetErrorBag();
+        $this->resetValidation();
         $this->selectEntityForAction(
             id: $id,
             modelClass: ProductSubtype::class,
@@ -82,14 +81,7 @@ class ProductSubtypeManager extends Component
     {
         Gate::authorize('update', $this->selectedProductSubtype);
 
-        $this->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('product_subtypes', 'name')->ignore($this->selectedProductSubtype?->id),
-            ],
-        ]);
+        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('product_subtypes', 'name')->ignore($this->selectedProductSubtype?->id)]]);
 
         try {
             $this->selectedProductSubtype->update(['name' => $this->name]);
@@ -98,7 +90,7 @@ class ProductSubtypeManager extends Component
             Toaster::error('Errore durante l\'aggiornamento del tipo prodotto: ' . $e->getMessage());
         }
 
-        $this->name = null;
+        $this->reset(['name', 'selectedProductSubtype']);
         $this->dispatch('close-modal', 'update-product-subtype');
     }
 
