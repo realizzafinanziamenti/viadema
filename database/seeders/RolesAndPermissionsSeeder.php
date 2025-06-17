@@ -60,6 +60,33 @@ class RolesAndPermissionsSeeder extends Seeder
             'view all practices',
             'update practices',
             'delete practices',
+            // settings permissions
+            'access settings',
+            // product subtypes permissions
+            'manage product subtypes',
+            'create product subtypes',
+            'update product subtypes',
+            'delete product subtypes',
+            // financial table permissions
+            'manage financial tables',
+            'create financial tables',
+            'update financial tables',
+            'delete financial tables',
+            // insurance permissions
+            'manage insurances',
+            'create insurances',
+            'update insurances',
+            'delete insurances',
+            // installments permissions
+            'manage installments',
+            'create installments',
+            'update installments',
+            'delete installments',
+            // customer types permissions
+            'manage customer types',
+            'create customer types',
+            'update customer types',
+            'delete customer types',
         ];
 
         foreach ($permissions as $permission) {
@@ -95,6 +122,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'update practices',
             'delete practices',
+            // settings permissions
+            'access settings',
         ]);
 
         $observer->givePermissionTo([
