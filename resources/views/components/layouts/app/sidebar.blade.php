@@ -94,9 +94,11 @@
                     <x-icons.icon-akar-statistic-up />
                 </x-sidebar-item>
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Impostazioni">
-                    <x-icons.icon-akar-settings-horizontal />
-                </x-sidebar-item>
+                @can('access settings')
+                    <x-sidebar-item route="setting.index" routeIs="setting" label="Impostazioni">
+                        <x-icons.icon-akar-settings-horizontal />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Chat Assistenza">
                     <x-icons.icon-akar-settings-horizontal />
