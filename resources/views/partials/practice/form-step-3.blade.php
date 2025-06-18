@@ -2,12 +2,12 @@
 @include('partials.practice.customer-preview-fields')
 
 {{-- Attachments --}}
-@if (!empty($practiceForm->attachments) || $practice?->attachments->isNotEmpty())
+@if (!empty($practiceForm->attachments) || (!empty($practice?->attachments) && $practice->attachments->isNotEmpty()))
     <div class="mt-6 flex flex-col gap-1.5">
         <flux:label>Allegati</flux:label>
 
         {{-- Old Attachements for Uploaded Practice --}}
-        @if ($practice->attachments)
+        @if (!empty($practice?->attachments) && $practice->attachments->isNotEmpty())
             @foreach ($practice->attachments as $attachment)
                 <x-display-input value="{{ $attachment->file_name }}" />
             @endforeach
