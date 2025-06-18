@@ -54,7 +54,7 @@ class InsuranceManager extends Component
             Toaster::error('Errore durante la creazione dell\'assicurazione: ' . $e->getMessage());
         }
 
-        $this->name = null;
+        $this->reset('name');
         $this->dispatch('close-modal', 'create-insurance');
     }
 
