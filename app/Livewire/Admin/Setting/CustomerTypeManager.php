@@ -54,7 +54,7 @@ class CustomerTypeManager extends Component
             Toaster::error('Errore durante la creazione della tipologia cliente: ' . $e->getMessage());
         }
 
-        $this->name = null;
+        $this->reset('name');
         $this->dispatch('close-modal', 'create-customer-type');
     }
 
@@ -124,6 +124,9 @@ class CustomerTypeManager extends Component
             modalName: 'delete-customer-type',
             successMessage: 'Tipologia cliente eliminata con successo'
         );
+
+        $this->reset('selectedCustomerType');
+        $this->resetPage();
     }
 
     public function render()

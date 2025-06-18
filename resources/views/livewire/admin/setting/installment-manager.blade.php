@@ -5,7 +5,7 @@
         <div class="flex justify-end items-center mb-4">
             @can('create installments')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea numero rate"
-                    x-on:click="$dispatch('open-modal', 'create-installment')" />
+                    wire:click="openCreateInstallmentModal" />
             @endcan
         </div>
 

@@ -5,7 +5,7 @@
         <div class="flex justify-end items-center mb-4">
             @can('create financial tables')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuova provvigione"
-                    x-on:click="$dispatch('open-modal', 'create-financial-table')" />
+                    wire:click="openCreateFinancialTableModal" />
             @endcan
         </div>
 
@@ -43,8 +43,8 @@
             <form wire:submit.prevent='createFinancialTable'>
                 {{-- Financial Table Name --}}
                 <div class="flex flex-col gap-1.5">
-                    <flux:label>Nome provvigione</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci nome provvigione" wire:model='percentage' />
+                    <flux:label>Provvigione</flux:label>
+                    <flux:input size="sm" placeholder="Inserisci provvigione" wire:model='percentage' />
                     <flux:error name="percentage" />
                 </div>
 
@@ -73,8 +73,8 @@
             <form wire:submit.prevent='updateFinancialTable'>
                 {{-- Financial Table Name --}}
                 <div class="flex flex-col gap-1.5">
-                    <flux:label>Nome provvigione</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci nome provvigione" wire:model='percentage' />
+                    <flux:label>Provvigione</flux:label>
+                    <flux:input size="sm" placeholder="Inserisci provvigione" wire:model='percentage' />
                     <flux:error name="percentage" />
                 </div>
 

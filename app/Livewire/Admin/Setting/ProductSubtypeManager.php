@@ -54,7 +54,7 @@ class ProductSubtypeManager extends Component
             Toaster::error('Errore durante la creazione del tipo prodotto: ' . $e->getMessage());
         }
 
-        $this->name = null;
+        $this->reset('name');
         $this->dispatch('close-modal', 'create-product-subtype');
     }
 
@@ -124,6 +124,9 @@ class ProductSubtypeManager extends Component
             modalName: 'delete-product-subtype',
             successMessage: 'Tipo prodotto eliminato con successo'
         );
+
+        $this->reset(['selectedProductSubtype']);
+        $this->resetPage();
     }
 
     public function render()

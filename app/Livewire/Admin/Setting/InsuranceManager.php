@@ -124,6 +124,9 @@ class InsuranceManager extends Component
             modalName: 'delete-insurance',
             successMessage: 'Assicurazione eliminata con successo'
         );
+
+        $this->reset('selectedInsurance');
+        $this->resetPage();
     }
 
     public function render()

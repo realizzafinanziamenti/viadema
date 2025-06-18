@@ -5,7 +5,7 @@
         <div class="flex justify-end items-center mb-4">
             @can('create customer types')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo cliente"
-                    x-on:click="$dispatch('open-modal', 'create-customer-type')" />
+                    wire:click="openCreateCustomerTypeModal" />
             @endcan
         </div>
 

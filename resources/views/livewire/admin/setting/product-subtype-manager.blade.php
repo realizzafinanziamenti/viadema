@@ -5,7 +5,7 @@
         <div class="flex justify-end items-center mb-4">
             @can('create product subtypes')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo prodotto"
-                    x-on:click="$dispatch('open-modal', 'create-product-subtype')" />
+                    wire:click="openCreateProductSubtypeModal" />
             @endcan
         </div>
 

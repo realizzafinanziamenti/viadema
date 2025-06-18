@@ -124,6 +124,9 @@ class FinancialTableManager extends Component
             modalName: 'delete-financial-table',
             successMessage: 'Provvigione eliminata con successo'
         );
+
+        $this->reset('selectedFinancialTable');
+        $this->resetPage();
     }
 
     public function render()
