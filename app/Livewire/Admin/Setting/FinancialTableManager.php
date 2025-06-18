@@ -58,43 +58,44 @@ class FinancialTableManager extends Component
         $this->dispatch('close-modal', 'create-financial-table');
     }
 
+    // UPDATE DISABLED
     /**
      * This method is called when the user clicks the update button.
      * It sets the selected financial table and opens the modal for updating the percentage.
      */
-    public function selectFinancialTableForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: FinancialTable::class,
-            property: 'selectedFinancialTable',
-            modalName: 'update-financial-table',
-            notFoundMessage: 'Provvigione non trovata'
-        );
-        $this->percentage = $this->selectedFinancialTable->percentage;
-    }
+    // public function selectFinancialTableForUpdate(int $id)
+    // {
+    //     $this->resetValidation();
+    //     $this->selectEntityForAction(
+    //         id: $id,
+    //         modelClass: FinancialTable::class,
+    //         property: 'selectedFinancialTable',
+    //         modalName: 'update-financial-table',
+    //         notFoundMessage: 'Provvigione non trovata'
+    //     );
+    //     $this->percentage = $this->selectedFinancialTable->percentage;
+    // }
 
     /**
      * This method is called when the user clicks the update button in the modal.
      * It updates the financial table and resets the percentage to null.
      */
-    public function updateFinancialTable(): void
-    {
-        Gate::authorize('update', $this->selectedFinancialTable);
+    // public function updateFinancialTable(): void
+    // {
+    //     Gate::authorize('update', $this->selectedFinancialTable);
 
-        $this->validate(['name' => ['required', 'numeric', 'between:0,100', Rule::unique('financial_tables', 'percentage')->ignore($this->selectedFinancialTable?->id)]]);
+    //     $this->validate(['name' => ['required', 'numeric', 'between:0,100', Rule::unique('financial_tables', 'percentage')->ignore($this->selectedFinancialTable?->id)]]);
 
-        try {
-            $this->selectedFinancialTable->update(['percentage' => $this->percentage]);
-            Toaster::success('Provvigione aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento della provvigione: ' . $e->getMessage());
-        }
+    //     try {
+    //         $this->selectedFinancialTable->update(['percentage' => $this->percentage]);
+    //         Toaster::success('Provvigione aggiornata con successo');
+    //     } catch (Exception $e) {
+    //         Toaster::error('Errore durante l\'aggiornamento della provvigione: ' . $e->getMessage());
+    //     }
 
-        $this->reset(['percentage', 'selectedFinancialTable']);
-        $this->dispatch('close-modal', 'update-financial-table');
-    }
+    //     $this->reset(['percentage', 'selectedFinancialTable']);
+    //     $this->dispatch('close-modal', 'update-financial-table');
+    // }
 
     /**
      * This method is called when the user clicks the delete button.

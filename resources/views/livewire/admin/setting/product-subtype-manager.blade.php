@@ -16,10 +16,11 @@
                 <span>{{ $subtype->name }}</span>
 
                 <div class="flex space-x-2">
-                    @can('update', $subtype)
+                    {{-- DISABLED --}}
+                    {{-- @can('update', $subtype)
                         <x-table-action-button-edit wire:click="selectProductSubtypeForUpdate({{ $subtype->id }})"
                             class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan
+                    @endcan --}}
 
                     @can('delete', $subtype)
                         <x-table-action-button-delete wire:click="selectProductSubtypeForDelete({{ $subtype->id }})"

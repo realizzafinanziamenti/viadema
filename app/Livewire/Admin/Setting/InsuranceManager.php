@@ -58,43 +58,44 @@ class InsuranceManager extends Component
         $this->dispatch('close-modal', 'create-insurance');
     }
 
+    // UPDATE DISABLED
     /**
      * This method is called when the user clicks the update button.
      * It sets the selected insurance and opens the modal for updating the name.
      */
-    public function selectInsuranceForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Insurance::class,
-            property: 'selectedInsurance',
-            modalName: 'update-insurance',
-            notFoundMessage: 'Assicurazione non trovata'
-        );
-        $this->name = $this->selectedInsurance->name;
-    }
+    // public function selectInsuranceForUpdate(int $id)
+    // {
+    //     $this->resetValidation();
+    //     $this->selectEntityForAction(
+    //         id: $id,
+    //         modelClass: Insurance::class,
+    //         property: 'selectedInsurance',
+    //         modalName: 'update-insurance',
+    //         notFoundMessage: 'Assicurazione non trovata'
+    //     );
+    //     $this->name = $this->selectedInsurance->name;
+    // }
 
     /**
      * This method is called when the user clicks the update button in the modal.
      * It updates the insurance and resets the name to null.
      */
-    public function updateInsurance(): void
-    {
-        Gate::authorize('update', $this->selectedInsurance);
+    // public function updateInsurance(): void
+    // {
+    //     Gate::authorize('update', $this->selectedInsurance);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('insurances', 'name')->ignore($this->selectedInsurance?->id)]]);
+    //     $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('insurances', 'name')->ignore($this->selectedInsurance?->id)]]);
 
-        try {
-            $this->selectedInsurance->update(['name' => $this->name]);
-            Toaster::success('Assicurazione aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento dell\' assicurazione: ' . $e->getMessage());
-        }
+    //     try {
+    //         $this->selectedInsurance->update(['name' => $this->name]);
+    //         Toaster::success('Assicurazione aggiornata con successo');
+    //     } catch (Exception $e) {
+    //         Toaster::error('Errore durante l\'aggiornamento dell\' assicurazione: ' . $e->getMessage());
+    //     }
 
-        $this->reset(['name', 'selectedInsurance']);
-        $this->dispatch('close-modal', 'update-insurance');
-    }
+    //     $this->reset(['name', 'selectedInsurance']);
+    //     $this->dispatch('close-modal', 'update-insurance');
+    // }
 
     /**
      * This method is called when the user clicks the delete button.

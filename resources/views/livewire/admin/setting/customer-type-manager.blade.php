@@ -16,10 +16,11 @@
                 <span>{{ $customerType->name }}</span>
 
                 <div class="flex space-x-2">
-                    @can('update', $customerType)
+                    {{-- DISABLED --}}
+                    {{-- @can('update', $customerType)
                         <x-table-action-button-edit wire:click="selectCustomerTypeForUpdate({{ $customerType->id }})"
                             class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan
+                    @endcan --}}
 
                     @can('delete', $customerType)
                         <x-table-action-button-delete wire:click="selectCustomerTypeForDelete({{ $customerType->id }})"

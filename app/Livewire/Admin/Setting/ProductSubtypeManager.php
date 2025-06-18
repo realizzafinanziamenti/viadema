@@ -59,43 +59,44 @@ class ProductSubtypeManager extends Component
         $this->dispatch('close-modal', 'create-product-subtype');
     }
 
+    // UPDATE DISABLED
     /**
      * This method is called when the user clicks the update button.
      * It sets the selected ProductSubtype and opens the modal for updating the name.
      */
-    public function selectProductSubtypeForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: ProductSubtype::class,
-            property: 'selectedProductSubtype',
-            modalName: 'update-product-subtype',
-            notFoundMessage: 'Tipo prodotto non trovato'
-        );
-        $this->name = $this->selectedProductSubtype->name;
-    }
+    // public function selectProductSubtypeForUpdate(int $id)
+    // {
+    //     $this->resetValidation();
+    //     $this->selectEntityForAction(
+    //         id: $id,
+    //         modelClass: ProductSubtype::class,
+    //         property: 'selectedProductSubtype',
+    //         modalName: 'update-product-subtype',
+    //         notFoundMessage: 'Tipo prodotto non trovato'
+    //     );
+    //     $this->name = $this->selectedProductSubtype->name;
+    // }
 
     /**
      * This method is called when the user clicks the update button in the modal.
      * It updates the ProductSubtype and resets the name to null.
      */
-    public function updateProductSubtype(): void
-    {
-        Gate::authorize('update', $this->selectedProductSubtype);
+    // public function updateProductSubtype(): void
+    // {
+    //     Gate::authorize('update', $this->selectedProductSubtype);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('product_subtypes', 'name', $this->selectedProductSubtype?->id)]]);
+    //     $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('product_subtypes', 'name', $this->selectedProductSubtype?->id)]]);
 
-        try {
-            $this->selectedProductSubtype->update(['name' => $this->name]);
-            Toaster::success('Tipo prodotto aggiornato con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento del tipo prodotto: ' . $e->getMessage());
-        }
+    //     try {
+    //         $this->selectedProductSubtype->update(['name' => $this->name]);
+    //         Toaster::success('Tipo prodotto aggiornato con successo');
+    //     } catch (Exception $e) {
+    //         Toaster::error('Errore durante l\'aggiornamento del tipo prodotto: ' . $e->getMessage());
+    //     }
 
-        $this->reset(['name', 'selectedProductSubtype']);
-        $this->dispatch('close-modal', 'update-product-subtype');
-    }
+    //     $this->reset(['name', 'selectedProductSubtype']);
+    //     $this->dispatch('close-modal', 'update-product-subtype');
+    // }
 
     /**
      * This method is called when the user clicks the delete button.

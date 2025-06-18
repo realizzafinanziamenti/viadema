@@ -59,43 +59,44 @@ class CustomerTypeManager extends Component
         $this->dispatch('close-modal', 'create-customer-type');
     }
 
+    // UPDATE DISABLED
     /**
      * This method is called when the user clicks the update button.
      * It sets the selected customer type and opens the modal for updating the name.
      */
-    public function selectCustomerTypeForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: CustomerType::class,
-            property: 'selectedCustomerType',
-            modalName: 'update-customer-type',
-            notFoundMessage: 'Tipologia cliente non trovata'
-        );
-        $this->name = $this->selectedCustomerType->name;
-    }
+    // public function selectCustomerTypeForUpdate(int $id)
+    // {
+    //     $this->resetValidation();
+    //     $this->selectEntityForAction(
+    //         id: $id,
+    //         modelClass: CustomerType::class,
+    //         property: 'selectedCustomerType',
+    //         modalName: 'update-customer-type',
+    //         notFoundMessage: 'Tipologia cliente non trovata'
+    //     );
+    //     $this->name = $this->selectedCustomerType->name;
+    // }
 
     /**
      * This method is called when the user clicks the update button in the modal.
      * It updates the customer type and resets the name to null.
      */
-    public function updateCustomerType(): void
-    {
-        Gate::authorize('update', $this->selectedCustomerType);
+    // public function updateCustomerType(): void
+    // {
+    //     Gate::authorize('update', $this->selectedCustomerType);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('customer_types', 'name', $this->selectedCustomerType?->id)]]);
+    //     $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('customer_types', 'name', $this->selectedCustomerType?->id)]]);
 
-        try {
-            $this->selectedCustomerType->update(['name' => $this->name]);
-            Toaster::success('Tipologia cliente aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento della tipologia cliente: ' . $e->getMessage());
-        }
+    //     try {
+    //         $this->selectedCustomerType->update(['name' => $this->name]);
+    //         Toaster::success('Tipologia cliente aggiornata con successo');
+    //     } catch (Exception $e) {
+    //         Toaster::error('Errore durante l\'aggiornamento della tipologia cliente: ' . $e->getMessage());
+    //     }
 
-        $this->reset(['name', 'selectedCustomerType']);
-        $this->dispatch('close-modal', 'update-customer-type');
-    }
+    //     $this->reset(['name', 'selectedCustomerType']);
+    //     $this->dispatch('close-modal', 'update-customer-type');
+    // }
 
     /**
      * This method is called when the user clicks the delete button.

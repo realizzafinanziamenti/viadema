@@ -16,10 +16,11 @@
                 <span>{{ $financialTable->percentage }}</span>
 
                 <div class="flex space-x-2">
-                    @can('update', $financialTable)
+                    {{-- DISABLED --}}
+                    {{-- @can('update', $financialTable)
                         <x-table-action-button-edit wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
                             class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan
+                    @endcan --}}
 
                     @can('delete', $financialTable)
                         <x-table-action-button-delete wire:click="selectFinancialTableForDelete({{ $financialTable->id }})"
