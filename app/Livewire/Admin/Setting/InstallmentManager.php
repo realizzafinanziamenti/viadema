@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Installment;
+use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
@@ -45,7 +46,7 @@ class InstallmentManager extends Component
     {
         Gate::authorize('create', Installment::class);
 
-        $this->validate(['value' => ['required', 'integer', 'min:0', 'max:10000', Rule::unique('installments', 'value')]]);
+        $this->validate(['value' => ['required', 'integer', 'min:0', 'max:10000', new UniqueNormalized('installments', 'value')]]);
 
         try {
             Installment::create(['value' => $this->value]);
@@ -83,7 +84,7 @@ class InstallmentManager extends Component
     {
         Gate::authorize('update', $this->selectedInstallment);
 
-        $this->validate(['name' => ['required', 'integer', 'min:0', 'max:10000', Rule::unique('installments', 'value')->ignore($this->selectedInstallment?->id)]]);
+        $this->validate(['name' => ['required', 'integer', 'min:0', 'max:10000', new UniqueNormalized('installments', 'value', $this->selectedInstallment?->id)]]);
 
         try {
             $this->selectedInstallment->update(['value' => $this->value]);

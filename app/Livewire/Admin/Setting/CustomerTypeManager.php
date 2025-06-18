@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\CustomerType;
+use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
@@ -45,7 +46,7 @@ class CustomerTypeManager extends Component
     {
         Gate::authorize('create', CustomerType::class);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('customer_types', 'name')]]);
+        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('customer_types', 'name')]]);
 
         try {
             CustomerType::create(['name' => $this->name]);
@@ -83,7 +84,7 @@ class CustomerTypeManager extends Component
     {
         Gate::authorize('update', $this->selectedCustomerType);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('customer_types', 'name')->ignore($this->selectedCustomerType?->id)]]);
+        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('customer_types', 'name', $this->selectedCustomerType?->id)]]);
 
         try {
             $this->selectedCustomerType->update(['name' => $this->name]);

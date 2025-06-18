@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\ProductSubtype;
+use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
@@ -45,7 +46,7 @@ class ProductSubtypeManager extends Component
     {
         Gate::authorize('create', ProductSubtype::class);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('product_subtypes', 'name')]]);
+        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('product_subtypes', 'name')]]);
 
         try {
             ProductSubtype::create(['name' => $this->name]);
@@ -83,7 +84,7 @@ class ProductSubtypeManager extends Component
     {
         Gate::authorize('update', $this->selectedProductSubtype);
 
-        $this->validate(['name' => ['required', 'string', 'max:255', Rule::unique('product_subtypes', 'name')->ignore($this->selectedProductSubtype?->id)]]);
+        $this->validate(['name' => ['required', 'string', 'max:255', new UniqueNormalized('product_subtypes', 'name', $this->selectedProductSubtype?->id)]]);
 
         try {
             $this->selectedProductSubtype->update(['name' => $this->name]);
