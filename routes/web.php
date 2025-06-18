@@ -6,6 +6,8 @@ use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
 use App\Livewire\Admin\Event\EventIndex;
+use App\Livewire\Admin\Lead\LeadCreate;
+use App\Livewire\Admin\Lead\LeadIndex;
 use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
@@ -47,6 +49,11 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
     Route::get('practices/details/{id}', PracticeShow::class)->name('practice.show')->middleware('can:view practices');
     Route::get('practices/{id}/edit', PracticeUpdate::class)->name('practice.edit')->middleware('can:update practices');
+
+    // Lead Routes
+    Route::get('leads', LeadIndex::class)->name('lead.index')->middleware('can:access leads');
+    Route::get('leads/create', LeadCreate::class)->name('lead.create')->middleware('can:create leads');
+    Route::get('leads/{id}/edit', LeadIndex::class)->name('lead.edit')->middleware('can:update leads');
 
     // Settings Routes
     Route::get('settings', SettingIndex::class)->name('setting.index')->middleware('can:access settings');
