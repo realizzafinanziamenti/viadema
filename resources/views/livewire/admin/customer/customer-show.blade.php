@@ -2,7 +2,7 @@
     <x-button-back class="mb-2.5" route="customer.index" />
     <x-page-title label="Dettaglio Collaboratore" />
 
-    <x-card class="w-3xl mx-auto">
+    <x-card class="max-w-3xl mx-auto">
         <x-card-header class="mb-6" label="Informazioni generali" />
 
         <div class="text-sm mb-2.5">

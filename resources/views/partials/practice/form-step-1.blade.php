@@ -22,7 +22,7 @@
     {{-- Attachments --}}
     <div class="flex flex-col gap-6 col-span-2">
         {{-- Old Attachements for Uploaded Practice --}}
-        @if ($practice?->attachments)
+        @if (!empty($practice?->attachments) && $practice->attachments->isNotEmpty())
             <div class="flex flex-col gap-1.5">
                 <flux:label>Allegati esistenti</flux:label>
 

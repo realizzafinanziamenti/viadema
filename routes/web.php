@@ -10,6 +10,7 @@ use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Practice\PracticeUpdate;
+use App\Livewire\Admin\Setting\SettingIndex;
 use App\Livewire\Admin\Team\TeamCreate;
 use App\Livewire\Admin\Team\TeamIndex;
 use App\Livewire\Admin\Team\TeamShow;
@@ -46,10 +47,13 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
     Route::get('practices/details/{id}', PracticeShow::class)->name('practice.show')->middleware('can:view practices');
     Route::get('practices/{id}/edit', PracticeUpdate::class)->name('practice.edit')->middleware('can:update practices');
+
+    // Settings Routes
+    Route::get('settings', SettingIndex::class)->name('setting.index')->middleware('can:access settings');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::redirect('settings', 'settings/profile');
+    // Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');

@@ -16,4 +16,14 @@ class CustomerType extends Model
     {
         return $this->hasMany(Practice::class);
     }
+
+    /**
+     * Accessor to ensure the name is always trimmed.
+     */
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            set: fn($value) => trim($value)
+        );
+    }
 }
