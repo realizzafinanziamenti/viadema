@@ -1,6 +1,6 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-6" label="Gestione assicurazioni" />
+        <x-card-header class="mb-6" label="Gestione tipologia cliente" />
 
         <div class="flex justify-end items-center mb-4">
             @can('create customer types')
@@ -95,7 +95,7 @@
     </x-modal>
 
     {{-- Delete Customer Type Modal --}}
-    <x-delete-modal name="delete-customer-type" header="Conferma eliminazione tipo cliente"
+    <x-delete-modal name="delete-customer-type" header="Conferma eliminazione tipologia cliente"
         function="deleteCustomerType"
-        message="Sei sicuro di voler eliminare il tipo cliente <strong>{{ $selectedInsurance?->name }}</strong>?" />
+        message="Sei sicuro di voler eliminare il tipologia cliente <strong>{{ $selectedCustomerType?->name }}</strong>?" />
 </div>
