@@ -101,6 +101,22 @@ class Customer extends Model
     // SCOPES
 
     /**
+     * Scope a query to filter customer by customer status
+     */
+    public function scopeCustomers(Builder $query)
+    {
+        return $query->where('customer_status', CustomerStatus::CUSTOMER);
+    }
+
+    /**
+     * Scope a query to filter lead by customer status
+     */
+    public function scopeLeads(Builder $query)
+    {
+        return $query->where('customer_status', CustomerStatus::LEAD);
+    }
+
+    /**
      * Scope a query to filter by search
      */
     public function scopeFilterBySearch(Builder $query, string $search)

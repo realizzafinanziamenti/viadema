@@ -66,6 +66,7 @@ class CustomerIndex extends Component
     public function render()
     {
         $query = Customer::with('user')
+            ->customers()
             ->orderByDesc('updated_at');
 
         $query = $query->filterBySearch($this->search);
