@@ -2,11 +2,16 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\CustomerStatus;
+use App\Enums\LeadCommunication;
+use App\Enums\LeadSource;
+use App\Enums\LeadStatus;
 use App\Models\Customer;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
@@ -15,22 +20,28 @@ class CustomerForm extends Form
 {
     public ?Customer $customer = null;
 
-    public $userId = null;
-    public $firstName = null;
-    public $lastName = null;
-    public $email = null;
-    public $phone = null;
-    public $dateOfBirth = null;
-    public $address = null;
-    public $postalCode = null;
-    public $city = null;
-    public $state = null;
-    public $taxId = null;
+    public ?int $userId = null;
+    public ?int $customerTypeId = null;
+    public ?string $firstName = null;
+    public ?string $lastName = null;
+    public ?string $email = null;
+    public ?string $phone = null;
+    public ?string $dateOfBirth = null;
+    public ?string $address = null;
+    public ?string $postalCode = null;
+    public ?string $city = null;
+    public ?string $state = null;
+    public ?string $taxId = null;
+    public ?string $customerStatus = null;
+    public ?string $leadSource = null;
+    public ?string $leadStatus = null;
+    public ?string $leadCommunication = null;
 
     protected function rules()
     {
         return array_merge(
             [
+                'customerTypeId' => ['nullable', 'exists:customer_types,id'],
                 'firstName' => 'required|string|max:255',
                 'lastName' => 'required|string|max:255',
                 'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->ignore($this->customer?->id)],
@@ -41,6 +52,10 @@ class CustomerForm extends Form
                 'city' => 'nullable|string|max:255',
                 'state' => 'nullable|string|max:255',
                 'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
+                'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
+                'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
+                'leadStatus' => ['nullable', 'string', new Enum(LeadStatus::class)],
+                'leadCommunication' => ['nullable', 'string', new Enum(LeadCommunication::class)],
             ],
             $this->userIdRules()
         );
@@ -67,6 +82,7 @@ class CustomerForm extends Form
     {
         return [
             'userId' => 'collaboratore',
+            'customerTypeId' => 'tipologia cliente',
             'firstName' => 'nome',
             'lastName' => 'cognome',
             'email' => 'email',
@@ -77,6 +93,10 @@ class CustomerForm extends Form
             'city' => 'città',
             'state' => 'provincia',
             'taxId' => 'codice fiscale',
+            'customerStatus' => 'stato cliente',
+            'leadSource' => 'canale di acquisizione',
+            'leadStatus' => 'stato lead',
+            'leadCommunication' => 'comunicazioni',
         ];
     }
 
@@ -93,6 +113,7 @@ class CustomerForm extends Form
         $this->customer = $customer;
 
         $this->userId = $customer->user_id;
+        $this->customerTypeId = $customer->customer_type_id;
         $this->firstName = $customer->first_name;
         $this->lastName = $customer->last_name;
         $this->email = $customer->email;
@@ -103,6 +124,10 @@ class CustomerForm extends Form
         $this->city = $customer->city;
         $this->state = $customer->state;
         $this->taxId = $customer->tax_id;
+        $this->customerStatus = $customer->customer_status?->value;
+        $this->leadSource = $customer->lead_source?->value;
+        $this->leadStatus = $customer->lead_status?->value;
+        $this->leadCommunication = $customer->lead_communication?->value;
     }
 
     /**
@@ -112,6 +137,7 @@ class CustomerForm extends Form
     {
         $this->customer = null;
         $this->userId = null;
+        $this->customerTypeId = null;
         $this->firstName = null;
         $this->lastName = null;
         $this->email = null;
@@ -122,6 +148,10 @@ class CustomerForm extends Form
         $this->city = null;
         $this->state = null;
         $this->taxId = null;
+        $this->customerStatus = null;
+        $this->leadSource = null;
+        $this->leadStatus = null;
+        $this->leadCommunication = null;
     }
 
     /**
@@ -168,6 +198,7 @@ class CustomerForm extends Form
         return [
             // if user is not allowed to assign customer to user, assign customer to current user
             'user_id' => auth()->user()->can('assign customer to user') ? $this->userId : auth()->id(),
+            'customer_type_id' => $this->customerTypeId ?: null,
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'email' => $this->email ?: null,
@@ -178,6 +209,10 @@ class CustomerForm extends Form
             'city' => $this->city ?: null,
             'state' => $this->state ?: null,
             'tax_id' => $this->taxId ?: null,
+            'customer_status' => $this->customerStatus,
+            'lead_source' => $this->leadSource ?: null,
+            'lead_status' => $this->leadStatus ?: null,
+            'lead_communication' => $this->leadCommunication ?: null,
         ];
     }
 }
