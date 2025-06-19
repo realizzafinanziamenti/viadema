@@ -19,7 +19,6 @@ class CustomerCreate extends Component
     public CustomerForm $form;
     public string $search = '';
     public array $teamMembers = [];
-    public ?string $teamMemberLabel = null;
 
     /**
      * Set title customer

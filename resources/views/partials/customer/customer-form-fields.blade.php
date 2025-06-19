@@ -7,6 +7,7 @@
             <flux:error name="{{ $form }}.firstName" />
         </div>
     </div>
+
     {{-- Last Name --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Cognome *</flux:label>
@@ -15,6 +16,46 @@
             <flux:error name="{{ $form }}.lastName" />
         </div>
     </div>
+
+    {{-- Customer Type --}}
+    @if ($context === 'lead')
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Tipologia Cliente</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <x-dropdown-select size="sm" align="right" :selectable-items="$customerTypes" :selected="$selectedCustomerTypeId"
+                    placeholder='Seleziona tipologia cliente' setFunction="setCustomerType" :has-error="$errors->has('{{ $form }}.customerTypeId')" />
+                <flux:error name="{{ $form }}.customerTypeId" />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Canale di acquisizione</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <x-dropdown-select size="sm" align="right" :selectable-items="$leadSources" :selected="$selectedLeadSource"
+                    placeholder='Seleziona canale di acquisizione' setFunction="setLeadSource" :has-error="$errors->has('{{ $form }}.leadSource')" />
+                <flux:error name="{{ $form }}.leadSource" />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Stato</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <x-dropdown-select size="sm" align="right" :selectable-items="$leadStatuses" :selected="$selectedLeadStatus"
+                    placeholder='Seleziona stato lead' setFunction="setLeadStatus" :has-error="$errors->has('{{ $form }}.leadStatus')" />
+                <flux:error name="{{ $form }}.leadStatus" />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Comunicazioni</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <x-dropdown-select size="sm" align="right" :selectable-items="$leadCommunications" :selected="$selectedLeadCommunication"
+                    placeholder='Seleziona comunicazione' setFunction="setLeadCommunication" :has-error="$errors->has('{{ $form }}.leadCommunication')" />
+                <flux:error name="{{ $form }}.leadCommunication" />
+            </div>
+        </div>
+    @endif
+
     {{-- Phone --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Cellulare *</flux:label>
@@ -23,6 +64,7 @@
             <flux:error name="{{ $form }}.phone" />
         </div>
     </div>
+
     {{-- Date of Birth --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di Nascita</flux:label>
@@ -31,6 +73,7 @@
             <flux:error name="{{ $form }}.dateOfBirth" />
         </div>
     </div>
+
     {{-- Tax ID --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Codice Fiscale</flux:label>
@@ -39,6 +82,7 @@
             <flux:error name="{{ $form }}.taxId" />
         </div>
     </div>
+
     {{-- Email --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Email</flux:label>
@@ -47,6 +91,7 @@
             <flux:error name="{{ $form }}.email" />
         </div>
     </div>
+
     {{-- Address --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Indirizzo</flux:label>
@@ -65,6 +110,7 @@
                 <flux:error name="{{ $form }}.postalCode" />
             </div>
         </div>
+
         {{-- Province --}}
         <div class="flex flex-col gap-1.5 col-span-2">
             <flux:label>Provincia</flux:label>
@@ -83,6 +129,7 @@
             <flux:error name="{{ $form }}.city" />
         </div>
     </div>
+
     {{-- Team Member Select --}}
     @if (auth()->user()->can('assign customer to user'))
         <div class="flex flex-col gap-1.5">

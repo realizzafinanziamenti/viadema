@@ -4,6 +4,7 @@
 
         <form wire:submit.prevent='save' class="w-full mt-10 mb-5">
             @include('partials.customer.customer-form-fields', [
+                'context' => 'customer',
                 'search' => 'search',
                 'form' => 'form',
                 'selectedUserId' => $form->userId,

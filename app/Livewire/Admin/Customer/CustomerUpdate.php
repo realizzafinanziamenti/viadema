@@ -20,7 +20,7 @@ class CustomerUpdate extends Component
     public string $search = '';
 
     /**
-     * Set title customer
+     * Set team member
      */
     public function setTeamMember(?int $value = null): void
     {
