@@ -160,6 +160,14 @@ class User extends Authenticatable
         return $this->hasMany(Practice::class);
     }
 
+    /**
+     * Get the user's events.
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
+
     // END RELATIONSHIPS
 
     // SCOPES

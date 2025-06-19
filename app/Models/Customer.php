@@ -76,6 +76,14 @@ class Customer extends Model
         return $this->hasMany(Practice::class);
     }
 
+    /**
+     * Get the customer type that owns the customer.
+     */
+    public function customerType(): BelongsTo
+    {
+        return $this->belongsTo(CustomerType::class);
+    }
+
     // END RELATIONSHIPS
 
     // ACCESSORS
