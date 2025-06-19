@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CustomerStatus;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -17,10 +18,24 @@ class CustomerSeeder extends Seeder
         $users = User::all();
 
         foreach ($users as $user) {
+
+            // Create 1 to 3 customers for each user
             Customer::factory()
-                ->count(random_int(1, 5))
+                ->count(random_int(1, 3))
                 ->create([
                     'user_id' => $user->id,
+                    'customer_status' => CustomerStatus::CUSTOMER->value,
+                    'lead_source' => null,
+                    'lead_status' => null,
+                    'lead_communication' => null,
+                ]);
+
+            // Create 1 to 3 leads for each user
+            Customer::factory()
+                ->count(random_int(1, 3))
+                ->create([
+                    'user_id' => $user->id,
+                    'customer_status' => CustomerStatus::LEAD->value,
                 ]);
         }
     }
