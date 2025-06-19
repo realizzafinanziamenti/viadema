@@ -8,6 +8,7 @@ use App\Livewire\Admin\Customer\CustomerUpdate;
 use App\Livewire\Admin\Event\EventIndex;
 use App\Livewire\Admin\Lead\LeadCreate;
 use App\Livewire\Admin\Lead\LeadIndex;
+use App\Livewire\Admin\Lead\LeadShow;
 use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
@@ -53,6 +54,7 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     // Lead Routes
     Route::get('leads', LeadIndex::class)->name('lead.index')->middleware('can:access leads');
     Route::get('leads/create', LeadCreate::class)->name('lead.create')->middleware('can:create leads');
+    Route::get('leads/{id}', LeadShow::class)->name('lead.show')->middleware('can:view leads');
     Route::get('leads/{id}/edit', LeadIndex::class)->name('lead.edit')->middleware('can:update leads');
 
     // Settings Routes

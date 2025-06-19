@@ -48,9 +48,9 @@
                     <x-table-data>
                         <div class="flex items-center justify-end w-full gap-3">
                             @can('view', $lead)
-                                {{-- <a href="{{ route('lead.show', ['id' => $lead->id]) }}" wire:navigate> --}}
-                                <x-table-action-button-view />
-                                {{-- </a> --}}
+                                <a href="{{ route('lead.show', ['id' => $lead->id]) }}" wire:navigate>
+                                    <x-table-action-button-view />
+                                </a>
                             @endcan
 
                             @can('update', $lead)
