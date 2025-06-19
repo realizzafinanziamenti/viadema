@@ -122,3 +122,15 @@ select:focus[data-flux-control] {
 .disbursed {
     @apply bg-blue-custom-light text-blue-custom border-sky-300;
 }
+
+.lead-status-new {
+    @apply text-orange-custom;
+}
+
+.lead-status-active {
+    @apply text-azure-custom;
+}
+
+.lead-status-lost {
+    @apply text-black-custom;
+}
