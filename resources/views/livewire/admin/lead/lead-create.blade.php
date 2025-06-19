@@ -3,7 +3,16 @@
         <x-card-header label="Crea nuovo profilo" />
 
         <form wire:submit.prevent='save' class="w-full mt-10 mb-5">
-            {{--  --}}
+            @include('partials.customer.customer-form-fields', [
+                'context' => 'lead',
+                'search' => 'search',
+                'form' => 'form',
+                'selectedUserId' => $form->userId,
+                'selectedCustomerTypeId' => $form->customerTypeId,
+                'selectedLeadSource' => $form->leadSource,
+                'selectedLeadStatus' => $form->leadStatus,
+                'selectedLeadCommunication' => $form->leadCommunication,
+            ])
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
