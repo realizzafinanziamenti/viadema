@@ -26,16 +26,17 @@
 
         @if ($lead->lead_status)
             <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4 uppercase {{ $lead->lead_status?->getLabelColor() }}">Stato:
+                <span class="text-gray-custom-4">Stato:
                 </span>
-                <span>{{ $lead->lead_status?->getLabelText() }}</span>
+                <span
+                    class="uppercase {{ $lead->lead_status?->getLabelColor() }}">{{ $lead->lead_status?->getLabelText() }}</span>
             </div>
         @endif
 
         @if ($lead->lead_source)
             <div class="text-sm mb-2.5">
                 <span class="text-gray-custom-4">Canale di acquisizione: </span>
-                <span>{{ $lead->lead_communication?->getLabelText() }}</span>
+                <span>{{ $lead->lead_source?->getLabelText() }}</span>
             </div>
         @endif
 
