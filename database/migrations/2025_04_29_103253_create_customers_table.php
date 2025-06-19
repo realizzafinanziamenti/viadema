@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('customer_type_id')->nullable()->constrained('customer_types')->nullOnDelete();
             $table->string('first_name');
             $table->string('last_name');
             $table->string('phone', 24);
@@ -27,7 +26,7 @@ return new class extends Migration
             $table->string('postal_code')->nullable();
             $table->string('customer_status');  // LEAD or CUSTOMER
             $table->string('lead_source')->nullable(); // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
-            $table->string('lead_status')->default('new'); // ACTIVE or LOST
+            $table->string('lead_status')->nullable(); // ACTIVE or LOST
             $table->string('lead_communication')->nullable(); // Example: 'Email', 'Phone', etc.
             $table->timestamps();
             $table->softDeletes();
