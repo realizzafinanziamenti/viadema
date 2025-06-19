@@ -24,6 +24,10 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('postal_code')->nullable();
+            $table->string('customer_status');  // LEAD or CUSTOMER
+            $table->string('lead_source')->nullable(); // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
+            $table->string('lead_status')->nullable(); // ACTIVE or LOST
+            $table->string('lead_communication')->nullable(); // Example: 'Email', 'Phone', etc.
             $table->timestamps();
             $table->softDeletes();
         });

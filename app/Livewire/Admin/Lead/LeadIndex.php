@@ -1,51 +1,49 @@
 <?php
 
-namespace App\Livewire\Admin\Customer;
+namespace App\Livewire\Admin\Lead;
 
 use App\Models\Customer;
 use App\Traits\HandlesEntityActions;
-use Exception;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
-use Masmerise\Toaster\Toaster;
 
-class CustomerIndex extends Component
+class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions;
 
-    public Customer|null $selectedCustomer = null;
+    public ?Customer $selectedLead = null;
     public $search = '';
 
     /**
      * This method is called when the user clicks the delete button.
-     * It sets the selected customer to be deleted.
+     * It sets the selected lead to be deleted.
      */
-    public function selectCustomerForDelete(int $id)
+    public function selectLeadForDelete(int $id)
     {
         $this->selectEntityForAction(
             id: $id,
             modelClass: Customer::class,
-            property: 'selectedCustomer',
-            modalName: 'delete-customer',
-            notFoundMessage: 'Cliente non trovato'
+            property: 'selectedLead',
+            modalName: 'delete-lead',
+            notFoundMessage: 'Lead non trovato'
         );
     }
 
     /**
      * This method is called when the user clicks the delete button in the modal.
-     * It deletes the selected customer and resets the selected customer to null.
+     * It deletes the selected lead and resets the selected lead to null.
      */
-    public function deleteCustomer()
+    public function deleteLead()
     {
-        Gate::authorize('delete', $this->selectedCustomer);
+        Gate::authorize('delete', $this->selectedLead);
 
         $this->deleteSelectedEntity(
-            property: 'selectedCustomer',
-            modalName: 'delete-customer',
-            successMessage: 'Cliente eliminato con successo',
+            property: 'selectedLead',
+            modalName: 'delete-lead',
+            successMessage: 'Lead eliminato con successo',
         );
     }
 
@@ -65,15 +63,15 @@ class CustomerIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Customer::with('user')
-            ->customers()
+        $query = Customer::with('user', 'customerType')
+            ->leads()
             ->orderByDesc('updated_at');
 
         $query = $query->filterBySearch($this->search);
-        $customers = $query->paginate(15);
+        $leads = $query->paginate(15);
 
-        return view('livewire.admin.customer.customer-index', [
-            'customers' => $customers,
+        return view('livewire.admin.lead.lead-index', [
+            'leads' => $leads,
         ]);
     }
 }

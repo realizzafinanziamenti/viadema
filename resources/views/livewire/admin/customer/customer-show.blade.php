@@ -17,7 +17,7 @@
 
         @if ($customer->email)
             <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4" class="text-gray-custom-4">Email: </span>
+                <span class="text-gray-custom-4">Email: </span>
                 <span>{{ $customer->email }}</span>
             </div>
         @endif

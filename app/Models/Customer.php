@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\CustomerStatus;
+use App\Enums\LeadCommunication;
+use App\Enums\LeadSource;
+use App\Enums\LeadStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +25,7 @@ class Customer extends Model
      */
     protected $fillable = [
         'user_id',
+        'customer_type_id',
         'first_name',
         'last_name',
         'phone',
@@ -31,6 +36,10 @@ class Customer extends Model
         'city',
         'state',
         'postal_code',
+        'customer_status', // LEAD or CUSTOMER
+        'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
+        'lead_status', // ACTIVE or LOST
+        'lead_communication', // Example: 'Email', 'Phone', etc.
     ];
 
     /**
@@ -42,6 +51,10 @@ class Customer extends Model
     {
         return [
             'date_of_birth' => 'datetime',
+            'customer_status' => CustomerStatus::class,
+            'lead_source' => LeadSource::class,
+            'lead_status' => LeadStatus::class,
+            'lead_communication' => LeadCommunication::class,
         ];
     }
 
@@ -61,6 +74,14 @@ class Customer extends Model
     public function practices(): HasMany
     {
         return $this->hasMany(Practice::class);
+    }
+
+    /**
+     * Get the customer type that owns the customer.
+     */
+    public function customerType(): BelongsTo
+    {
+        return $this->belongsTo(CustomerType::class);
     }
 
     // END RELATIONSHIPS
@@ -86,6 +107,22 @@ class Customer extends Model
     // END ACCESSORS
 
     // SCOPES
+
+    /**
+     * Scope a query to filter customer by customer status
+     */
+    public function scopeCustomers(Builder $query)
+    {
+        return $query->where('customer_status', CustomerStatus::CUSTOMER);
+    }
+
+    /**
+     * Scope a query to filter lead by customer status
+     */
+    public function scopeLeads(Builder $query)
+    {
+        return $query->where('customer_status', CustomerStatus::LEAD);
+    }
 
     /**
      * Scope a query to filter by search

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Customer;
 
+use App\Enums\CustomerStatus;
 use App\Livewire\Forms\CustomerForm;
 use App\Models\Customer;
 use App\Models\User;
@@ -18,7 +19,6 @@ class CustomerCreate extends Component
     public CustomerForm $form;
     public string $search = '';
     public array $teamMembers = [];
-    public ?string $teamMemberLabel = null;
 
     /**
      * Set title customer
@@ -42,6 +42,9 @@ class CustomerCreate extends Component
     public function mount()
     {
         Gate::authorize('create', Customer::class);
+
+        // Initialize customer status to CUSTOMER
+        $this->form->customerStatus = CustomerStatus::CUSTOMER->value;
     }
 
     #[Layout('components.layouts.app')]

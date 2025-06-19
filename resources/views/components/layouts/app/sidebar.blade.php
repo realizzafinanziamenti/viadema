@@ -58,9 +58,11 @@
                     </x-sidebar-item>
                 @endcan
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Leads">
-                    <x-icons.icon-akar-draft />
-                </x-sidebar-item>
+                @can('access leads')
+                    <x-sidebar-item route="lead.index" routeIs="lead" label="Leads">
+                        <x-icons.icon-akar-draft />
+                    </x-sidebar-item>
+                @endcan
 
                 <x-sidebar-item route="dashboard" routeIs="#" label="Modulistica">
                     <x-icons.icon-akar-clipboard />

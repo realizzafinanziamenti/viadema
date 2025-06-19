@@ -18,6 +18,14 @@ class CustomerType extends Model
     }
 
     /**
+     * Get the customers associated with the customer type.
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    /**
      * Accessor to ensure the name is always trimmed.
      */
     protected function name(): Attribute

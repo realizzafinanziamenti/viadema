@@ -35,9 +35,9 @@
                     <x-table-data label="{{ $customer->id }}" />
                     <x-table-data truncate label="{{ $customer->full_name }}" />
                     <x-table-data truncate label="{{ $customer->phone }}" />
-                    <x-table-data truncate label="{{ $customer->tax_id }}" />
-                    <x-table-data truncate label="{{ $customer->city }}" />
-                    <x-table-data truncate label="{{ $customer->email }}" />
+                    <x-table-data truncate label="{{ $customer->tax_id ?? 'N/D' }}" />
+                    <x-table-data truncate label="{{ $customer->city ?? 'N/D' }}" />
+                    <x-table-data truncate label="{{ $customer->email ?? 'N/D' }}" />
 
                     <x-table-data class="inline-flex items-center">
                         <x-user-table-data :user="$customer->user" />
