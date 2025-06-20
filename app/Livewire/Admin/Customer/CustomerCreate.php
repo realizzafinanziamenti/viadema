@@ -33,7 +33,7 @@ class CustomerCreate extends Component
      */
     public function save(): void
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', [Customer::class, CustomerStatus::CUSTOMER]);
         $customer = $this->form->store();
 
         $this->redirectRoute('customer.show', ['id' => $customer->id], navigate: true);
@@ -41,7 +41,7 @@ class CustomerCreate extends Component
 
     public function mount()
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', [Customer::class, CustomerStatus::CUSTOMER]);
 
         // Initialize customer status to CUSTOMER
         $this->form->customerStatus = CustomerStatus::CUSTOMER->value;

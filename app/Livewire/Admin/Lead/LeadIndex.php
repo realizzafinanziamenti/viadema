@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Lead;
 
+use App\Enums\CustomerStatus;
 use App\Models\Customer;
 use App\Traits\HandlesEntityActions;
 use Illuminate\Support\Facades\Gate;
@@ -57,7 +58,7 @@ class LeadIndex extends Component
 
     public function mount()
     {
-        Gate::authorize('viewAny', Customer::class);
+        Gate::authorize('viewAny', [Customer::class, CustomerStatus::LEAD]);
     }
 
     #[Layout('components.layouts.app')]

@@ -131,7 +131,9 @@
     </div>
 
     {{-- Team Member Select --}}
-    @if (auth()->user()->can('assign customer to user'))
+    @if (
+        (auth()->user()->can('assign customer to user') && $context === 'customer') ||
+            (auth()->user()->can('assign lead to user') && $context === 'lead'))
         <div class="flex flex-col gap-1.5">
             <flux:label>Collaboratore *</flux:label>
 

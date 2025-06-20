@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Customer;
 
+use App\Enums\CustomerStatus;
 use App\Models\Customer;
 use App\Traits\HandlesEntityActions;
 use Exception;
@@ -59,7 +60,7 @@ class CustomerIndex extends Component
 
     public function mount()
     {
-        Gate::authorize('viewAny', Customer::class);
+        Gate::authorize('viewAny', [Customer::class, CustomerStatus::CUSTOMER]);
     }
 
     #[Layout('components.layouts.app')]

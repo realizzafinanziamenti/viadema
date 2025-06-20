@@ -58,6 +58,22 @@ class Customer extends Model
         ];
     }
 
+    /**
+     * Check if the customer is a CUSTOMER.
+     */
+    public function isCustomer(): bool
+    {
+        return $this->customer_status === CustomerStatus::CUSTOMER;
+    }
+
+    /**
+     * Check if the customer is a LEAD.
+     */
+    public function isLead(): bool
+    {
+        return $this->customer_status === CustomerStatus::LEAD;
+    }
+
     // RELATIONSHIPS
 
     /**
