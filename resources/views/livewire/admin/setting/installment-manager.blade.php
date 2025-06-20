@@ -16,11 +16,12 @@
                 <span>{{ $installment->value }}</span>
 
                 <div class="flex space-x-2">
-                    {{-- DISABLED --}}
-                    {{-- @can('update', $installment)
-                        <x-table-action-button-edit wire:click="selectInstallmentForUpdate({{ $installment->id }})"
-                            class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan --}}
+                    @if ($installment->isEditable())
+                        @can('update', $installment)
+                            <x-table-action-button-edit wire:click="selectInstallmentForUpdate({{ $installment->id }})"
+                                class="btn btn-primary">Modifica</x-table-action-button-edit>
+                        @endcan
+                    @endif
 
                     @can('delete', $installment)
                         <x-table-action-button-delete wire:click="selectInstallmentForDelete({{ $installment->id }})"

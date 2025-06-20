@@ -16,11 +16,13 @@
                 <span>{{ $financialTable->percentage }}</span>
 
                 <div class="flex space-x-2">
-                    {{-- DISABLED --}}
-                    {{-- @can('update', $financialTable)
-                        <x-table-action-button-edit wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
-                            class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan --}}
+                    @if ($financialTable->isEditable())
+                        @can('update', $financialTable)
+                            <x-table-action-button-edit
+                                wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
+                                class="btn btn-primary">Modifica</x-table-action-button-edit>
+                        @endcan
+                    @endif
 
                     @can('delete', $financialTable)
                         <x-table-action-button-delete wire:click="selectFinancialTableForDelete({{ $financialTable->id }})"
@@ -45,7 +47,8 @@
                 {{-- Financial Table Name --}}
                 <div class="flex flex-col gap-1.5">
                     <flux:label>Provvigione</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci provvigione" wire:model='percentage' />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="percentage" symbol="%" placeholder="Inserisci provvigione" />
                     <flux:error name="percentage" />
                 </div>
 
@@ -75,7 +78,8 @@
                 {{-- Financial Table Name --}}
                 <div class="flex flex-col gap-1.5">
                     <flux:label>Provvigione</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci provvigione" wire:model='percentage' />
+                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
+                        size="sm" wire:model="percentage" symbol="%" placeholder="Inserisci provvigione" />
                     <flux:error name="percentage" />
                 </div>
 
