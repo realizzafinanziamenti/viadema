@@ -16,11 +16,12 @@
                 <span>{{ $insurance->name }}</span>
 
                 <div class="flex space-x-2">
-                    {{-- DISABLED --}}
-                    {{-- @can('update', $insurance)
-                        <x-table-action-button-edit wire:click="selectInsuranceForUpdate({{ $insurance->id }})"
-                            class="btn btn-primary">Modifica</x-table-action-button-edit>
-                    @endcan --}}
+                    @if ($insurance->isEditable())
+                        @can('update', $insurance)
+                            <x-table-action-button-edit wire:click="selectInsuranceForUpdate({{ $insurance->id }})"
+                                class="btn btn-primary">Modifica</x-table-action-button-edit>
+                        @endcan
+                    @endif
 
                     @can('delete', $insurance)
                         <x-table-action-button-delete wire:click="selectInsuranceForDelete({{ $insurance->id }})"

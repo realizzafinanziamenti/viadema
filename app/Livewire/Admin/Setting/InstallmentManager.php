@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Installment;
+use App\Rules\NotUsedInPractices;
 use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
@@ -38,44 +39,43 @@ class InstallmentManager extends Component
         $this->dispatch('open-modal', 'create-installment');
     }
 
-    // UPDATE DISABLED
     /**
      * This method is called when the user clicks the create button in the modal.
      * It creates a new installment and resets the name to null.
      */
-    // public function createInstallment(): void
-    // {
-    //     Gate::authorize('create', Installment::class);
+    public function createInstallment(): void
+    {
+        Gate::authorize('create', Installment::class);
 
-    //     $this->validate(['value' => ['required', 'integer', 'min:0', 'max:10000', new UniqueNormalized('installments', 'value')]]);
+        $this->validate(['value' => ['required', 'integer', 'min:0', 'max:10000', new UniqueNormalized('installments', 'value')]]);
 
-    //     try {
-    //         Installment::create(['value' => $this->value]);
-    //         Toaster::success('Rata creata con successo');
-    //     } catch (Exception $e) {
-    //         Toaster::error('Errore durante la creazione della rata: ' . $e->getMessage());
-    //     }
+        try {
+            Installment::create(['value' => $this->value]);
+            Toaster::success('Rata creata con successo');
+        } catch (Exception $e) {
+            Toaster::error('Errore durante la creazione della rata: ' . $e->getMessage());
+        }
 
-    //     $this->reset('value');
-    //     $this->dispatch('close-modal', 'create-installment');
-    // }
+        $this->reset('value');
+        $this->dispatch('close-modal', 'create-installment');
+    }
 
     /**
      * This method is called when the user clicks the update button.
      * It sets the selected installment and opens the modal for updating the name.
      */
-    // public function selectInstallmentForUpdate(int $id)
-    // {
-    //     $this->resetValidation();
-    //     $this->selectEntityForAction(
-    //         id: $id,
-    //         modelClass: Installment::class,
-    //         property: 'selectedInstallment',
-    //         modalName: 'update-installment',
-    //         notFoundMessage: 'Rata non trovata'
-    //     );
-    //     $this->value = $this->selectedInstallment->value;
-    // }
+    public function selectInstallmentForUpdate(int $id)
+    {
+        $this->resetValidation();
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Installment::class,
+            property: 'selectedInstallment',
+            modalName: 'update-installment',
+            notFoundMessage: 'Rata non trovata'
+        );
+        $this->value = $this->selectedInstallment->value;
+    }
 
     /**
      * This method is called when the user clicks the update button in the modal.
@@ -85,7 +85,14 @@ class InstallmentManager extends Component
     {
         Gate::authorize('update', $this->selectedInstallment);
 
-        $this->validate(['name' => ['required', 'integer', 'min:0', 'max:10000', new UniqueNormalized('installments', 'value', $this->selectedInstallment?->id)]]);
+        $this->validate(['value' => [
+            'required',
+            'integer',
+            'min:0',
+            'max:10000',
+            new UniqueNormalized('installments', 'value', $this->selectedInstallment?->id),
+            new NotUsedInPractices($this->selectedInstallment)  // validazione non legata alla campo 'name' ma all'istanza del modello
+        ]]);
 
         try {
             $this->selectedInstallment->update(['value' => $this->value]);

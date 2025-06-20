@@ -26,6 +26,15 @@ class Installment extends Model
     }
 
     /**
+     * Check if the product subtype can be edited.
+     * A product subtype is editable if it has no associated practices.
+     */
+    public function isEditable(): bool
+    {
+        return !$this->practices()->exists();
+    }
+
+    /**
      * Get the product types associated with the installment.
      */
     public function productTypes(): BelongsToMany
