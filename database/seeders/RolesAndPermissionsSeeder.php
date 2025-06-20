@@ -53,6 +53,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'update customers',
             'delete customers',
             'assign customer to user',
+            // leads permissions
+            'access leads',
+            'create leads',
+            'view leads',
+            'view all leads',
+            'update leads',
+            'delete leads',
+            'assign lead to user',
             // practices permissions
             'access practices',
             'create practices',
@@ -97,9 +105,9 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         /**
-         * Assign permissions to roles
+         * Define role permissions for each role
          */
-        $teamMember->givePermissionTo([
+        $teamMemberPermissions = [
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -124,9 +132,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete practices',
             // settings permissions
             'access settings',
-        ]);
+        ];
 
-        $observer->givePermissionTo([
+        $observerPermissions = [
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -140,6 +148,12 @@ class RolesAndPermissionsSeeder extends Seeder
             // assign practices permissions
             'access practices',
             'view practices',
-        ]);
+        ];
+
+        /**
+         * Sync permissions to roles
+         */
+        $teamMember->syncPermissions($teamMemberPermissions);
+        $observer->syncPermissions($observerPermissions);
     }
 }
