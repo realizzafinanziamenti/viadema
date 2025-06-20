@@ -48,33 +48,52 @@ class PracticeForm extends Form
 
     protected function rules(): array
     {
+        return array_merge(
+            [
+                'productTypeId' => ['required', 'exists:product_types,id'],
+                'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
+                'customerId' => ['required', 'exists:customers,id'],
+                'financialTableId' => ['nullable', 'exists:financial_tables,id'],
+                'insuranceId' => ['nullable', 'exists:insurances,id'],
+                'installmentId' => ['required', 'exists:installments,id'],
+                'customerTypeId' => ['nullable', 'exists:customer_types,id'],
+                'amountDisbursed' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+                'totalAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+                'rateAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+                'tan' => ['required', 'numeric', 'between:0,10000'],
+                'teg' => ['nullable', 'numeric', 'between:0,10000'],
+                'taeg' => ['required', 'numeric', 'between:0,10000'],
+                'insertedAt' => ['nullable', 'date'],
+                'firstInstallmentDate' => ['required', 'date'],
+                'lastInstallmentDate' => ['required', 'date'],
+                'renewabilityDate' => ['required', 'date'],
+                'renewabilityPercentage' => ['required', 'numeric', 'between:0,100'],
+                'percentageAlert' => ['required', 'numeric', 'between:0,100'],
+                'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
+                'previousFinance' => ['nullable', 'string', 'max:255'],
+                'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
+                'notes' => ['nullable', 'string', 'max:65535'],
+                'attachments' => ['nullable', 'array', 'max:10'],
+                'attachments.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
+            ],
+            $this->userIdRules()
+        );
+    }
+
+    /**
+     * userId rules
+     * if user is not allowed to assign practice to user, assign practice to current user
+     */
+    protected function userIdRules(): array
+    {
+        if (auth()->user()->can('assign practice to user')) {
+            return [
+                'userId' => ['required', 'exists:users,id'],
+            ];
+        }
+
         return [
-            'productTypeId' => ['required', 'exists:product_types,id'],
-            'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
-            'userId' => ['required', 'exists:users,id'],
-            'customerId' => ['required', 'exists:customers,id'],
-            'financialTableId' => ['nullable', 'exists:financial_tables,id'],
-            'insuranceId' => ['nullable', 'exists:insurances,id'],
-            'installmentId' => ['required', 'exists:installments,id'],
-            'customerTypeId' => ['nullable', 'exists:customer_types,id'],
-            'amountDisbursed' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'totalAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'rateAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'tan' => ['required', 'numeric', 'between:0,10000'],
-            'teg' => ['nullable', 'numeric', 'between:0,10000'],
-            'taeg' => ['required', 'numeric', 'between:0,10000'],
-            'insertedAt' => ['nullable', 'date'],
-            'firstInstallmentDate' => ['required', 'date'],
-            'lastInstallmentDate' => ['required', 'date'],
-            'renewabilityDate' => ['required', 'date'],
-            'renewabilityPercentage' => ['nullable', 'numeric', 'between:0,100'],
-            'percentageAlert' => ['nullable', 'numeric', 'between:0,100'],
-            'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
-            'previousFinance' => ['nullable', 'string', 'max:255'],
-            'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
-            'notes' => ['nullable', 'string', 'max:65535'],
-            'attachments' => ['nullable', 'array', 'max:10'],
-            'attachments.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
+            'userId' => ['nullable'],
         ];
     }
 
@@ -154,30 +173,7 @@ class PracticeForm extends Form
 
         try {
             $practice = DB::transaction(function () {
-                $practice = Practice::create([
-                    'product_type_id' => $this->productTypeId,
-                    'product_subtype_id' => $this->productSubtypeId,
-                    'user_id' => $this->userId,
-                    'customer_id' => $this->customerId,
-                    'financial_table_id' => $this->financialTableId,
-                    'insurance_id' => $this->insuranceId,
-                    'installment_id' => $this->installmentId,
-                    'customer_type_id' => $this->customerTypeId,
-                    'amount_disbursed' => $this->amountDisbursed,
-                    'total_amount' => $this->totalAmount,
-                    'rate_amount' => $this->rateAmount,
-                    'tan' => $this->tan,
-                    'taeg' => $this->taeg,
-                    'inserted_at' => now(),
-                    'first_installment_date' => $this->firstInstallmentDate,
-                    'last_installment_date' => $this->lastInstallmentDate,
-                    'renewability_date' => $this->renewabilityDate,
-                    'renewability_percentage' => $this->renewabilityPercentage,
-                    'percentage_alert' => $this->percentageAlert,
-                    'practice_status' => $this->practiceStatus,    // default to UNDER_REVIEW
-                    'practice_code' => $this->practiceCode,
-                    'notes' => $this->notes
-                ]);
+                $practice = Practice::create($this->practiceData());
 
                 foreach ($this->attachments as $attachment) {
                     $practice->attachments()->create([
@@ -212,30 +208,7 @@ class PracticeForm extends Form
 
         try {
             DB::transaction(function () {
-                $this->practice->update([
-                    'product_type_id' => $this->productTypeId,
-                    'product_subtype_id' => $this->productSubtypeId,
-                    'user_id' => $this->userId,
-                    'customer_id' => $this->customerId,
-                    'financial_table_id' => $this->financialTableId,
-                    'insurance_id' => $this->insuranceId,
-                    'installment_id' => $this->installmentId,
-                    'customer_type_id' => $this->customerTypeId,
-                    'amount_disbursed' => $this->amountDisbursed,
-                    'total_amount' => $this->totalAmount,
-                    'rate_amount' => $this->rateAmount,
-                    'tan' => $this->tan,
-                    'taeg' => $this->taeg,
-                    'inserted_at' => $this->practice->inserted_at,
-                    'first_installment_date' => $this->firstInstallmentDate,
-                    'last_installment_date' => $this->lastInstallmentDate,
-                    'renewability_date' => $this->renewabilityDate,
-                    'renewability_percentage' => $this->renewabilityPercentage,
-                    'percentage_alert' => $this->percentageAlert,
-                    'practice_status' => $this->practiceStatus,
-                    'practice_code' => $this->practiceCode,
-                    'notes' => $this->notes
-                ]);
+                $this->practice->update($this->practiceData());
 
                 foreach ($this->attachments as $attachment) {
                     $this->practice->attachments()->create([
@@ -254,5 +227,38 @@ class PracticeForm extends Form
             Toaster::error('Errore durante l\'aggiornamento della pratica: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * practice data
+     */
+    private function practiceData(): array
+    {
+        return [
+            // if user is not allowed to assign practice to user, assign practice to current user
+            'user_id' => auth()->user()->can('assign practice to user') ? $this->userId : auth()->id(),
+            'product_type_id' => $this->productTypeId,
+            'product_subtype_id' => $this->productSubtypeId ?? null,
+            'customer_id' => $this->customerId,
+            'financial_table_id' => $this->financialTableId ?? null,
+            'insurance_id' => $this->insuranceId ?? null,
+            'installment_id' => $this->installmentId,
+            'customer_type_id' => $this->customerTypeId ?? null,
+            'amount_disbursed' => $this->amountDisbursed,
+            'total_amount' => $this->totalAmount,
+            'rate_amount' => $this->rateAmount,
+            'tan' => $this->tan,
+            'taeg' => $this->taeg,
+            'inserted_at' => $this->insertedAt ?? now(),  // in upload it use old date, instead in create it uses now()
+            'first_installment_date' => $this->firstInstallmentDate,
+            'last_installment_date' => $this->lastInstallmentDate,
+            'renewability_date' => $this->renewabilityDate,
+            'renewability_percentage' => $this->renewabilityPercentage,
+            'percentage_alert' => $this->percentageAlert,
+            'practice_status' => $this->practiceStatus,
+            'previous_finance' => $this->previousFinance ?? null,
+            'practice_code' => $this->practiceCode,
+            'notes' => $this->notes
+        ];
     }
 }

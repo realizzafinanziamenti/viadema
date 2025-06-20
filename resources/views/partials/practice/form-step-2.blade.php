@@ -7,6 +7,7 @@
             <flux:error name="practiceForm.practiceCode" />
         </div>
     </div>
+
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Prodotto *</flux:label>
@@ -17,6 +18,7 @@
             <flux:error name="practiceForm.productTypeId" />
         </div>
     </div>
+
     {{-- Product Subtype --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Tipo prodotto</flux:label>
@@ -27,16 +29,21 @@
             <flux:error name="practiceForm.productSubtypeId" />
         </div>
     </div>
-    {{-- Team Member --}}
-    <div class="flex flex-col gap-1.5">
-        <flux:label>Assegna a *</flux:label>
-        <div class="flex flex-col gap-0.5">
-            <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$practiceForm->userId" searchable search="teamMemberSearch"
-                placeholder='Seleziona collaboratore' setFunction="setPracticeTeamMember" :has-error="$errors->has('practiceForm.userId')" />
 
-            <flux:error name="practiceForm.userId" />
+    {{-- Team Member --}}
+    @if (auth()->user()->can('assign practice to user'))
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Assegna a *</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$practiceForm->userId" searchable
+                    search="teamMemberSearch" placeholder='Seleziona collaboratore' setFunction="setPracticeTeamMember"
+                    :has-error="$errors->has('practiceForm.userId')" />
+
+                <flux:error name="practiceForm.userId" />
+            </div>
         </div>
-    </div>
+    @endif
+
     {{-- First Installment Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di inizio *</flux:label>
@@ -45,6 +52,7 @@
             <flux:error name="practiceForm.firstInstallmentDate" />
         </div>
     </div>
+
     {{-- Last Installment Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di fine</flux:label>
@@ -53,6 +61,7 @@
             <flux:error name="practiceForm.lastInstallmentDate" />
         </div>
     </div>
+
     {{-- Amount Disbursed --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Importo *</flux:label>
@@ -62,16 +71,17 @@
             <flux:error name="practiceForm.amountDisbursed" />
         </div>
     </div>
+
     {{-- Installment --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Rate *</flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$practiceForm->installmentId" placeholder='Seleziona rate'
                 setFunction="setInstallment" :has-error="$errors->has('practiceForm.installmentId')" />
-
             <flux:error name="practiceForm.installmentId" />
         </div>
     </div>
+
     {{-- Rate Amount --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Rata mensile *</flux:label>
@@ -81,6 +91,7 @@
             <flux:error name="practiceForm.rateAmount" />
         </div>
     </div>
+
     {{-- Taeg --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Taeg fisso *</flux:label>
@@ -90,6 +101,7 @@
             <flux:error name="practiceForm.taeg" />
         </div>
     </div>
+
     {{-- Tan --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Tan fisso *</flux:label>
@@ -99,6 +111,7 @@
             <flux:error name="practiceForm.tan" />
         </div>
     </div>
+
     {{-- Total Amount --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Totale dovuto</flux:label>
@@ -108,6 +121,7 @@
             <flux:error name="practiceForm.totalAmount" />
         </div>
     </div>
+
     {{-- Renewability Percentage --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Percentuale rinnovabilità *</flux:label>
@@ -117,6 +131,7 @@
             <flux:error name="practiceForm.renewabilityPercentage" />
         </div>
     </div>
+
     {{-- Percentage Alert --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Percentuale alert *</flux:label>
@@ -126,6 +141,7 @@
             <flux:error name="practiceForm.percentageAlert" />
         </div>
     </div>
+
     {{-- Renewed --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data rinnovabilità</flux:label>
@@ -134,6 +150,7 @@
             <flux:error name="practiceForm.renewabilityDate" />
         </div>
     </div>
+
     {{-- Customer Type --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Tipologia cliente</flux:label>
@@ -144,6 +161,7 @@
             <flux:error name="practiceForm.customerTypeId" />
         </div>
     </div>
+
     {{-- Insurance --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Assicurazione</flux:label>
@@ -154,6 +172,7 @@
             <flux:error name="practiceForm.insuranceId" />
         </div>
     </div>
+
     {{-- Financial Table --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Tabella provvigionale</flux:label>
@@ -164,6 +183,7 @@
             <flux:error name="practiceForm.financialTableId" />
         </div>
     </div>
+
     {{-- Notes --}}
     <div class="flex flex-col gap-1.5 col-span-2">
         <flux:textarea label="Note" resize="none" wire:model='practiceForm.notes' />
