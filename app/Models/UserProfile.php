@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserDepartment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,10 +19,23 @@ class UserProfile extends Model
      */
     protected $fillable = [
         'user_id',
+        'user_department',
         'phone',
         'tax_id',
         'city',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'user_department' => UserDepartment::class,
+        ];
+    }
 
     // RELATIONSHIPS
     public function user(): BelongsTo

@@ -11,7 +11,7 @@ enum UserDepartment: string
     case EXTERNAL = 'external';
     case OBSERVER = 'observer';
 
-    public function gettRole(): string
+    public function getRole(): string
     {
         return match ($this) {
             self::DIRECT_PRODUCTION => 'team_member',
