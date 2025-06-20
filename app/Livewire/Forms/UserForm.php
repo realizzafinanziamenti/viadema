@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\UserDepartment;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -19,6 +21,7 @@ class UserForm extends Form
     public ?User $user = null;
 
     public $role = null;
+    public $department = null;
     public $firstName = null;
     public $lastName = null;
     public $email = null;
@@ -34,6 +37,7 @@ class UserForm extends Form
     protected function rules()
     {
         return [
+            'department' => ['required', 'string', new Enum(UserDepartment::class)],
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user?->id)],
@@ -47,6 +51,7 @@ class UserForm extends Form
     protected function validationAttributes()
     {
         return [
+            'department' => 'dipartimento',
             'firstName' => 'nome',
             'lastName' => 'cognome',
             'email' => 'email',
@@ -66,6 +71,7 @@ class UserForm extends Form
     {
         $this->user = $user;
 
+        $this->department = $user->user_department?->value;
         $this->firstName = $user->first_name;
         $this->lastName = $user->last_name;
         $this->email = $user->email;
@@ -93,6 +99,7 @@ class UserForm extends Form
                     : null;
 
                 $user = User::create([
+                    'user_department' => $this->department,
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'email' => $this->email,
@@ -151,6 +158,7 @@ class UserForm extends Form
                     : $this->user->profile_photo_path;
 
                 $this->user->update([
+                    'user_department' => $this->department,
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'email' => $this->email,

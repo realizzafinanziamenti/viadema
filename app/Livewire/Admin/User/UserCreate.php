@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Admin\User;
 
+use App\Enums\UserDepartment;
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
+use App\Traits\EnumHelper;
+use App\Traits\InteractsWithDropdowns;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -11,10 +14,19 @@ use Spatie\LivewireFilepond\WithFilePond;
 
 class UserCreate extends Component
 {
-    use WithFilePond;
+    use WithFilePond, InteractsWithDropdowns, EnumHelper;
 
     // user form component
     public UserForm $form;
+    public array $departments = [];
+
+    /**
+     * Set department
+     */
+    public function setDepartment(?string $value = null): void
+    {
+        $this->setFormSelectValue('department', $value);
+    }
 
     /**
      * Save team member
@@ -30,8 +42,7 @@ class UserCreate extends Component
     public function mount()
     {
         Gate::authorize('create', User::class);
-        // set user rule to team member
-        $this->form->role = 'team_member';
+        $this->departments = $this->getEnumOptions(UserDepartment::class);
     }
 
     #[Layout('components.layouts.app')]
