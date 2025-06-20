@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Team;
+namespace App\Livewire\Admin\User;
 
 use App\Models\User;
 use Exception;
@@ -11,7 +11,7 @@ use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
 
-class TeamIndex extends Component
+class UserIndex extends Component
 {
     use WithPagination, WithoutUrlPagination;
 
@@ -73,7 +73,7 @@ class TeamIndex extends Component
         $query = $query->filterBySearch($this->search);
         $teamMembers = $query->paginate(15);
 
-        return view('livewire.admin.team.team-index', [
+        return view('livewire.admin.user.user-index', [
             'teamMembers' => $teamMembers,
         ]);
     }

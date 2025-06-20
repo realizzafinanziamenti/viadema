@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Team;
+namespace App\Livewire\Admin\User;
 
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
@@ -9,7 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Spatie\LivewireFilepond\WithFilePond;
 
-class TeamUpdate extends Component
+class UserUpdate extends Component
 {
     use WithFilePond;
 
@@ -25,7 +25,7 @@ class TeamUpdate extends Component
         Gate::authorize('update', $this->user);
         $user = $this->form->update();
 
-        $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
+        $this->redirectRoute('user.show', ['id' => $user->id], navigate: true);
     }
 
     /**
@@ -58,6 +58,6 @@ class TeamUpdate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        return view('livewire.admin.team.team-update');
+        return view('livewire.admin.user.user-update');
     }
 }

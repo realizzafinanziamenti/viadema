@@ -39,11 +39,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'update events',
             'delete events',
             // team members permissions
-            'access team members',
-            'create team members',
-            'view team members',
+            'access users',
+            'create users',
+            'view users',
             'view all team members',
-            'update team members',
+            'update users',
             'delete team members',
             // customers permissions
             'access customers',
@@ -117,8 +117,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'update events',
             'delete events',
             // assign team members permissions
-            'access team members',
-            'view team members',
+            'access users',
+            'view users',
             // assign customers permissions
             'access customers',
             'create customers',
@@ -141,8 +141,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'access events',
             'view events',
             // assign team members permissions
-            'access team members',
-            'view team members',
+            'access users',
+            'view users',
             // assign customers permissions
             'access customers',
             'view customers',

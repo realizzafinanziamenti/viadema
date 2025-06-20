@@ -1,5 +1,5 @@
 <div class="w-full">
-    <x-button-back class="mb-2.5" route="user.team.index" />
+    <x-button-back class="mb-2.5" route="user.index" />
     <x-page-title label="Dettaglio Collaboratore" />
 
     <x-card class="w-3xl mx-auto">

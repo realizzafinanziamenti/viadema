@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Team;
+namespace App\Livewire\Admin\User;
 
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
@@ -9,7 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Spatie\LivewireFilepond\WithFilePond;
 
-class TeamCreate extends Component
+class UserCreate extends Component
 {
     use WithFilePond;
 
@@ -24,7 +24,7 @@ class TeamCreate extends Component
         Gate::authorize('create', User::class);
         $user = $this->form->store();
 
-        $this->redirectRoute('user.team.show', ['id' => $user->id], navigate: true);
+        $this->redirectRoute('user.show', ['id' => $user->id], navigate: true);
     }
 
     public function mount()
@@ -37,6 +37,6 @@ class TeamCreate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        return view('livewire.admin.team.team-create');
+        return view('livewire.admin.user.user-create');
     }
 }
