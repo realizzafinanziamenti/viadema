@@ -7,8 +7,8 @@
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
                 placeholder="Cerca per nome, cognome..." />
 
-            @can('create team members')
-                <a href="{{ route('user.team.create') }}" wire:navigate>
+            @can('create users')
+                <a href="{{ route('user.create') }}" wire:navigate>
                     <x-buttons.create-button label="Crea nuova anagrafica" />
                 </a>
             @endcan
@@ -43,13 +43,13 @@
                     {{-- Actions --}}
                     <x-table-data class="inline-flex items-center justify-end w-full gap-3">
                         @can('view', $teamMember)
-                            <a href="{{ route('user.team.show', ['id' => $teamMember->id]) }}" wire:navigate>
+                            <a href="{{ route('user.show', ['id' => $teamMember->id]) }}" wire:navigate>
                                 <x-table-action-button-view />
                             </a>
                         @endcan
 
                         @can('update', $teamMember)
-                            <a href="{{ route('user.team.edit', ['id' => $teamMember->id]) }}" wire:navigate>
+                            <a href="{{ route('user.edit', ['id' => $teamMember->id]) }}" wire:navigate>
                                 <x-table-action-button-edit />
                             </a>
                         @endcan

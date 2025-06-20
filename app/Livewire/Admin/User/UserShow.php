@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire\Admin\Team;
+namespace App\Livewire\Admin\User;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-class TeamShow extends Component
+class UserShow extends Component
 {
     public User $user;
 
@@ -20,6 +20,6 @@ class TeamShow extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        return view('livewire.admin.team.team-show');
+        return view('livewire.admin.user.user-show');
     }
 }

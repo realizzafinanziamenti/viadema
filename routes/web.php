@@ -15,10 +15,10 @@ use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Practice\PracticeUpdate;
 use App\Livewire\Admin\Setting\SettingIndex;
-use App\Livewire\Admin\Team\TeamCreate;
-use App\Livewire\Admin\Team\TeamIndex;
-use App\Livewire\Admin\Team\TeamShow;
-use App\Livewire\Admin\Team\TeamUpdate;
+use App\Livewire\Admin\User\UserCreate;
+use App\Livewire\Admin\User\UserIndex;
+use App\Livewire\Admin\User\UserShow;
+use App\Livewire\Admin\User\UserUpdate;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -34,11 +34,11 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     // Event Routes
     Route::get('events', EventIndex::class)->name('event.index')->middleware('can:access events');
 
-    // Team Member Routes
-    Route::get('users/team', TeamIndex::class)->name('user.team.index')->middleware('can:access team members');
-    Route::get('users/team/create', TeamCreate::class)->name('user.team.create')->middleware('can:create team members');
-    Route::get('users/team/{id}', TeamShow::class)->name('user.team.show')->middleware('can:view team members');
-    Route::get('users/team/{id}/edit', TeamUpdate::class)->name('user.team.edit')->middleware('can:update team members');
+    // User Routes
+    Route::get('users', UserIndex::class)->name('user.index')->middleware('can:access users');
+    Route::get('users/create', UserCreate::class)->name('user.create')->middleware('can:create users');
+    Route::get('users/{id}', UserShow::class)->name('user.show')->middleware('can:view users');
+    Route::get('users/{id}/edit', UserUpdate::class)->name('user.edit')->middleware('can:update users');
 
     // Customer Routes
     Route::get('customers', CustomerIndex::class)->name('customer.index')->middleware('can:access customers');

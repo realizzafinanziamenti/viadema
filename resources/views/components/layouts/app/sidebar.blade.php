@@ -86,8 +86,8 @@
 
             {{-- MANAGEMENT --}}
             <flux:navlist.group heading="Gestione" class="grid">
-                @can('access team members')
-                    <x-sidebar-item route="user.team.index" routeIs="user.team" label="Gestione Collaboratori">
+                @can('access users')
+                    <x-sidebar-item route="user.index" routeIs="user" label="Gestione Collaboratori">
                         <x-icons.icon-akar-people-multiple />
                     </x-sidebar-item>
                 @endcan

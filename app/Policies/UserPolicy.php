@@ -5,14 +5,14 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class TeamMemberPolicy
+class UserPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('access team members');
+        return $user->hasPermissionTo('access users');
     }
 
     /**
@@ -20,7 +20,7 @@ class TeamMemberPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->hasPermissionTo('view team members');
+        return $user->hasPermissionTo('view users');
     }
 
     /**
@@ -28,7 +28,7 @@ class TeamMemberPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create team members');
+        return $user->hasPermissionTo('create users');
     }
 
     /**
@@ -36,7 +36,7 @@ class TeamMemberPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->hasPermissionTo('update team members');
+        return $user->hasPermissionTo('update users');
     }
 
     /**
