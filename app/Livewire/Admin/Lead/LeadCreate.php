@@ -74,7 +74,7 @@ class LeadCreate extends Component
      */
     public function save(): void
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', [Customer::class, CustomerStatus::LEAD]);
         $lead = $this->form->store();
 
         $this->redirectRoute('lead.show', ['id' => $lead->id], navigate: true);
@@ -96,7 +96,7 @@ class LeadCreate extends Component
 
     public function mount()
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', [Customer::class, CustomerStatus::LEAD]);
 
         // Initialize customer status to LEAD
         $this->form->customerStatus = CustomerStatus::LEAD->value;
