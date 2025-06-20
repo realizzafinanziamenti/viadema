@@ -17,8 +17,8 @@
         </div>
     </div>
 
-    {{-- Customer Type --}}
     @if ($context === 'lead')
+        {{-- Customer Type --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Tipologia Cliente</flux:label>
             <div class="flex flex-col gap-0.5">
@@ -28,6 +28,7 @@
             </div>
         </div>
 
+        {{-- Lead Source --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Canale di acquisizione</flux:label>
             <div class="flex flex-col gap-0.5">
@@ -37,6 +38,7 @@
             </div>
         </div>
 
+        {{-- Lead Status --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Stato</flux:label>
             <div class="flex flex-col gap-0.5">
@@ -46,6 +48,7 @@
             </div>
         </div>
 
+        {{-- Lead Communication --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Comunicazioni</flux:label>
             <div class="flex flex-col gap-0.5">
