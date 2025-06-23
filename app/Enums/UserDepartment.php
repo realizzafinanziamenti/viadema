@@ -51,4 +51,19 @@ enum UserDepartment: string
             self::OBSERVER => 'Osservatore',
         };
     }
+
+    /**
+     * Get the CSS class for the current department.
+     */
+    public function getLabelColor(): string
+    {
+        return match ($this) {
+            self::DIRECT_PRODUCTION => 'direct-production',
+            self::INDIRECT_PRODUCTION => 'indirect-production',
+            self::CALL_CENTER => 'call-center',
+            self::CONSULTANT => 'consultant',
+            self::EXTERNAL => 'external',
+            self::OBSERVER => 'observer',
+        };
+    }
 }

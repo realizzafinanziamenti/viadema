@@ -19,7 +19,7 @@
             <x-slot name="header" class="border-b">
                 <x-table-header label="Id collaboratore" class="w-1/12" />
                 <x-table-header label="Nome collaboratore" class="w-2/12" />
-                <x-table-header label="Personale" class="w-1/12" />
+                <x-table-header label="Personale" class="w-2/12" />
                 <x-table-header label="Cellulare" class="w-[160px]" />
                 <x-table-header label="Codice fiscale" class="w-[170px]" />
                 <x-table-header label="Email" class="w-2/12" />
@@ -34,9 +34,11 @@
                 <tr wire:key='{{ $teamMember->id }}' class="border-y border-collapse">
                     <x-table-data label="{{ $teamMember->id }}" />
                     <x-table-data truncate label="{{ $teamMember->full_name }}" />
-                    <x-table-data truncate label="Per ora niente" />
+                    <x-table-data truncate
+                        class="uppercase font-semibold {{ $teamMember->profile?->user_department?->getLabelColor() }}"
+                        label="{{ $teamMember->profile?->user_department?->getLabelText() }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile?->tax_id }}" />
+                    <x-table-data truncate label="{{ $teamMember->profile?->tax_id ?? 'N/D' }}" />
                     <x-table-data truncate label="{{ $teamMember->email }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->city }}" />
 
