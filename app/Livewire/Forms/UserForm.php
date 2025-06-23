@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\UserDepartment;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -19,6 +21,7 @@ class UserForm extends Form
     public ?User $user = null;
 
     public $role = null;
+    public $department = null;
     public $firstName = null;
     public $lastName = null;
     public $email = null;
@@ -34,6 +37,8 @@ class UserForm extends Form
     protected function rules()
     {
         return [
+            'role' => ['required', 'string', Rule::in(UserDepartment::getRoles())],
+            'department' => ['required', 'string', new Enum(UserDepartment::class)],
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user?->id)],
@@ -47,6 +52,8 @@ class UserForm extends Form
     protected function validationAttributes()
     {
         return [
+            'role' => 'ruolo',
+            'department' => 'dipartimento',
             'firstName' => 'nome',
             'lastName' => 'cognome',
             'email' => 'email',
@@ -66,6 +73,8 @@ class UserForm extends Form
     {
         $this->user = $user;
 
+        $this->role = $user->getRoleNames()->first();  // Get the first role assigned to the user - correct because a user can have only one role in this context
+        $this->department = $user->profile?->user_department?->value;
         $this->firstName = $user->first_name;
         $this->lastName = $user->last_name;
         $this->email = $user->email;
@@ -103,6 +112,7 @@ class UserForm extends Form
                 $user->assignRole($this->role);
 
                 $user->profile()->create([
+                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,
@@ -158,7 +168,10 @@ class UserForm extends Form
                     'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
+                $this->user->syncRoles($this->role);  // SYNC ROLES
+
                 $this->user->profile()->update([
+                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,

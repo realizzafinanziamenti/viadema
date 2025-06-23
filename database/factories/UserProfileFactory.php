@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserDepartment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class UserProfileFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_department' => fake()->randomElement(UserDepartment::cases())->value,
             'phone' => fake()->phoneNumber(),
             'tax_id' => fake()->taxId(),
             'city' => fake()->city(),

@@ -180,6 +180,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope a query to exclude superadmin.
+     */
+    public function scopeWithoutSuperadmin(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('roles', function ($q) {
+            $q->where('name', 'superadmin');
+        });
+    }
+
+    /**
      * Scope a query to filter by search
      */
     public function scopeFilterBySearch(Builder $query, string $search)

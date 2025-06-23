@@ -34,6 +34,7 @@
     --color-azure-custom-light: #8DD4DC;
     --color-azure-chat-bg: #f2fafb;
     --color-pink-custom: #E56399;
+    --color-purple-custom: #830CFA;
     --color-red-custom: #d30000;
     --color-red-custom-light: #fae6e6;
     --color-green-custom: #4c731f;
@@ -123,14 +124,26 @@ select:focus[data-flux-control] {
     @apply bg-blue-custom-light text-blue-custom border-sky-300;
 }
 
-.lead-status-new {
+.lead-status-new, .external {
     @apply text-orange-custom;
 }
 
-.lead-status-active {
+.lead-status-active, .direct-production {
     @apply text-azure-custom;
 }
 
-.lead-status-lost {
+.lead-status-lost, .observer {
     @apply text-black-custom;
+}
+
+.indirect-production {
+    @apply text-blue-custom;
+}
+
+.call-center {
+    @apply text-pink-custom;
+}
+
+.consultant {
+    @apply text-purple-custom;
 }

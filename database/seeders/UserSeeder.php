@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserDepartment;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -40,11 +41,13 @@ class UserSeeder extends Seeder
         for ($i = 0; $i < 25; $i++) {
             $teamMember = User::factory()->create();
 
-            $teamMember->assignRole('team_member');
-
-            UserProfile::factory()->create([
+            $profile = UserProfile::factory()->create([
                 'user_id' => $teamMember->id,
             ]);
+
+            if ($profile->user_department && $department = UserDepartment::tryFrom($profile->user_department?->value)) {
+                $teamMember->assignRole($department->getRole());
+            }
         }
     }
 }
