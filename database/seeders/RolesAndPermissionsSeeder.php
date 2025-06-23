@@ -30,6 +30,8 @@ class RolesAndPermissionsSeeder extends Seeder
          * Create permissions
          */
         $permissions = [
+            // dashboard permissions
+            'access dashboard',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -109,6 +111,8 @@ class RolesAndPermissionsSeeder extends Seeder
          * Define role permissions for each role
          */
         $teamMemberPermissions = [
+            // dashboard permissions
+            'access dashboard',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -125,6 +129,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view customers',
             'update customers',
             'delete customers',
+            // assign leads permissions
+            'access leads',
+            'create leads',
+            'view leads',
+            'update leads',
+            'delete leads',
             // assign practices permissions
             'access practices',
             'view practices',
@@ -136,6 +146,8 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         $observerPermissions = [
+            // dashboard permissions
+            'access dashboard',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -146,6 +158,9 @@ class RolesAndPermissionsSeeder extends Seeder
             // assign customers permissions
             'access customers',
             'view customers',
+            // assign leads permissions
+            'access leads',
+            'view leads',
             // assign practices permissions
             'access practices',
             'view practices',
