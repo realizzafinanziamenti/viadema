@@ -74,7 +74,7 @@ class UserForm extends Form
         $this->user = $user;
 
         $this->role = $user->getRoleNames()->first();  // Get the first role assigned to the user - correct because a user can have only one role in this context
-        $this->department = $user->user_department?->value;
+        $this->department = $user->profile?->user_department?->value;
         $this->firstName = $user->first_name;
         $this->lastName = $user->last_name;
         $this->email = $user->email;

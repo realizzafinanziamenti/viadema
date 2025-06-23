@@ -67,17 +67,11 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Dipartimento *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-dropdown-select size="sm" :selectable-items="$departments" :selected="$department" placeholder='Seleziona dipartimento'
+            <x-dropdown-select size="sm" :selectable-items="$departments" :selected="$form->department" placeholder='Seleziona dipartimento'
                 setFunction="setDepartment" :has-error="$errors->has('form.department')" />
 
             <flux:error name="form.department" />
             <flux:error name="form.role" />
         </div>
-    </div>
-    {{-- Profile Photo --}}
-    <div class="flex flex-col gap-1.5 col-span-2">
-        <flux:label>Immagine Profilo</flux:label>
-        <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
-            accepted-file-types="image/jpeg,image/png" />
     </div>
 </div>

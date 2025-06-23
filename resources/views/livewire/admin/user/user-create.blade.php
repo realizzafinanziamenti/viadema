@@ -5,9 +5,15 @@
         <form wire:submit.prevent='save' class="w-2xl mx-auto mt-10 mb-5">
 
             @include('partials.user.user-form-fields', [
-                'form' => 'form',
-                'department' => $form->department,
+                'form' => $form,
             ])
+
+            {{-- Profile Photo --}}
+            <div class="flex flex-col gap-1.5 col-span-2 mt-6">
+                <flux:label>Immagine Profilo</flux:label>
+                <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
+                    accepted-file-types="image/jpeg,image/png" />
+            </div>
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
