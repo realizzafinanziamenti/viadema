@@ -5,6 +5,7 @@ use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
 use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
+use App\Livewire\Admin\Dashboard\Dashboard;
 use App\Livewire\Admin\Event\EventIndex;
 use App\Livewire\Admin\Lead\LeadCreate;
 use App\Livewire\Admin\Lead\LeadIndex;
@@ -26,7 +27,7 @@ Route::permanentRedirect('/', 'login');
 
 Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     // Dasboard Route
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', Dashboard::class)->name('dashboard')->middleware('can:access dashboard');
 
     // Calendar Route
     Route::get('calendar', Calendar::class)->name('calendar')->middleware('can:access calendar');
