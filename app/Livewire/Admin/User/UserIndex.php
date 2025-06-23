@@ -67,7 +67,8 @@ class UserIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = User::teamMembers()
+        $query = User::with('profile')
+            ->withoutSuperadmin()
             ->orderByDesc('updated_at');
 
         $query = $query->filterBySearch($this->search);
