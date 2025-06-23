@@ -37,6 +37,7 @@ class UserForm extends Form
     protected function rules()
     {
         return [
+            'role' => ['required', 'string', Rule::in(UserDepartment::getRoles())],
             'department' => ['required', 'string', new Enum(UserDepartment::class)],
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
@@ -51,6 +52,7 @@ class UserForm extends Form
     protected function validationAttributes()
     {
         return [
+            'role' => 'ruolo',
             'department' => 'dipartimento',
             'firstName' => 'nome',
             'lastName' => 'cognome',
@@ -71,6 +73,7 @@ class UserForm extends Form
     {
         $this->user = $user;
 
+        $this->role = $user->getRoleNames()->first();  // Get the first role assigned to the user - correct because a user can have only one role in this context
         $this->department = $user->user_department?->value;
         $this->firstName = $user->first_name;
         $this->lastName = $user->last_name;
@@ -99,7 +102,6 @@ class UserForm extends Form
                     : null;
 
                 $user = User::create([
-                    'user_department' => $this->department,
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'email' => $this->email,
@@ -110,6 +112,7 @@ class UserForm extends Form
                 $user->assignRole($this->role);
 
                 $user->profile()->create([
+                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,
@@ -158,7 +161,6 @@ class UserForm extends Form
                     : $this->user->profile_photo_path;
 
                 $this->user->update([
-                    'user_department' => $this->department,
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'email' => $this->email,
@@ -166,7 +168,10 @@ class UserForm extends Form
                     'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
+                $this->user->syncRoles($this->role);  // SYNC ROLES
+
                 $this->user->profile()->update([
+                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,

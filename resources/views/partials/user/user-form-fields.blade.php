@@ -71,6 +71,7 @@
                 setFunction="setDepartment" :has-error="$errors->has('form.department')" />
 
             <flux:error name="form.department" />
+            <flux:error name="form.role" />
         </div>
     </div>
     {{-- Profile Photo --}}

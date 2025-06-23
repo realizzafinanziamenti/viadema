@@ -11,6 +11,9 @@ enum UserDepartment: string
     case EXTERNAL = 'external';
     case OBSERVER = 'observer';
 
+    /**
+     * Returns the role associated with the department.
+     */
     public function getRole(): string
     {
         return match ($this) {
@@ -23,6 +26,20 @@ enum UserDepartment: string
         };
     }
 
+    /**
+     * Returns an array of unique roles for all departments.
+     */
+    public static function getRoles(): array
+    {
+        return array_unique(array_map(
+            fn(self $department) => $department->getRole(),
+            self::cases()
+        ));
+    }
+
+    /**
+     * Returns the label text for the department.
+     */
     public function getLabelText(): string
     {
         return match ($this) {
