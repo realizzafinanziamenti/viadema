@@ -40,13 +40,16 @@
         {{-- Right --}}
         <div class="w-2/3 h-full flex flex-col gap-2.5">
             <x-dashboard.practice-counter-element color="green" countLabel="Totale pratiche deliberate"
-                buttonLabel="Vedi deliberate" :practiceCount="$approvedPracticeCount" />
+                buttonLabel="Vedi deliberate" :practiceCount="$approvedPracticeCount"
+                href="{{ route('practice.index', ['status' => $approvedStatus]) }}" />
 
             <x-dashboard.practice-counter-element color="oil" countLabel="Totale pratiche in attesa"
-                buttonLabel="Vedi in attesa" :practiceCount="$pendingPracticeCount" />
+                buttonLabel="Vedi in attesa" :practiceCount="$pendingPracticeCount"
+                href="{{ route('practice.index', ['status' => $pendingStatus]) }}" />
 
             <x-dashboard.practice-counter-element color="blue" countLabel="Totale nuove pratiche"
-                buttonLabel="Vedi nuove" :practiceCount="$underReviewPracticeCount" />
+                buttonLabel="Vedi nuove" :practiceCount="$underReviewPracticeCount"
+                href="{{ route('practice.index', ['status' => $underReviewStatus]) }}" />
         </div>
 
     </div>

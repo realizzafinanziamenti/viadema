@@ -3,6 +3,7 @@
     'countLabel' => 'Totale pratiche',
     'buttonLabel' => 'Vedi pratiche',
     'color' => '',
+    'href' => '#',
 ])
 
 @php
@@ -33,6 +34,8 @@
 
     {{-- Left --}}
     <div class="w-[120px] shrink-0">
-        <x-dashboard.dashboard-button label="{{ $buttonLabel }}" class="{{ $cssColorButton }}" />
+        <a href="{{ $href }}" wire:navigate class="w-full">
+            <x-dashboard.dashboard-button label="{{ $buttonLabel }}" class="{{ $cssColorButton }}" />
+        </a>
     </div>
 </div>

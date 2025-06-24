@@ -10,6 +10,9 @@ use Livewire\Component;
 class PracticeCounter extends Component
 {
     public int $praticeCount = 0;
+    public string $approvedStatus = PracticeStatus::APPROVED->value;
+    public string $pendingStatus = PracticeStatus::PENDING->value;
+    public string $underReviewStatus = PracticeStatus::UNDER_REVIEW->value;
     public int $approvedPracticeCount = 0;  // deliberate
     public int $pendingPracticeCount = 0;  // in attesa
     public int $underReviewPracticeCount = 0;  // nuove
@@ -45,9 +48,9 @@ class PracticeCounter extends Component
     public function mount()
     {
         $this->praticeCount = Practice::count();
-        $this->approvedPracticeCount = Practice::where('practice_status', PracticeStatus::APPROVED->value)->count();
-        $this->pendingPracticeCount = Practice::where('practice_status', PracticeStatus::PENDING->value)->count();
-        $this->underReviewPracticeCount = Practice::where('practice_status', PracticeStatus::UNDER_REVIEW->value)->count();
+        $this->approvedPracticeCount = Practice::where('practice_status', $this->approvedStatus)->count();
+        $this->pendingPracticeCount = Practice::where('practice_status', $this->pendingStatus)->count();
+        $this->underReviewPracticeCount = Practice::where('practice_status', $this->underReviewStatus)->count();
     }
 
     public function render()
