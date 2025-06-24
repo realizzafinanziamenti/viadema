@@ -17,9 +17,8 @@
 
         {{-- SECOND ROW --}}
 
-        <x-card class="col-span-24 xl:col-span-11" header="Liquidato">
-
-        </x-card>
+        {{-- Disbursed Comparison --}}
+        <livewire:admin.dashboard.disbursed-comparison />
 
         <x-card class="col-span-24 xl:col-span-13" header="I miei collaboratori">
 
