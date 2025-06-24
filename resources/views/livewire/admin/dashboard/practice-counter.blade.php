@@ -1,7 +1,5 @@
-<x-card class="col-span-24 xl:col-span-10 h-[300px] flex flex-col gap-5">
-    <x-dashboard.card-header-dashboard label="Numero pratiche" />
-
-    <div class="flex items-center gap-4 flex-1">
+<x-dashboard.dashboard-card class="col-span-24 xl:col-span-10 h-[300px] flex flex-col gap-5" header="Numero pratiche">
+    <div class="flex items-center gap-5 p-2 flex-1">
 
         {{-- Left --}}
         <div class="w-1/3 h-full flex items-center justify-center">
@@ -53,4 +51,4 @@
         </div>
 
     </div>
-</x-card>
+</x-dashboard.dashboard-card>
