@@ -1,8 +1,10 @@
 @props(['header' => null])
 
 <div {{ $attributes->merge(['class' => 'bg-white p-5 rounded-lg']) }}>
-    {{-- Card header --}}
-    <x-card-header label="{{ $header }}" />
+    @if ($header)
+        {{-- Card header --}}
+        <x-card-header label="{{ $header }}" />
+    @endif
 
     {{ $slot }}
 </div>
