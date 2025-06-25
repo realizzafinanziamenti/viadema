@@ -35,7 +35,7 @@
     {{-- Left --}}
     <div class="w-[120px] shrink-0">
         <a href="{{ $href }}" wire:navigate class="w-full">
-            <x-dashboard.dashboard-button label="{{ $buttonLabel }}" class="{{ $cssColorButton }}" />
+            <x-dashboard.dashboard-button label="{{ $buttonLabel }}" class="cursor-pointer {{ $cssColorButton }}" />
         </a>
     </div>
 </div>
