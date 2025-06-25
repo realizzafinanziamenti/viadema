@@ -8,9 +8,8 @@
         {{-- Practice Counter --}}
         <livewire:admin.dashboard.practice-counter />
 
-        <x-card class="col-span-24 xl:col-span-14" header="Pratiche Liquidate">
-
-        </x-card>
+        {{-- Latest Disbursed Practices --}}
+        <livewire:admin.dashboard.latest-disbursed-practices />
 
         {{-- END FIRST ROW --}}
 

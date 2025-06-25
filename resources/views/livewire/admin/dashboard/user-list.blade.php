@@ -1,6 +1,6 @@
-<x-dashboard.dashboard-card class="col-span-24 xl:col-span-13 h-[300px] flex flex-col" header="Lista collaboratori">
+<x-dashboard.dashboard-card class="col-span-24 xl:col-span-13 h-[300px] flex flex-col gap-3" header="Lista collaboratori">
 
-    <x-table class="my-3" minWidth="min-w-[500px]">
+    <x-table class="my-1" minWidth="min-w-[500px]">
         {{-- Table header --}}
         <x-slot name="header" class="border-b">
             <x-table-header height="h-8" label="ID" class="w-[80px]" />
