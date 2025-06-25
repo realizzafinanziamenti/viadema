@@ -20,9 +20,8 @@
         {{-- Disbursed Comparison --}}
         <livewire:admin.dashboard.disbursed-comparison />
 
-        <x-card class="col-span-24 xl:col-span-13" header="I miei collaboratori">
-
-        </x-card>
+        {{-- User List --}}
+        <livewire:admin.dashboard.user-list />
 
         {{-- END SECOND ROW --}}
 
