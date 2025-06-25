@@ -14,7 +14,7 @@ class LatestDisbursedPractices extends Component
     {
         $this->practices = Practice::with(['user'])
             ->where('practice_status', PracticeStatus::DISBURSED)
-            ->latest('updated_at')
+            ->latest('disbursement_date')
             ->take(5)
             ->get();
     }
