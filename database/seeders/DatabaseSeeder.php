@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
             InstallmentProductDefaultSeeder::class,
+            FormDocumentSeeder::class,
         ]);
 
         // development seeding
