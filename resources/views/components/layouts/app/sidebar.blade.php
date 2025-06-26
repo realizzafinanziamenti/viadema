@@ -20,11 +20,13 @@
         <flux:navlist class="overflow-y-auto ps-6 pe-4 scrollbar-none hover:scrollbar-thin pb-6">
             {{-- Sidebar Search --}}
             {{-- HOME --}}
-            <flux:navlist.group heading="Home" class="grid">
-                <x-sidebar-item route="dashboard" routeIs="dashboard" label="Dashboard">
-                    <x-icons.icon-akar-home />
-                </x-sidebar-item>
-            </flux:navlist.group>
+            @can('access dashboard')
+                <flux:navlist.group heading="Home" class="grid">
+                    <x-sidebar-item route="dashboard" routeIs="dashboard" label="Dashboard">
+                        <x-icons.icon-akar-home />
+                    </x-sidebar-item>
+                </flux:navlist.group>
+            @endcan
 
             {{-- CRM --}}
             <flux:navlist.group heading="Crm" class="grid">

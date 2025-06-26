@@ -1,11 +1,11 @@
-@props(['truncate' => false, 'label' => ''])
+@props(['truncate' => false, 'label' => '', 'height' => 'h-14'])
 
 @php
     $class = $truncate ? 'truncate' : '';
     $title = $truncate ? ['title' => trim($label)] : [];
 @endphp
 
-<td {{ $attributes->merge(array_merge(['class' => 'px-2 h-14 font-medium ' . $class], $title)) }}>
+<td {{ $attributes->merge(array_merge(['class' => $height . ' px-2 font-medium ' . $class], $title)) }}>
     {{ $label ?? '' }}
     {{ $slot }}
 </td>

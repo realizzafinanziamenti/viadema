@@ -727,6 +727,13 @@ class PracticeIndex extends Component
             ? ProductType::where('slug', $slug)->firstOrFail()
             : null;
 
+        // Set the practice status based on the request status parameter
+        // This allows the component to be used with or without a specific practice status (for dashboard links)
+        if ($practiceStatus = $request->query('status')) {
+            $this->setPracticeStatusForFilter($practiceStatus);
+            $this->selectedPracticeStatusForFilter = $practiceStatus;
+        }
+
         // the expired status based on the request parameter
         // This allows the component to be used with or without the expired filter
         $this->expired = $request->boolean('expired');

@@ -34,16 +34,16 @@
     --color-azure-custom-light: #8DD4DC;
     --color-azure-chat-bg: #f2fafb;
     --color-pink-custom: #E56399;
-    --color-purple-custom: #830CFA;
+    --color-purple-custom: #806BFF;
     --color-red-custom: #d30000;
     --color-red-custom-light: #fae6e6;
-    --color-green-custom: #4c731f;
+    --color-green-custom: #5f9123;
     --color-green-custom-light: #f4faed;
     --color-orange-custom: #ff8c42;
     --color-orange-custom-hover: #E07028;
     --color-orange-custom-light: #fffcee;
-    --color-azure-status-custom: #00BE8B;
-    --color-azure-status-custom-light: #f0fbf8;
+    --color-oil-custom: #00BE8B;
+    --color-oil-custom-light: #f0fbf8;
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -117,7 +117,7 @@ select:focus[data-flux-control] {
 }
 
 .pending {
-    @apply bg-azure-status-custom-light text-azure-status-custom border-teal-200;
+    @apply bg-oil-custom-light text-oil-custom border-teal-200;
 }
 
 .disbursed {
