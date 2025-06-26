@@ -37,4 +37,14 @@ class FormDocument extends Model
             $query->where('title', 'like', "%{$search}%");
         });
     }
+
+    /**
+     * Scope a query to filter by date
+     */
+    public function scopeFilterByDate(Builder $query, string $date)
+    {
+        return $query->when($date, function ($query) use ($date) {
+            $query->whereDate('created_at', $date);
+        });
+    }
 }
