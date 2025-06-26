@@ -38,25 +38,41 @@ class DisbursedComparison extends Component
     {
         $ranges = [];
 
+        // Retrieve the number of days in the month
+        // Ottieni il numero di giorni nel mese
         $daysInMonth = $date->daysInMonth;
         $day = 1;
 
+        // Loop to generate day ranges (e.g. 1–5, 6–10, ...)
+        // Cicla per generare intervalli di giorni (es. 1–5, 6–10, ...)
         while ($day <= $daysInMonth) {
+            // Calculate the start day of the current range
+            // Calcola il giorno di inizio dell'intervallo corrente
             $start = $date->copy()->startOfMonth()->addDays($day - 1)->startOfDay();
 
+            // Calculate the end day of the current range
+            // Calcola il giorno di fine dell'intervallo corrente
             $endDay = $day + $step - 1;
             if ($endDay > $daysInMonth) {
+                // Prevent going past the end of the month
+                // Evita di superare la fine del mese
                 $endDay = $daysInMonth;
             }
 
+            // Calculate the end date for the current range
+            // Calcola la data di fine per l'intervallo corrente
             $end = $date->copy()->startOfMonth()->addDays($endDay - 1)->endOfDay();
 
+            // Add the range to the list with a label like "5gg", "10gg", etc.
+            // Aggiungi l'intervallo alla lista con un'etichetta come "5gg", "10gg", ecc.
             $ranges[] = [
                 'label' => $endDay . 'gg',
                 'start' => $start,
                 'end' => $end,
             ];
 
+            // Move to the next range block
+            // Passa al blocco di intervallo successivo
             $day += $step;
         }
 
@@ -68,11 +84,22 @@ class DisbursedComparison extends Component
      */
     protected function getDisbursedByRanges(Carbon $monthDate): array
     {
+        // Fetch all disbursed practices for that month with only necessary fields
+        // Recupera tutte le pratiche disbursate per quel mese con solo i campi necessari
+        $practices = Practice::where('practice_status', PracticeStatus::DISBURSED->value)
+            ->whereMonth('disbursement_date', $monthDate->month)
+            ->whereYear('disbursement_date', $monthDate->year)
+            ->get(['disbursement_date', 'amount_disbursed']);
+
+        // Get the list of day ranges for that month
+        // Ottieni gli intervalli di date per quel mese
         $ranges = $this->getDateRanges($monthDate);
 
-        return collect($ranges)->map(function ($range) {
-            $total = Practice::where('practice_status', PracticeStatus::DISBURSED->value)
-                ->whereBetween('disbursement_date', [$range['start'], $range['end']])
+        // For each range, calculate the total disbursed amount
+        // Per ogni intervallo calcola il totale dei disbursamenti
+        return collect($ranges)->map(function ($range) use ($practices) {
+            $total = $practices
+                ->filter(fn($p) => $p->disbursement_date->between($range['start'], $range['end']))
                 ->sum('amount_disbursed');
 
             return [

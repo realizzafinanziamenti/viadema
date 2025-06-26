@@ -12,7 +12,7 @@ class LatestDisbursedPractices extends Component
 
     public function mount()
     {
-        $this->practices = Practice::with(['user'])
+        $this->practices = Practice::with(['customer'])
             ->where('practice_status', PracticeStatus::DISBURSED)
             ->latest('disbursement_date')
             ->take(5)
