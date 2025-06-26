@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -23,5 +24,17 @@ class FormDocument extends Model
     public function attachment(): MorphOne
     {
         return $this->morphOne(Attachment::class, 'attachable');
+    }
+
+    /**
+     * Scope a query to filter by search
+     */
+    public function scopeFilterBySearch(Builder $query, string $search)
+    {
+        $search = trim($search);
+
+        return $query->when($search, function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        });
     }
 }
