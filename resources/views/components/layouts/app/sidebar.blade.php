@@ -66,9 +66,11 @@
                     </x-sidebar-item>
                 @endcan
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Modulistica">
-                    <x-icons.icon-akar-clipboard />
-                </x-sidebar-item>
+                @can('access form documents')
+                    <x-sidebar-item route="form-document.index" routeIs="form-document" label="Modulistica">
+                        <x-icons.icon-akar-clipboard />
+                    </x-sidebar-item>
+                @endcan
             </flux:navlist.group>
 
             {{-- CALENDAR --}}
