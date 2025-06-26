@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attachment;
 use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
@@ -55,6 +56,17 @@ class PracticeSeeder extends Seeder
                         'alert_date' => now()->addMinutes(rand(10, 20)),
                         'user_id' => 1, // superadmin user
                     ]);
+                }
+
+                // 50% dei casi, aggiungi 1 o 2 allegati
+                if (fake()->boolean()) {
+                    $attachmentCount = rand(1, 2);
+
+                    for ($j = 0; $j < $attachmentCount; $j++) {
+                        $practice->attachments()->save(
+                            Attachment::factory()->make()
+                        );
+                    }
                 }
             }
         }
