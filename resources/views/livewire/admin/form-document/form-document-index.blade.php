@@ -41,7 +41,7 @@
                             $align = $index >= count($formDocuments) - 5 ? 'top' : 'right';
                         @endphp
 
-                        <x-dropdown :align="$align" width="w-30" contentClasses="bg-white">
+                        <x-dropdown :align="$align" width="w-30">
                             <x-slot name="trigger">
                                 <div
                                     class="shrink-0 text-gray-custom-5 rounded-full flex items-center justify-center cursor-pointer size-6.5">
@@ -51,21 +51,21 @@
 
                             <x-slot name="content">
                                 @can('download form documents')
-                                    <x-dropdown-button class="cursor-pointer rounded-t-md" size="sm"
+                                    <x-dropdown-button class="cursor-pointer rounded-t-md"
                                         wire:click='download({{ $document->id }})'>
                                         Scarica
                                     </x-dropdown-button>
                                 @endcan
 
                                 @can('update form documents')
-                                    <x-dropdown-button class="cursor-pointer" size="sm"
+                                    <x-dropdown-button class="cursor-pointer"
                                         wire:click='selectDocumentForUpdate({{ $document->id }})'>
                                         Rinomina
                                     </x-dropdown-button>
                                 @endcan
 
                                 @can('delete form documents')
-                                    <x-dropdown-button class="cursor-pointer rounded-b-md" size="sm"
+                                    <x-dropdown-button class="cursor-pointer rounded-b-md"
                                         wire:click='selectDocumentForDelete({{ $document->id }})'>
                                         Elimina
                                     </x-dropdown-button>
