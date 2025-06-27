@@ -4,7 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create customer types')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo cliente"
+                <x-buttons.create-button size="sm" px="px-6" label="Crea tipo cliente"
                     wire:click="openCreateCustomerTypeModal" />
             @endcan
         </div>
@@ -60,8 +60,8 @@
         <form wire:submit.prevent='createCustomerType'>
             {{-- Customer Type Name --}}
             <div class="flex flex-col gap-1.5">
-                <flux:label>Nome tipo cliente</flux:label>
-                <flux:input size="sm" placeholder="Inserisci nome tipo cliente" wire:model='name' />
+                <flux:label>Tipo cliente</flux:label>
+                <flux:input size="sm" placeholder="Inserisci tipo cliente" wire:model='name' />
                 <flux:error name="name" />
             </div>
 

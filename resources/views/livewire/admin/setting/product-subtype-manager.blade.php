@@ -4,7 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create product subtypes')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo prodotto"
+                <x-buttons.create-button size="sm" px="px-6" label="Crea tipo prodotto"
                     wire:click="openCreateProductSubtypeModal" />
             @endcan
         </div>
@@ -60,8 +60,8 @@
             <form wire:submit.prevent='createProductSubtype'>
                 {{-- Product Subtype Name --}}
                 <div class="flex flex-col gap-1.5">
-                    <flux:label>Nome tipo prodotto</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci nome tipo prodotto" wire:model='name' />
+                    <flux:label>Tipo prodotto</flux:label>
+                    <flux:input size="sm" placeholder="Inserisci tipo prodotto" wire:model='name' />
                     <flux:error name="name" />
                 </div>
 

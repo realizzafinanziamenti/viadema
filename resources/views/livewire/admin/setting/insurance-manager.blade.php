@@ -4,7 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create insurances')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea nuova assicurazione"
+                <x-buttons.create-button size="sm" px="px-6" label="Crea assicurazione"
                     wire:click="openCreateInsuranceModal" />
             @endcan
         </div>
@@ -57,8 +57,8 @@
             <form wire:submit.prevent='createInsurance'>
                 {{-- Insurance Name --}}
                 <div class="flex flex-col gap-1.5">
-                    <flux:label>Nome assicurazione</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci nome assicurazione" wire:model='name' />
+                    <flux:label>Assicurazione</flux:label>
+                    <flux:input size="sm" placeholder="Inserisci assicurazione" wire:model='name' />
                     <flux:error name="name" />
                 </div>
 

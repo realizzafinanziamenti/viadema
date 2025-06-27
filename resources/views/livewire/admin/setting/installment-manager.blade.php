@@ -4,7 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create installments')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea numero rate"
+                <x-buttons.create-button size="sm" px="px-6" label="Crea rate"
                     wire:click="openCreateInstallmentModal" />
             @endcan
         </div>
@@ -60,8 +60,8 @@
             <form wire:submit.prevent='createInstallment'>
                 {{-- Installment Name --}}
                 <div class="flex flex-col gap-1.5">
-                    <flux:label>Numero rate</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci numero rate" wire:model='value' />
+                    <flux:label>Rate</flux:label>
+                    <flux:input size="sm" placeholder="Inserisci rate" wire:model='value' />
                     <flux:error name="value" />
                 </div>
 
