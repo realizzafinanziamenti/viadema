@@ -102,6 +102,6 @@
     </x-card>
 
     {{-- Delete Document Modal --}}
-    <x-delete-modal name="delete-document" header="Conferma Eliminazione Documento" function="deleteDocument"
+    <x-delete-modal name="delete-document" header="Conferma Eliminazione" function="deleteDocument"
         message="Sei sicuro di voler eliminare <strong>{{ $selectedDocument?->title }}</strong>?" />
 </div>
