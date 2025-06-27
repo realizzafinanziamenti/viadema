@@ -1,35 +1,50 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-6" label="Gestione tipo prodotti" />
+        <x-card-header class="mb-3" label="Gestione tipo prodotti" />
 
-        <div class="flex justify-end items-center mb-4">
+        <div class="flex justify-end items-center mb-5">
             @can('create product subtypes')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuovo tipo prodotto"
                     wire:click="openCreateProductSubtypeModal" />
             @endcan
         </div>
 
-        @foreach ($productSubtypes as $index => $subtype)
-            <div
-                class="w-full flex justify-between items-center truncate py-2 px-3
-                    text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
-                <span>{{ $subtype->name }}</span>
+        <x-table minWidth="max-content">
+            {{-- Table Header --}}
+            <x-slot name="header" class="border-b">
+                <x-table-header label="Nome prodotto" />
 
-                <div class="flex space-x-2">
-                    @if ($subtype->isEditable())
-                        @can('update', $subtype)
-                            <x-table-action-button-edit wire:click="selectProductSubtypeForUpdate({{ $subtype->id }})"
-                                class="btn btn-primary">Modifica</x-table-action-button-edit>
-                        @endcan
-                    @endif
+                <x-table-header class="w-[100px]">
+                    {{-- Actions --}}
+                </x-table-header>
+            </x-slot>
 
-                    @can('delete', $subtype)
-                        <x-table-action-button-delete wire:click="selectProductSubtypeForDelete({{ $subtype->id }})"
-                            class="btn btn-danger">Elimina</x-table-action-button-delete>
-                    @endcan
-                </div>
-            </div>
-        @endforeach
+            {{-- Table body --}}
+            @foreach ($productSubtypes as $index => $subtype)
+                <tr wire:key='{{ $subtype->id }}' class="border-y border-collapse">
+                    <x-table-data label="{{ $subtype->name }}" />
+
+                    {{-- Actions --}}
+                    <x-table-data>
+                        <div class="flex items-center justify-end w-full gap-3">
+                            @if ($subtype->isEditable())
+                                @can('update', $subtype)
+                                    <x-table-action-button-edit
+                                        wire:click="selectProductSubtypeForUpdate({{ $subtype->id }})"
+                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
+                                @endcan
+                            @endif
+
+                            @can('delete', $subtype)
+                                <x-table-action-button-delete
+                                    wire:click="selectProductSubtypeForDelete({{ $subtype->id }})"
+                                    class="btn btn-danger">Elimina</x-table-action-button-delete>
+                            @endcan
+                        </div>
+                    </x-table-data>
+                </tr>
+            @endforeach
+        </x-table>
 
         {{-- Pagination --}}
         <div class="mt-5">

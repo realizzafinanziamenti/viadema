@@ -1,36 +1,50 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-6" label="Gestione tabella provvigionale" />
+        <x-card-header class="mb-3" label="Gestione tabella provvigionale" />
 
-        <div class="flex justify-end items-center mb-4">
+        <div class="flex justify-end items-center mb-5">
             @can('create financial tables')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuova provvigione"
                     wire:click="openCreateFinancialTableModal" />
             @endcan
         </div>
 
-        @foreach ($financialTables as $index => $financialTable)
-            <div
-                class="w-full flex justify-between items-center truncate py-2 px-3
-                    text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
-                <span>{{ $financialTable->percentage }}</span>
+        <x-table minWidth="max-content">
+            {{-- Table Header --}}
+            <x-slot name="header" class="border-b">
+                <x-table-header label="Valore provvigione" />
 
-                <div class="flex space-x-2">
-                    @if ($financialTable->isEditable())
-                        @can('update', $financialTable)
-                            <x-table-action-button-edit
-                                wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
-                                class="btn btn-primary">Modifica</x-table-action-button-edit>
-                        @endcan
-                    @endif
+                <x-table-header class="w-[100px]">
+                    {{-- Actions --}}
+                </x-table-header>
+            </x-slot>
 
-                    @can('delete', $financialTable)
-                        <x-table-action-button-delete wire:click="selectFinancialTableForDelete({{ $financialTable->id }})"
-                            class="btn btn-danger">Elimina</x-table-action-button-delete>
-                    @endcan
-                </div>
-            </div>
-        @endforeach
+            {{-- Table body --}}
+            @foreach ($financialTables as $index => $financialTable)
+                <tr wire:key='{{ $financialTable->id }}' class="border-y border-collapse">
+                    <x-table-data label="{{ $financialTable->percentage }}" />
+
+                    {{-- Actions --}}
+                    <x-table-data>
+                        <div class="flex items-center justify-end w-full gap-3">
+                            @if ($financialTable->isEditable())
+                                @can('update', $financialTable)
+                                    <x-table-action-button-edit
+                                        wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
+                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
+                                @endcan
+                            @endif
+
+                            @can('delete', $financialTable)
+                                <x-table-action-button-delete
+                                    wire:click="selectFinancialTableForDelete({{ $financialTable->id }})"
+                                    class="btn btn-danger">Elimina</x-table-action-button-delete>
+                            @endcan
+                        </div>
+                    </x-table-data>
+                </tr>
+            @endforeach
+        </x-table>
 
         {{-- Pagination --}}
         <div class="mt-5">
