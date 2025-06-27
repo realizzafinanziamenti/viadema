@@ -1,35 +1,47 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-6" label="Gestione assicurazioni" />
+        <x-card-header class="mb-3" label="Gestione assicurazioni" />
 
-        <div class="flex justify-end items-center mb-4">
+        <div class="flex justify-end items-center mb-5">
             @can('create insurances')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea nuova assicurazione"
                     wire:click="openCreateInsuranceModal" />
             @endcan
         </div>
 
-        @foreach ($insurances as $index => $insurance)
-            <div
-                class="w-full flex justify-between items-center truncate py-2 px-3
-                    text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
-                <span>{{ $insurance->name }}</span>
+        <x-table minWidth="max-content">
+            {{-- Table Header --}}
+            <x-slot name="header" class="border-b">
+                <x-table-header label="Nome assicurazione" />
 
-                <div class="flex space-x-2">
-                    @if ($insurance->isEditable())
-                        @can('update', $insurance)
-                            <x-table-action-button-edit wire:click="selectInsuranceForUpdate({{ $insurance->id }})"
-                                class="btn btn-primary">Modifica</x-table-action-button-edit>
-                        @endcan
-                    @endif
+                <x-table-header class="w-[100px]">
+                    {{-- Actions --}}
+                </x-table-header>
+            </x-slot>
 
-                    @can('delete', $insurance)
-                        <x-table-action-button-delete wire:click="selectInsuranceForDelete({{ $insurance->id }})"
-                            class="btn btn-danger">Elimina</x-table-action-button-delete>
-                    @endcan
-                </div>
-            </div>
-        @endforeach
+            {{-- Table body --}}
+            @foreach ($insurances as $index => $insurance)
+                <tr wire:key='{{ $insurance->id }}' class="border-y border-collapse">
+                    <x-table-data label="{{ $insurance->name }}" />
+
+                    <x-table-data>
+                        <div class="flex items-center justify-end w-full gap-3">
+                            @if ($insurance->isEditable())
+                                @can('update', $insurance)
+                                    <x-table-action-button-edit wire:click="selectInsuranceForUpdate({{ $insurance->id }})"
+                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
+                                @endcan
+                            @endif
+
+                            @can('delete', $insurance)
+                                <x-table-action-button-delete wire:click="selectInsuranceForDelete({{ $insurance->id }})"
+                                    class="btn btn-danger">Elimina</x-table-action-button-delete>
+                            @endcan
+                        </div>
+                    </x-table-data>
+                </tr>
+            @endforeach
+        </x-table>
 
         {{-- Pagination --}}
         <div class="mt-5">
