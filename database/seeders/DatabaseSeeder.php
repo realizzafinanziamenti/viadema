@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // development seeding
-        if (app()->environment('local', 'testing')) {
+        if (app()->environment('local', 'testing', 'staging')) {
             $this->call([
                 UserSeeder::class,
                 CustomerSeeder::class,
