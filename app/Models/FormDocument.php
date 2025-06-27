@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -36,6 +37,14 @@ class FormDocument extends Model
         return $query->when($search, function ($query) use ($search) {
             $query->where('title', 'like', "%{$search}%");
         });
+    }
+
+    /**
+     * Accessor to obtain formatted created at.
+     */
+    protected function formattedCreatedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->created_at?->format('d/m/y'));
     }
 
     /**

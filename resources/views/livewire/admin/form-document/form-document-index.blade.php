@@ -32,14 +32,41 @@
                         <div class="truncate">
                             <div class="text-xs font-semibold text-gray-custom-5 truncate"
                                 title="{{ $document->title }}">{{ $document->title }}</div>
-                            <div class="text-xs text-gray-custom-5 truncate" title="{{ $document->description }}">
-                                {{ $document->description }}</div>
+                            <div class="text-xs text-gray-custom-5 truncate">
+                                {{ $document->formatted_created_at }}</div>
                         </div>
 
-                        <div wire:click='selectDocumentForDelete({{ $document->id }})'
-                            class="shrink-0 text-red-600 rounded-full flex items-center justify-center cursor-pointer size-6.5 hover:text-white hover:bg-red-600">
-                            <x-icons.icon-akar-trash-can class="size-4" />
-                        </div>
+                        <x-dropdown width="w-30" contentClasses="bg-white">
+                            <x-slot name="trigger">
+                                <div
+                                    class="shrink-0 text-gray-custom-5 rounded-full flex items-center justify-center cursor-pointer size-6.5">
+                                    <x-icons.icon-akar-more class="size-4" />
+                                </div>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                @can('update form documents')
+                                    <x-dropdown-button class="cursor-pointer" size="sm"
+                                        wire:click='download({{ $document->id }})'>
+                                        Scarica
+                                    </x-dropdown-button>
+                                @endcan
+
+                                @can('update form documents')
+                                    <x-dropdown-button class="cursor-pointer" size="sm"
+                                        wire:click='edit({{ $document->id }})'>
+                                        Modifica
+                                    </x-dropdown-button>
+                                @endcan
+
+                                @can('delete form documents')
+                                    <x-dropdown-button class="cursor-pointer" size="sm"
+                                        wire:click='selectDocumentForDelete({{ $document->id }})'>
+                                        Elimina
+                                    </x-dropdown-button>
+                                @endcan
+                            </x-slot>
+                        </x-dropdown>
                     </div>
                 </div>
             @endforeach
@@ -65,7 +92,7 @@
 
                     {{-- Description --}}
                     <div class="flex flex-col gap-1.5">
-                        <flux:textarea label="Note" resize="none" wire:model='description' />
+                        <flux:textarea label="Descrizione" resize="none" wire:model='description' />
                         <flux:error name="description" />
                     </div>
 
