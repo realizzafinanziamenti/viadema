@@ -82,8 +82,37 @@ class FormDocumentIndex extends Component
             $this->reset(['title', 'description', 'file']);
             $this->dispatch('close-modal', 'document-create');
         } catch (Exception $e) {
-            Log::error('Errore durante il salvataggio della pratica: ' . $e->getMessage());
+            Log::error('Errore durante il caricamento del documento: ' . $e->getMessage());
             Toaster::error('Errore durante il caricamento del documento: ' . $e->getMessage());
+            $this->dispatch('close-modal', 'document-create');
+        }
+    }
+
+    /**
+     * This method is called when the user clicks the delete button in the modal.
+     * It deletes the selected document and resets the selected document to null.
+     */
+    public function edit()
+    {
+        Gate::authorize('update', $this->selectedDocument);
+
+        $this->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            $this->selectedDocument->update([
+                'title' => $this->title,
+                'description' => $this->description,
+            ]);
+
+            Toaster::success('Documento rinominato con successo');
+            $this->reset(['title', 'description', 'file']);
+            $this->dispatch('close-modal', 'document-edit');
+        } catch (Exception $e) {
+            Log::error('Errore durante la modifica del documento: ' . $e->getMessage());
+            Toaster::error('Errore durante la modifica del documento: ' . $e->getMessage());
             $this->dispatch('close-modal', 'document-create');
         }
     }
@@ -103,6 +132,26 @@ class FormDocumentIndex extends Component
         } catch (Exception $e) {
             Toaster::error('File non trovato o errore: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * This method is called when the user clicks the edit button.
+     * It sets the selected document to be edited.
+     */
+    public function selectDocumentForUpdate(int $id)
+    {
+        $this->resetErrorBag();
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: FormDocument::class,
+            property: 'selectedDocument',
+            modalName: 'document-edit',
+            notFoundMessage: 'Documento non trovato'
+        );
+        if ($this->selectedDocument) {
+            $this->title = $this->selectedDocument->title;
+            $this->description = $this->selectedDocument->description;
         }
     }
 
