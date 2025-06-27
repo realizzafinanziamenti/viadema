@@ -10,7 +10,7 @@
 @endphp
 
 <button type="{{ $type }}"
-    {{ $attributes->merge(['class' => 'block w-full ps-4.5 pe-3 text-start truncate text-zinc-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out ' . $sizeClasses]) }}>
+    {{ $attributes->merge(['class' => 'block w-full ps-4.5 pe-3 text-start truncate text-gray-custom-5 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out ' . $sizeClasses]) }}>
 
     {{ $slot }}
 </button>
