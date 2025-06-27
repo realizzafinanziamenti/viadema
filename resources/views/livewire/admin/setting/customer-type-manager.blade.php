@@ -27,14 +27,6 @@
                     {{-- Actions --}}
                     <x-table-data>
                         <div class="flex items-center justify-end w-full gap-3">
-                            @can('update', $customerType)
-                                @if ($customerType->isEditable())
-                                    <x-table-action-button-edit
-                                        wire:click="selectCustomerTypeForUpdate({{ $customerType->id }})"
-                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
-                                @endcan
-                            @endif
-
                             @can('delete', $customerType)
                                 <x-table-action-button-delete
                                     wire:click="selectCustomerTypeForDelete({{ $customerType->id }})"
@@ -79,36 +71,6 @@
                 </flux:button>
             </div>
         </form>
-    </x-modal>
-
-    {{-- Update Customer Type Modal --}}
-    <x-modal name="update-customer-type">
-        <div class="flex flex-col">
-            <x-modal-header label="Modifica tipo cliente" class="mb-6" />
-
-            <form wire:submit.prevent='updateCustomerType'>
-                {{-- Customer Type Name --}}
-                <div class="flex flex-col gap-1.5">
-                    <flux:label>Nome tipo cliente</flux:label>
-                    <flux:input size="sm" placeholder="Inserisci nome tipo cliente" wire:model='name' />
-                    <flux:error name="name" />
-                </div>
-
-                {{-- Buttons --}}
-                <div class="flex gap-3 justify-end mt-16">
-                    <flux:button variant="primary" type="button" size="sm"
-                        x-on:click="$dispatch('close-modal', 'update-customer-type')"
-                        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
-                        Annulla
-                    </flux:button>
-
-                    <flux:button variant="primary" type="submit" size="sm"
-                        class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                        Modifica
-                    </flux:button>
-                </div>
-            </form>
-        </div>
     </x-modal>
 
     {{-- Delete Customer Type Modal --}}
