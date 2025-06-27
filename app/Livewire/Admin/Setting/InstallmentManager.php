@@ -3,12 +3,10 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Installment;
-use App\Rules\NotUsedInPractices;
 use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -58,51 +56,6 @@ class InstallmentManager extends Component
 
         $this->reset('value');
         $this->dispatch('close-modal', 'create-installment');
-    }
-
-    /**
-     * This method is called when the user clicks the update button.
-     * It sets the selected installment and opens the modal for updating the name.
-     */
-    public function selectInstallmentForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Installment::class,
-            property: 'selectedInstallment',
-            modalName: 'update-installment',
-            notFoundMessage: 'Rata non trovata'
-        );
-        $this->value = $this->selectedInstallment->value;
-    }
-
-    /**
-     * This method is called when the user clicks the update button in the modal.
-     * It updates the installment and resets the name to null.
-     */
-    public function updateInstallment(): void
-    {
-        Gate::authorize('update', $this->selectedInstallment);
-
-        $this->validate(['value' => [
-            'required',
-            'integer',
-            'min:0',
-            'max:10000',
-            new UniqueNormalized('installments', 'value', $this->selectedInstallment?->id),
-            new NotUsedInPractices($this->selectedInstallment)  // validazione non legata alla campo 'name' ma all'istanza del modello
-        ]]);
-
-        try {
-            $this->selectedInstallment->update(['value' => $this->value]);
-            Toaster::success('Rata aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento della rata: ' . $e->getMessage());
-        }
-
-        $this->reset(['value', 'selectedInstallment']);
-        $this->dispatch('close-modal', 'update-installment');
     }
 
     /**

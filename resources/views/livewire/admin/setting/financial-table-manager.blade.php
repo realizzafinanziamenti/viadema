@@ -4,7 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create financial tables')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea nuova provvigione"
+                <x-buttons.create-button size="sm" px="px-6" label="Crea provvigione"
                     wire:click="openCreateFinancialTableModal" />
             @endcan
         </div>
@@ -27,14 +27,6 @@
                     {{-- Actions --}}
                     <x-table-data>
                         <div class="flex items-center justify-end w-full gap-3">
-                            @if ($financialTable->isEditable())
-                                @can('update', $financialTable)
-                                    <x-table-action-button-edit
-                                        wire:click="selectFinancialTableForUpdate({{ $financialTable->id }})"
-                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
-                                @endcan
-                            @endif
-
                             @can('delete', $financialTable)
                                 <x-table-action-button-delete
                                     wire:click="selectFinancialTableForDelete({{ $financialTable->id }})"
@@ -77,37 +69,6 @@
                     <flux:button variant="primary" type="submit" size="sm"
                         class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
                         Crea
-                    </flux:button>
-                </div>
-            </form>
-        </div>
-    </x-modal>
-
-    {{-- Update Financial Table Modal --}}
-    <x-modal name="update-financial-table">
-        <div class="flex flex-col">
-            <x-modal-header label="Modifica provvigione" class="mb-6" />
-
-            <form wire:submit.prevent='updateFinancialTable'>
-                {{-- Financial Table Name --}}
-                <div class="flex flex-col gap-1.5">
-                    <flux:label>Provvigione</flux:label>
-                    <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01"
-                        size="sm" wire:model="percentage" symbol="%" placeholder="Inserisci provvigione" />
-                    <flux:error name="percentage" />
-                </div>
-
-                {{-- Buttons --}}
-                <div class="flex gap-3 justify-end mt-16">
-                    <flux:button variant="primary" type="button" size="sm"
-                        x-on:click="$dispatch('close-modal', 'update-financial-table')"
-                        class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
-                        Annulla
-                    </flux:button>
-
-                    <flux:button variant="primary" type="submit" size="sm"
-                        class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                        Modifica
                     </flux:button>
                 </div>
             </form>

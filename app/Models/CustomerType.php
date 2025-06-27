@@ -18,15 +18,6 @@ class CustomerType extends Model
     }
 
     /**
-     * Check if the product subtype can be edited.
-     * A product subtype is editable if it has no associated practices.
-     */
-    public function isEditable(): bool
-    {
-        return !$this->practices()->exists();
-    }
-
-    /**
      * Get the customers associated with the customer type.
      */
     public function customers(): HasMany

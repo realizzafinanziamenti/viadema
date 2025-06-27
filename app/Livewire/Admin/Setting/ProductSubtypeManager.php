@@ -3,12 +3,10 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\ProductSubtype;
-use App\Rules\NotUsedInPractices;
 use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -58,50 +56,6 @@ class ProductSubtypeManager extends Component
 
         $this->reset('name');
         $this->dispatch('close-modal', 'create-product-subtype');
-    }
-
-    /**
-     * This method is called when the user clicks the update button.
-     * It sets the selected ProductSubtype and opens the modal for updating the name.
-     */
-    public function selectProductSubtypeForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: ProductSubtype::class,
-            property: 'selectedProductSubtype',
-            modalName: 'update-product-subtype',
-            notFoundMessage: 'Tipo prodotto non trovato'
-        );
-        $this->name = $this->selectedProductSubtype->name;
-    }
-
-    /**
-     * This method is called when the user clicks the update button in the modal.
-     * It updates the ProductSubtype and resets the name to null.
-     */
-    public function updateProductSubtype(): void
-    {
-        Gate::authorize('update', $this->selectedProductSubtype);
-
-        $this->validate(['name' => [
-            'required',
-            'string',
-            'max:255',
-            new UniqueNormalized('product_subtypes', 'name', $this->selectedProductSubtype?->id),
-            new NotUsedInPractices($this->selectedProductSubtype)  // validazione non legata alla campo 'name' ma all'istanza del modello
-        ]]);
-
-        try {
-            $this->selectedProductSubtype->update(['name' => $this->name]);
-            Toaster::success('Tipo prodotto aggiornato con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento del tipo prodotto: ' . $e->getMessage());
-        }
-
-        $this->reset(['name', 'selectedProductSubtype']);
-        $this->dispatch('close-modal', 'update-product-subtype');
     }
 
     /**
