@@ -7,6 +7,7 @@ use App\Livewire\Admin\Customer\CustomerShow;
 use App\Livewire\Admin\Customer\CustomerUpdate;
 use App\Livewire\Admin\Dashboard\Dashboard;
 use App\Livewire\Admin\Event\EventIndex;
+use App\Livewire\Admin\FormDocument\FormDocumentIndex;
 use App\Livewire\Admin\Lead\LeadCreate;
 use App\Livewire\Admin\Lead\LeadIndex;
 use App\Livewire\Admin\Lead\LeadShow;
@@ -58,6 +59,9 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('leads/create', LeadCreate::class)->name('lead.create')->middleware('can:create leads');
     Route::get('leads/{id}', LeadShow::class)->name('lead.show')->middleware('can:view leads');
     Route::get('leads/{id}/edit', LeadUpdate::class)->name('lead.edit')->middleware('can:update leads');
+
+    // Document Routes
+    Route::get('form-documents', FormDocumentIndex::class)->name('form-document.index')->middleware('can:access form documents');
 
     // Settings Routes
     Route::get('settings', SettingIndex::class)->name('setting.index')->middleware('can:access settings');

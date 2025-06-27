@@ -13,7 +13,7 @@
         </div>
 
         {{-- Buttons --}}
-        <div class="grid justify-items-stretch gap-3 mt-6">
+        <div class="flex items-center justify-end gap-x-3 mt-8">
             <flux:button variant="primary" type="button" size="sm"
                 x-on:click="$dispatch('close-modal', '{{ $name }}')"
                 class="px-10 w-full bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white">
@@ -22,7 +22,7 @@
 
             <flux:button variant="primary" type="button" size="sm" wire:click='{{ $function }}'
                 class="px-10 w-full bg-red-600 border-red-600 hover:bg-red-800 hover:border-red-800">
-                Procedi ed elimina
+                Elimina
             </flux:button>
         </div>
     </div>

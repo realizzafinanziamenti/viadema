@@ -98,6 +98,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'create customer types',
             'update customer types',
             'delete customer types',
+            // document permissions
+            'access form documents',
+            'create form documents',
+            'view form documents',
+            'view all form documents',
+            'update form documents',
+            'delete form documents',
+            'download form documents',
         ];
 
         foreach ($permissions as $permission) {
@@ -141,6 +149,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'update practices',
             'delete practices',
+            // document permissions
+            'access form documents',
+            'view form documents',
+            'download form documents',
             // settings permissions
             'access settings',
         ];
@@ -164,6 +176,8 @@ class RolesAndPermissionsSeeder extends Seeder
             // assign practices permissions
             'access practices',
             'view practices',
+            // document permissions
+            'access form documents',
         ];
 
         /**
