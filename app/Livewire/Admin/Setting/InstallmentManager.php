@@ -3,12 +3,10 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Installment;
-use App\Rules\NotUsedInPractices;
 use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;

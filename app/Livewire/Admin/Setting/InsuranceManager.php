@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Insurance;
-use App\Rules\NotUsedInPractices;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
