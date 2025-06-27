@@ -1,35 +1,50 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-6" label="Gestione numero rate" />
+        <x-card-header class="mb-3" label="Gestione numero rate" />
 
-        <div class="flex justify-end items-center mb-4">
+        <div class="flex justify-end items-center mb-5">
             @can('create installments')
                 <x-buttons.create-button size="sm" px="px-6" label="Crea numero rate"
                     wire:click="openCreateInstallmentModal" />
             @endcan
         </div>
 
-        @foreach ($installments as $index => $installment)
-            <div
-                class="w-full flex justify-between items-center truncate py-2 px-3
-                    text-sm bg-white border-b {{ $index === 0 ? 'border-t' : '' }} border-zinc-200 text-zinc-500">
-                <span>{{ $installment->value }}</span>
+        <x-table minWidth="max-content">
+            {{-- Table Header --}}
+            <x-slot name="header" class="border-b">
+                <x-table-header label="Numero rate" />
 
-                <div class="flex space-x-2">
-                    @if ($installment->isEditable())
-                        @can('update', $installment)
-                            <x-table-action-button-edit wire:click="selectInstallmentForUpdate({{ $installment->id }})"
-                                class="btn btn-primary">Modifica</x-table-action-button-edit>
-                        @endcan
-                    @endif
+                <x-table-header class="w-[100px]">
+                    {{-- Actions --}}
+                </x-table-header>
+            </x-slot>
 
-                    @can('delete', $installment)
-                        <x-table-action-button-delete wire:click="selectInstallmentForDelete({{ $installment->id }})"
-                            class="btn btn-danger">Elimina</x-table-action-button-delete>
-                    @endcan
-                </div>
-            </div>
-        @endforeach
+            {{-- Table body --}}
+            @foreach ($installments as $index => $installment)
+                <tr wire:key='{{ $installment->id }}' class="border-y border-collapse">
+                    <x-table-data label="{{ $installment->value }}" />
+
+                    {{-- Actions --}}
+                    <x-table-data>
+                        <div class="flex items-center justify-end w-full gap-3">
+                            @if ($installment->isEditable())
+                                @can('update', $installment)
+                                    <x-table-action-button-edit
+                                        wire:click="selectInstallmentForUpdate({{ $installment->id }})"
+                                        class="btn btn-primary">Modifica</x-table-action-button-edit>
+                                @endcan
+                            @endif
+
+                            @can('delete', $installment)
+                                <x-table-action-button-delete
+                                    wire:click="selectInstallmentForDelete({{ $installment->id }})"
+                                    class="btn btn-danger">Elimina</x-table-action-button-delete>
+                            @endcan
+                        </div>
+                    </x-table-data>
+                </tr>
+            @endforeach
+        </x-table>
 
         {{-- Pagination --}}
         <div class="mt-5">
