@@ -11,7 +11,6 @@
                 'selectedCustomerTypeId' => $form->customerTypeId,
                 'selectedLeadSource' => $form->leadSource,
                 'selectedLeadStatus' => $form->leadStatus,
-                'selectedLeadCommunication' => $form->leadCommunication,
             ])
 
             {{-- Submit Buttons --}}

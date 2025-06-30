@@ -32,30 +32,30 @@ class CustomerForm extends Form
     public ?string $city = null;
     public ?string $state = null;
     public ?string $taxId = null;
+    public ?float $amount = null;
     public ?string $customerStatus = null;
     public ?string $leadSource = null;
     public ?string $leadStatus = null;
-    public ?string $leadCommunication = null;
 
     protected function rules()
     {
         return array_merge(
             [
                 'customerTypeId' => ['nullable', 'exists:customer_types,id'],
-                'firstName' => 'required|string|max:255',
-                'lastName' => 'required|string|max:255',
+                'firstName' => ['required', 'string', 'max:255'],
+                'lastName' => ['required', 'string', 'max:255'],
                 'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->ignore($this->customer?->id)],
-                'phone' => 'required|string|min:10|max:24',
-                'dateOfBirth' => 'nullable|date',
-                'address' => 'nullable|string|max:255',
-                'postalCode' => 'nullable|string|max:10',
-                'city' => 'nullable|string|max:255',
-                'state' => 'nullable|string|max:255',
+                'phone' => ['required', 'string', 'min:10', 'max:24'],
+                'dateOfBirth' => ['nullable', 'date'],
+                'address' => ['nullable', 'string', 'max:255'],
+                'postalCode' => ['nullable', 'string', 'max:10'],
+                'city' => ['nullable', 'string', 'max:255'],
+                'state' => ['nullable', 'string', 'max:255'],
                 'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
+                'amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
                 'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
                 'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
                 'leadStatus' => ['nullable', 'string', new Enum(LeadStatus::class)],
-                'leadCommunication' => ['nullable', 'string', new Enum(LeadCommunication::class)],
             ],
             $this->userIdRules()
         );
@@ -93,10 +93,10 @@ class CustomerForm extends Form
             'city' => 'città',
             'state' => 'provincia',
             'taxId' => 'codice fiscale',
+            'amount' => 'importo',
             'customerStatus' => 'stato cliente',
             'leadSource' => 'canale di acquisizione',
             'leadStatus' => 'stato lead',
-            'leadCommunication' => 'comunicazioni',
         ];
     }
 
@@ -124,10 +124,10 @@ class CustomerForm extends Form
         $this->city = $customer->city;
         $this->state = $customer->state;
         $this->taxId = $customer->tax_id;
+        $this->amount = $customer->amount;
         $this->customerStatus = $customer->customer_status?->value;
         $this->leadSource = $customer->lead_source?->value;
         $this->leadStatus = $customer->lead_status?->value;
-        $this->leadCommunication = $customer->lead_communication?->value;
     }
 
     /**
@@ -148,10 +148,10 @@ class CustomerForm extends Form
         $this->city = null;
         $this->state = null;
         $this->taxId = null;
+        $this->amount = null;
         $this->customerStatus = null;
         $this->leadSource = null;
         $this->leadStatus = null;
-        $this->leadCommunication = null;
     }
 
     /**
@@ -164,11 +164,11 @@ class CustomerForm extends Form
         try {
             $customer = DB::transaction(fn() => Customer::create($this->customerData()));
 
-            Toaster::success('Cliente creato con successo');
+            Toaster::success('Profilo creato con successo');
             return $customer;
         } catch (Exception $e) {
-            Log::error('Errore durante la creazione del cliente: ' . $e->getMessage());
-            Toaster::error('Errore durante la creazione del cliente: ' . $e->getMessage());
+            Log::error('Errore durante la creazione del profilo: ' . $e->getMessage());
+            Toaster::error('Errore durante la creazione del profilo: ' . $e->getMessage());
         }
     }
 
@@ -182,11 +182,11 @@ class CustomerForm extends Form
         try {
             DB::transaction(fn() => $this->customer->update($this->customerData()));
 
-            Toaster::success('Cliente aggiornato con successo');
+            Toaster::success('Profilo aggiornato con successo');
             return $this->customer;
         } catch (Exception $e) {
-            Log::error('Errore durante l\'aggiornamento del cliente: ' . $e->getMessage());
-            Toaster::error('Errore durante l\'aggiornamento del cliente: ' . $e->getMessage());
+            Log::error('Errore durante l\'aggiornamento del profilo: ' . $e->getMessage());
+            Toaster::error('Errore durante l\'aggiornamento del profilo: ' . $e->getMessage());
         }
     }
 
@@ -209,10 +209,10 @@ class CustomerForm extends Form
             'city' => $this->city ?: null,
             'state' => $this->state ?: null,
             'tax_id' => $this->taxId ?: null,
+            'amount' => $this->amount ?: null,
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
-            'lead_communication' => $this->leadCommunication ?: null,
         ];
     }
 }

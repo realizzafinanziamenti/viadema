@@ -112,27 +112,27 @@ select:focus[data-flux-control] {
     @apply bg-green-custom-light text-green-custom border-green-200;
 }
 
-.suspended {
+.suspended, .lead-status-new {
     @apply bg-orange-custom-light text-orange-custom border-orange-200;
 }
 
-.pending {
+.lead-status-contacted, .pending {
     @apply bg-oil-custom-light text-oil-custom border-teal-200;
 }
 
-.disbursed {
+.lead-status-waiting-reply, .disbursed {
     @apply bg-blue-custom-light text-blue-custom border-sky-300;
 }
 
-.lead-status-new, .external {
+.external {
     @apply text-orange-custom;
 }
 
-.lead-status-active, .direct-production {
+.direct-production {
     @apply text-azure-custom;
 }
 
-.lead-status-lost, .observer {
+.observer {
     @apply text-black-custom;
 }
 

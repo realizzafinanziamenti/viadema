@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum UserDepartment: string
 {
-    case DIRECT_PRODUCTION = 'direct-production';
-    case INDIRECT_PRODUCTION = 'indirect-production';
-    case CALL_CENTER = 'call-center';
+    case DIRECT_PRODUCTION = 'direct_production';
+    case INDIRECT_PRODUCTION = 'indirect_production';
+    case CALL_CENTER = 'call_center';
     case CONSULTANT = 'consultant';
     case EXTERNAL = 'external';
     case OBSERVER = 'observer';

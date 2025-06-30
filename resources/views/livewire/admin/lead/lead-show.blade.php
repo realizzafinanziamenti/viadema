@@ -17,19 +17,10 @@
             </div>
         @endif
 
-        @if ($lead->lead_communication)
-            <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4">Comunicazioni: </span>
-                <span>{{ $lead->lead_communication?->getLabelText() }}</span>
-            </div>
-        @endif
-
         @if ($lead->lead_status)
-            <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4">Stato:
-                </span>
-                <span
-                    class="uppercase {{ $lead->lead_status?->getLabelColor() }}">{{ $lead->lead_status?->getLabelText() }}</span>
+            <div class="text-sm mb-2.5 flex items-center gap-2">
+                <span class="text-gray-custom-4">Stato lead: </span>
+                <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" wire:click="openUpdateLeadStatusModal" />
             </div>
         @endif
 
@@ -93,5 +84,15 @@
                 <span>{{ $lead->tax_id }}</span>
             </div>
         @endif
+
+        @if ($lead->amount)
+            <div class="text-sm mb-2.5">
+                <span class="text-gray-custom-4">Importo: </span>
+                <span>{{ $lead->formatted_amount }}</span>
+            </div>
+        @endif
     </x-card>
+
+    {{-- Update Lead Status Modal --}}
+    @include('partials.customer.update-lead-status-modal')
 </div>

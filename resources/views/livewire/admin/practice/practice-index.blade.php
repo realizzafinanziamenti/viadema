@@ -75,7 +75,7 @@
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
-                        <x-practice-status-badge :practice="$practice"
+                        <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
                             wire:click="selectPracticeForStatus({{ $practice->id }})" />
                     </x-table-data>
 
