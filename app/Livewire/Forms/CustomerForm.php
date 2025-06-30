@@ -127,7 +127,6 @@ class CustomerForm extends Form
         $this->customerStatus = $customer->customer_status?->value;
         $this->leadSource = $customer->lead_source?->value;
         $this->leadStatus = $customer->lead_status?->value;
-        $this->leadCommunication = $customer->lead_communication?->value;
     }
 
     /**
@@ -212,7 +211,6 @@ class CustomerForm extends Form
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
-            'lead_communication' => $this->leadCommunication ?: null,
         ];
     }
 }

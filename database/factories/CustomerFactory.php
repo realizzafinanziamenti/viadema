@@ -40,7 +40,6 @@ class CustomerFactory extends Factory
             'customer_status' => fake()->randomElement(CustomerStatus::cases())->value,
             'lead_source' => fake()->randomElement(LeadSource::cases())->value,
             'lead_status' => fake()->randomElement(LeadStatus::cases())->value,
-            'lead_communication' => fake()->randomElement(LeadCommunication::cases())->value,
         ];
     }
 }
