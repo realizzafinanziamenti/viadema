@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -38,6 +39,15 @@ class PracticePolicy
     public function update(User $user, Practice $practice): bool
     {
         return $user->hasPermissionTo('update practices') && $user->id === $practice->user_id;
+    }
+
+    /**
+     * Determine whether the user can update status of the model.
+     */
+    public function updateStatus(User $user, Practice $practice): bool
+    {
+        return $user->hasPermissionTo('update practices') && $user->id === $practice->user_id
+            && $practice->practice_status !== PracticeStatus::DISBURSED->value;
     }
 
     /**

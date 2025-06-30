@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
@@ -24,6 +25,7 @@ class PracticeShow extends Component
     public Practice $practice;
     public array $practiceStatuses = [];
     public ?string $selectedPracticeStatus = null;
+    public ?string $disbursementDate = null;
     public ?Attachment $selectedAttachment = null;
 
     /**
@@ -50,15 +52,36 @@ class PracticeShow extends Component
      */
     public function updatePracticeStatus(): void
     {
-        Gate::authorize('update', $this->practice);
+        Gate::authorize('updateStatus', $this->practice);
+
+        $rules = [
+            'selectedPracticeStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
+        ];
+
+        // If the selected practice status is DISBURSED, validate the disbursement date
+        if ($this->selectedPracticeStatus === PracticeStatus::DISBURSED->value) {
+            $rules['disbursementDate'] = ['required', 'date'];
+        }
+
+        $this->validate($rules);
 
         try {
-            $this->practice->update(['practice_status' => $this->selectedPracticeStatus]);
+            $updateData = ['practice_status' => $this->selectedPracticeStatus];
+
+            // If the selected practice status is DISBURSED, set the disbursement date
+            if ($this->selectedPracticeStatus === PracticeStatus::DISBURSED->value) {
+                $updateData['disbursement_date'] = $this->disbursementDate ?? now();
+            }
+
+            $this->practice->update($updateData);
+
             Toaster::success('Stato della pratica aggiornato con successo');
         } catch (Exception $e) {
             Toaster::error('Errore durante l\'aggiornamento dello stato della pratica');
         }
 
+        $this->setPracticeStatus($this->selectedPracticeStatus);
+        $this->disbursementDate = null;
         $this->dispatch('close-modal', 'update-practice-status');
     }
 
@@ -131,6 +154,10 @@ class PracticeShow extends Component
 
         $this->initializePracticeStatuses();
         $this->setPracticeStatus($this->practice->practice_status?->value);
+
+        // Initialize the disbursement date to now
+        // This is used to set the disbursement date when updating the practice status
+        $this->disbursementDate = now()->format('Y-m-d');
     }
 
     #[Layout('components.layouts.app')]

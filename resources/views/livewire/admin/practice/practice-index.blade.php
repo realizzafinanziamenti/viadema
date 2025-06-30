@@ -35,17 +35,17 @@
         <x-table class="mb-5 z-10">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Id pratica" class="w-2/16" />
-                <x-table-header label="Cliente" class="w-3/16" />
+                <x-table-header label="Id pratica" class="w-[130px]" />
+                <x-table-header label="Cliente" class="w-3/10" />
 
                 @if (!$productType)
-                    <x-table-header label="Prodotto" class="w-3/16" />
+                    <x-table-header label="Prodotto" class="w-[150px]" />
                 @endif
 
-                <x-table-header label="Data apertura" class="w-2/16" />
-                <x-table-header label="Codice fiscale" class="w-3/16" />
-                <x-table-header label="Stato pratica" class="min-w-[130px] w-2/16" />
-                <x-table-header label="Collaboratore" class="w-4/16" />
+                <x-table-header label="Data apertura" class="w-[130px]" />
+                <x-table-header label="Codice fiscale" class="w-3/10" />
+                <x-table-header label="Stato pratica" class="w-[140px]" />
+                <x-table-header label="Collaboratore" class="w-4/10" />
                 <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
@@ -75,8 +75,12 @@
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
-                        <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
-                            wire:click="selectPracticeForStatus({{ $practice->id }})" />
+                        @if (!$expired)
+                            <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
+                                wire:click="selectPracticeForStatus({{ $practice->id }})" />
+                        @else
+                            <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                        @endif
                     </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
