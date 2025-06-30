@@ -4,8 +4,7 @@
         {{-- Table header --}}
         <x-slot name="header" class="border-b">
             <x-table-header height="h-8" label="ID" class="w-[80px]" />
-            <x-table-header height="h-8" label="Nome collaboratore" class="w-1/4" />
-            <x-table-header height="h-8" label="Data assunzione" class="w-1/4 text-center" />
+            <x-table-header height="h-8" label="Nome collaboratore" class="w-2/4" />
             <x-table-header height="h-8" label="Comparto" class="w-1/4" />
             <x-table-header height="h-8" label="Pratiche completate" class="w-1/4 text-center" />
             <x-table-header height="h-8" class="w-[50px]">
@@ -22,12 +21,12 @@
                     <x-user-table-data size="8" :user="$teamMember" />
                 </x-table-data>
 
-                <x-table-data height="h-10" truncate label="10/10/2025" class="text-center" />
                 <x-table-data height="h-10" truncate
                     class="uppercase font-semibold {{ $teamMember->profile?->user_department?->getLabelColor() }}"
                     label="{{ $teamMember->profile?->user_department?->getLabelText() }}" />
 
-                <x-table-data height="h-10" truncate label="N/D" class="text-center" />
+                <x-table-data height="h-10" truncate label="{{ $teamMember->disbursed_practices_count }}"
+                    class="text-center" />
 
                 {{-- Actions --}}
                 <x-table-data height="h-10" class="inline-flex items-center justify-end w-full gap-3">
