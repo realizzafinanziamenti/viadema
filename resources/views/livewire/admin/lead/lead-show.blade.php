@@ -84,5 +84,12 @@
                 <span>{{ $lead->tax_id }}</span>
             </div>
         @endif
+
+        @if ($lead->amount)
+            <div class="text-sm mb-2.5">
+                <span class="text-gray-custom-4">Importo: </span>
+                <span>{{ $lead->formatted_amount }}</span>
+            </div>
+        @endif
     </x-card>
 </div>

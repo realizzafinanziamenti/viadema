@@ -27,6 +27,7 @@ class CustomerSeeder extends Seeder
                     'customer_status' => CustomerStatus::CUSTOMER->value,
                     'lead_source' => null,
                     'lead_status' => null,
+                    'amount' => null,
                 ]);
 
             // Create 1 to 3 leads for each user

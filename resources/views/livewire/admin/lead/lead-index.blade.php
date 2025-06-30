@@ -24,6 +24,7 @@
                 <x-table-header label="Telefono" class="w-3/20" />
                 <x-table-header label="Città" class="w-3/20" />
                 <x-table-header label="Stato" class="w-[150px]" />
+                <x-table-header label="Importo" class="w-[120px]" />
                 <x-table-header label="Provenienza" class="w-3/20" />
                 <x-table-header label="Assegnato a" class="w-4/20" />
                 <x-table-header label="Data creazione" class="w-[100px]" />
@@ -48,6 +49,7 @@
                             wire:click="selectPracticeForStatus({{ $lead->id }})" />
                     </x-table-data>
 
+                    <x-table-data truncate label="{{ $lead->formatted_amount ?? 'N/D' }}" />
                     <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />
 
                     <x-table-data truncate class="flex items-center">

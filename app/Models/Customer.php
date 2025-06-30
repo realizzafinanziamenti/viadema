@@ -36,9 +36,10 @@ class Customer extends Model
         'city',
         'state',
         'postal_code',
+        'amount', // Total amount spent by the customer
         'customer_status', // LEAD or CUSTOMER
         'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
-        'lead_status', //
+        'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
     ];
 
     /**
@@ -50,6 +51,7 @@ class Customer extends Model
     {
         return [
             'date_of_birth' => 'datetime',
+            'amount' => 'decimal:2',
             'customer_status' => CustomerStatus::class,
             'lead_source' => LeadSource::class,
             'lead_status' => LeadStatus::class,
@@ -116,6 +118,14 @@ class Customer extends Model
     protected function formattedDateOfBirth(): Attribute
     {
         return Attribute::get(fn() => $this->date_of_birth?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted amount .
+     */
+    protected function formattedAmount(): Attribute
+    {
+        return Attribute::get(fn() => $this->amount !== null ? number_format($this->amount, 2, ',', '.') . '€' : 'N/D');
     }
 
     /**
