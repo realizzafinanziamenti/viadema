@@ -44,11 +44,7 @@
 
                 <x-table-header label="Data apertura" class="w-[130px]" />
                 <x-table-header label="Codice fiscale" class="w-3/10" />
-
-                @if (!$expired)
-                    <x-table-header label="Stato pratica" class="w-[140px]" />
-                @endif
-
+                <x-table-header label="Stato pratica" class="w-[140px]" />
                 <x-table-header label="Collaboratore" class="w-4/10" />
                 <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
@@ -78,12 +74,14 @@
                     <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
-                    @if (!$expired)
-                        <x-table-data>
+                    <x-table-data>
+                        @if (!$expired)
                             <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
                                 wire:click="selectPracticeForStatus({{ $practice->id }})" />
-                        </x-table-data>
-                    @endif
+                        @else
+                            <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                        @endif
+                    </x-table-data>
 
                     <x-table-data class="inline-flex items-center">
                         @if ($practice->user)

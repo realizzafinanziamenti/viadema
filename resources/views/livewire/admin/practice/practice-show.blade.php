@@ -33,8 +33,21 @@
 
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
-                    <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" wire:click="openUpdatePracticeStatusModal" />
+
+                    @if ($practice->practice_status !== App\Enums\PracticeStatus::DISBURSED)
+                        <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
+                            wire:click="openUpdatePracticeStatusModal" />
+                    @else
+                        <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                    @endif
                 </div>
+
+                @if ($practice->practice_status === App\Enums\PracticeStatus::DISBURSED)
+                    <div class="text-sm mb-2.5">
+                        <span class="text-gray-custom-4">Data di liquidazione: </span>
+                        <span>{{ $practice->formatted_disbursement_date }}</span>
+                    </div>
+                @endif
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>
