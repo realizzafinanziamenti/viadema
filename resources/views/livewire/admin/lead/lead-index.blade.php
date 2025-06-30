@@ -14,16 +14,20 @@
             @endcan
         </div>
 
-        <x-table class="mb-5">
+        <x-table class="mb-5" minWidth="min-w-[1500px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Codice ID" class="w-2/20" />
-                <x-table-header label="Possibile cliente" class="w-4/20" />
+                <x-table-header label="N. Trattativa" class="w-[100px]" />
                 <x-table-header label="Tipologia" class="w-3/20" />
-                <x-table-header label="Comunicazioni" class="w-3/20" />
-                <x-table-header label="Stato" class="w-3/20" />
-                <x-table-header label="Canale di acquisizione" class="w-3/20" />
-                <x-table-header label="Collaboratore" class="w-4/20" />
+                <x-table-header label="Nominativo" class="w-4/20" />
+                <x-table-header label="Email" class="w-3/20" />
+                <x-table-header label="Telefono" class="w-3/20" />
+                <x-table-header label="Città" class="w-3/20" />
+                <x-table-header label="Stato" class="w-[150px]" />
+                <x-table-header label="Provenienza" class="w-3/20" />
+                <x-table-header label="Assegnato a" class="w-4/20" />
+                <x-table-header label="Data creazione" class="w-[100px]" />
+                <x-table-header label="Ultimo contatto" class="w-[100px]" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
                 </x-table-header>
@@ -32,17 +36,27 @@
             {{-- Table body --}}
             @foreach ($leads as $lead)
                 <tr wire:key='{{ $lead->id }}' class="border-y border-collapse">
-                    <x-table-data label="{{ $lead->id }}" />
-                    <x-table-data truncate label="{{ $lead->full_name }}" />
+                    <x-table-data truncate label="{{ $lead->formatted_id }}" />
                     <x-table-data truncate label="{{ $lead->customerType?->name ?? 'N/D' }}" />
-                    <x-table-data truncate label="{{ $lead->lead_communication?->getLabelText() ?? 'N/D' }}" />
-                    <x-table-data truncate class="uppercase font-semibold {{ $lead->lead_status?->getLabelColor() }}"
-                        label="{{ $lead->lead_status?->getLabeltext() ?? 'N/D' }}" />
+                    <x-table-data truncate label="{{ $lead->full_name }}" />
+                    <x-table-data truncate label="{{ $lead->email ?? 'N/D' }}" />
+                    <x-table-data truncate label="{{ $lead->phone ?? 'N/D' }}" />
+                    <x-table-data truncate label="{{ $lead->city ?? 'N/D' }}" />
+
+                    <x-table-data>
+                        <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
+                            wire:click="selectPracticeForStatus({{ $lead->id }})" />
+                    </x-table-data>
+
                     <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />
 
-                    <x-table-data class="inline-flex items-center">
+                    <x-table-data truncate class="flex items-center">
                         <x-user-table-data :user="$lead->user" />
                     </x-table-data>
+
+                    <x-table-data truncate label="{{ $lead->formatted_created_at }}" />
+                    <x-table-data truncate label="{{ $lead->formatted_updated_at }}" />
+
 
                     {{-- Actions --}}
                     <x-table-data>
