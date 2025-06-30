@@ -5,8 +5,8 @@ namespace App\Enums;
 enum LeadStatus: string
 {
     case NEW = 'new';
-    case ACTIVE = 'active';
-    case LOST = 'lost';
+    case CONTACTED = 'contacted';
+    case WAITING_REPLY = 'waiting_reply';
 
     /**
      * Get the display label for the current lead status
@@ -15,8 +15,8 @@ enum LeadStatus: string
     {
         return match ($this) {
             self::NEW => 'Nuovo',
-            self::ACTIVE => 'Attivo',
-            self::LOST => 'Perso',
+            self::CONTACTED => 'Contattato',
+            self::WAITING_REPLY => 'In attesa di risposta',
         };
     }
 
@@ -27,8 +27,8 @@ enum LeadStatus: string
     {
         return match ($this) {
             self::NEW => 'lead-status-new',
-            self::ACTIVE => 'lead-status-active',
-            self::LOST => 'lead-status-lost',
+            self::CONTACTED => 'lead-status-contacted',
+            self::WAITING_REPLY => 'lead-status-waiting-reply',
         };
     }
 }

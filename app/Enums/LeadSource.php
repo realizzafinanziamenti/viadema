@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum LeadSource: string
 {
-    case TIK_TOK = 'tik-tok';
+    case TIK_TOK = 'tik_tok';
     case META = 'meta';
-    case SEARCH_ENGINE = 'search-engine';
+    case SEARCH_ENGINE = 'search_engine';
     case REFERRAL = 'referral';
 
     /**
