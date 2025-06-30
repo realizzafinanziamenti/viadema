@@ -27,7 +27,6 @@ class LeadUpdate extends Component
     public array $customerTypes = [];
     public array $leadSources = [];
     public array $leadStatuses = [];
-    public array $leadCommunications = [];
 
     /**
      * Set title customer
@@ -62,14 +61,6 @@ class LeadUpdate extends Component
     }
 
     /**
-     * Set lead communication
-     */
-    public function setLeadCommunication(?string $value = null): void
-    {
-        $this->setFormSelectValue('leadCommunication', $value);
-    }
-
-    /**
      * edit lead
      */
     public function save(): void
@@ -91,7 +82,6 @@ class LeadUpdate extends Component
 
         $this->leadSources = $this->getEnumOptions(LeadSource::class);
         $this->leadStatuses = $this->getEnumOptions(LeadStatus::class);
-        $this->leadCommunications = $this->getEnumOptions(LeadCommunication::class);
     }
 
     public function mount($id)
