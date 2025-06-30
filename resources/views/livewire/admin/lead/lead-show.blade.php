@@ -20,7 +20,7 @@
         @if ($lead->lead_status)
             <div class="text-sm mb-2.5 flex items-center gap-2">
                 <span class="text-gray-custom-4">Stato lead: </span>
-                <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" wire:click="openUpdatePracticeStatusModal" />
+                <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" wire:click="openUpdateLeadStatusModal" />
             </div>
         @endif
 
@@ -92,4 +92,7 @@
             </div>
         @endif
     </x-card>
+
+    {{-- Update Lead Status Modal --}}
+    @include('partials.customer.update-lead-status-modal')
 </div>
