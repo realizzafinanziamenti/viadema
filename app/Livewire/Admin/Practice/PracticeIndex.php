@@ -344,7 +344,7 @@ class PracticeIndex extends Component
      */
     public function updatePracticeStatus(): void
     {
-        Gate::authorize('update', $this->selectedPractice);
+        Gate::authorize('updateStatus', $this->selectedPractice);
 
         try {
             $this->selectedPractice->update(['practice_status' => $this->selectedPracticeStatus]);
