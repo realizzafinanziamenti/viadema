@@ -12,7 +12,9 @@ class LatestDisbursedPractices extends Component
 
     public function mount()
     {
-        $this->practices = Practice::with(['customer'])
+        $this->practices = Practice::with(['customer' => function ($query) {
+            $query->withCount('practices');
+        }])
             ->where('practice_status', PracticeStatus::DISBURSED)
             ->latest('disbursement_date')
             ->take(5)

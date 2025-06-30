@@ -22,7 +22,8 @@
                 <x-table-data height="h-10" truncate label="{{ $practice->customer?->full_name }}" />
                 <x-table-data height="h-10" truncate label="{{ $practice->customer?->email ?? 'N/D' }}" />
                 <x-table-data height="h-10" truncate label="{{ $practice->customer?->phone ?? 'N/D' }}" />
-                <x-table-data height="h-10" truncate label="5" class="text-center" />
+                <x-table-data height="h-10" truncate label="{{ $practice->customer?->practices_count }}"
+                    class="text-center" />
                 <x-table-data height="h-10" truncate label="{{ $practice->formatted_amount_disbursed ?? 'N/D' }}" />
 
                 {{-- Actions --}}
