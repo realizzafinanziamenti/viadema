@@ -33,7 +33,7 @@ class PracticeIndex extends Component
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
-    public Practice|null $selectedPractice = null;
+    public ?Practice $selectedPractice = null;
     public array $practiceStatuses = [];
     public ?string $selectedPracticeStatus = null;
     public string $search = '';
@@ -241,7 +241,7 @@ class PracticeIndex extends Component
     }
 
     /**
-     * Set team member for customer form
+     * Set team member
      */
     public function setTeamMember(?int $value = null): void
     {

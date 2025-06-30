@@ -46,7 +46,7 @@
 
                     <x-table-data>
                         <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
-                            wire:click="selectPracticeForStatus({{ $lead->id }})" />
+                            wire:click="selectLeadForStatus({{ $lead->id }})" />
                     </x-table-data>
 
                     <x-table-data truncate label="{{ $lead->formatted_amount ?? 'N/D' }}" />
@@ -87,6 +87,9 @@
         {{-- Pagination buttons --}}
         {{ $leads->links() }}
     </x-card>
+
+    {{-- Update Lead Status Modal --}}
+    @include('partials.customer.update-lead-status-modal')
 
     {{-- Delete Lead Modal --}}
     <x-delete-modal name="delete-lead" header="Conferma Eliminazione Lead" function="deleteLead"
