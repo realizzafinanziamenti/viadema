@@ -9,7 +9,7 @@ use Livewire\Component;
 
 class PracticeCounter extends Component
 {
-    public int $praticeCount = 0;
+    public int $practiceCount = 0;
     public string $approvedStatus = PracticeStatus::APPROVED->value;
     public string $pendingStatus = PracticeStatus::PENDING->value;
     public string $underReviewStatus = PracticeStatus::UNDER_REVIEW->value;
@@ -57,7 +57,6 @@ class PracticeCounter extends Component
             $this->pendingStatus,
             $this->underReviewStatus,
         ])->first();
-
         $this->practiceCount = $result->total;
         $this->approvedPracticeCount = $result->approved_count;
         $this->pendingPracticeCount = $result->pending_count;
