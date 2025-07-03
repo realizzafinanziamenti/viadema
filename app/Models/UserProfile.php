@@ -19,23 +19,10 @@ class UserProfile extends Model
      */
     protected $fillable = [
         'user_id',
-        'user_department',
         'phone',
         'tax_id',
         'city',
     ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'user_department' => UserDepartment::class,
-        ];
-    }
 
     // RELATIONSHIPS
     public function user(): BelongsTo

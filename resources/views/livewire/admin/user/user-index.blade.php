@@ -35,8 +35,8 @@
                     <x-table-data label="{{ $teamMember->id }}" />
                     <x-table-data truncate label="{{ $teamMember->full_name }}" />
                     <x-table-data truncate
-                        class="uppercase font-semibold {{ $teamMember->profile?->user_department?->getLabelColor() }}"
-                        label="{{ $teamMember->profile?->user_department?->getLabelText() }}" />
+                        class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"
+                        label="{{ $teamMember->department?->getLabelText() }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->tax_id ?? 'N/D' }}" />
                     <x-table-data truncate label="{{ $teamMember->email }}" />

@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
         ]);
 
-        $teamMemberTest->assignRole('team_member');
+        $teamMemberTest->assignRole(UserDepartment::DIRECT_PRODUCTION->getRole());
 
         UserProfile::factory()->create([
             'user_id' => $teamMemberTest->id,
@@ -39,15 +39,13 @@ class UserSeeder extends Seeder
          * Create random team members
          */
         for ($i = 0; $i < 25; $i++) {
-            $teamMember = User::factory()->create();
+            $user = User::factory()->create();
+
+            $user->assignRole(UserDepartment::randomRole()->getRole());
 
             $profile = UserProfile::factory()->create([
-                'user_id' => $teamMember->id,
+                'user_id' => $user->id,
             ]);
-
-            if ($profile->user_department && $department = UserDepartment::tryFrom($profile->user_department?->value)) {
-                $teamMember->assignRole($department->getRole());
-            }
         }
     }
 }

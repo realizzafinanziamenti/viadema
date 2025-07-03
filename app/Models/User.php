@@ -93,14 +93,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user role is team_member
-     */
-    public function isTeamMember(): bool
-    {
-        return $this->hasRole('team_member');
-    }
-
-    /**
      * Check if the user role is observer
      */
     public function isObserver(): bool
@@ -191,7 +183,7 @@ class User extends Authenticatable
      */
     public function scopeTeamMembers(Builder $query)
     {
-        return $query->role('team_member');
+        return $query->role(UserDepartment::cases());
     }
 
     /**
