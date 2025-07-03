@@ -22,8 +22,8 @@
                 </x-table-data>
 
                 <x-table-data height="h-10" truncate
-                    class="uppercase font-semibold {{ $teamMember->profile?->user_department?->getLabelColor() }}"
-                    label="{{ $teamMember->profile?->user_department?->getLabelText() }}" />
+                    class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"
+                    label="{{ $teamMember->department?->getLabelText() }}" />
 
                 <x-table-data height="h-10" truncate label="{{ $teamMember->disbursed_practices_count }}"
                     class="text-center" />

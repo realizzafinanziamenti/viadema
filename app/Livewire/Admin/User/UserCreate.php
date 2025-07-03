@@ -26,17 +26,6 @@ class UserCreate extends Component
     public function setDepartment(?string $value = null): void
     {
         $this->setFormSelectValue('department', $value);
-        $this->setRole($value);
-    }
-
-    /**
-     * Set role based on department
-     */
-    public function setRole(?string $value): void
-    {
-        if ($value && $department = UserDepartment::tryFrom($value)) {
-            $this->form->role = $department->getRole();
-        }
     }
 
     /**

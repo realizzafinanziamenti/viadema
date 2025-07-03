@@ -16,14 +16,7 @@ enum UserDepartment: string
      */
     public function getRole(): string
     {
-        return match ($this) {
-            self::DIRECT_PRODUCTION => 'team_member',
-            self::INDIRECT_PRODUCTION => 'team_member',
-            self::CALL_CENTER => 'team_member',
-            self::CONSULTANT => 'team_member',
-            self::EXTERNAL => 'team_member',
-            self::OBSERVER => 'observer',
-        };
+        return $this->value;
     }
 
     /**
@@ -35,6 +28,15 @@ enum UserDepartment: string
             fn(self $department) => $department->getRole(),
             self::cases()
         ));
+    }
+
+    /**
+     * Returns a random department.
+     */
+    public static function randomRole(): self
+    {
+        $cases = self::cases();
+        return $cases[array_rand($cases)];
     }
 
     /**
