@@ -17,11 +17,11 @@ enum UserDepartment: string
     public function getRole(): string
     {
         return match ($this) {
-            self::DIRECT_PRODUCTION => 'team_member',
-            self::INDIRECT_PRODUCTION => 'team_member',
-            self::CALL_CENTER => 'team_member',
-            self::CONSULTANT => 'team_member',
-            self::EXTERNAL => 'team_member',
+            self::DIRECT_PRODUCTION => 'direct_production',
+            self::INDIRECT_PRODUCTION => 'indirect_production',
+            self::CALL_CENTER => 'call_center',
+            self::CONSULTANT => 'consultant',
+            self::EXTERNAL => 'external',
             self::OBSERVER => 'observer',
         };
     }
