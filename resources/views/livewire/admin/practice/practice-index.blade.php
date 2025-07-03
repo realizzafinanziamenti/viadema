@@ -10,10 +10,11 @@
     <x-card>
         {{-- Filters and Create Button --}}
         <div class="flex items-center justify-between gap-4 mb-5">
-            <div class="flex items-center gap-4">
-                <flux:input class="w-sm! 2xl:w-lg!" wire:model.live.debounce.500ms='search'
-                    icon:trailing="magnifying-glass"
-                    placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+            <div class="flex items-center gap-4 flex-1">
+                <div class="w-full max-w-sm 2xl:max-w-lg">
+                    <flux:input wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
+                        placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+                </div>
 
                 <x-dropdown-select width="w-52" :selectable-items="$orderBySelect" :selected="$selectedOrderBy->value" placeholder='Ordina per'
                     setFunction="setOrderBy" :has-error="$errors->has('tempSelectedTeamMemberForFilter')" />
@@ -83,7 +84,7 @@
                         @endif
                     </x-table-data>
 
-                    <x-table-data class="inline-flex items-center">
+                    <x-table-data truncate class="inline-flex items-center">
                         @if ($practice->user)
                             <x-user-table-data :user="$practice->user" />
                         @endif
