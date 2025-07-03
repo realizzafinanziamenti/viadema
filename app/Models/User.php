@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\UserDepartment;
 use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -133,6 +134,20 @@ class User extends Authenticatable
     {
         return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
     }
+
+    /**
+     * Accessor to obtain the user's department based on their role.
+     *
+     * @return Attribute<UserDepartment|null>
+     */
+    public function department(): Attribute
+    {
+        return Attribute::get(function () {
+            $role = $this->roles->pluck('name')->first();
+            return $role ? UserDepartment::from($role) : null;
+        });
+    }
+
 
     // RELATIONSHIPS
 
