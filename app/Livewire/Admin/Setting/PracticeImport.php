@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Admin\Setting;
 
+use App\Imports\PracticesImport;
 use App\Models\Practice;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PracticeImport extends Component
 {
@@ -26,16 +28,19 @@ class PracticeImport extends Component
         }
     }
 
+    /**
+     * Import the practices from the uploaded file.
+     */
     public function import()
     {
         $this->isImporting = true;
 
-        // Handle the file import logic here
+        Excel::import(new PracticesImport, $this->file);
     }
 
     public function mount()
     {
-        Gate::authorize('import practice from file', Practice::class);
+        Gate::authorize('import practices', Practice::class);
     }
 
     public function render()
