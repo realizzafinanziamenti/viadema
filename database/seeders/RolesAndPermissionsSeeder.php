@@ -70,6 +70,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // practices permissions
             'access practices',
             'create practices',
+            'import practices',
             'view practices',
             'view all practices',
             'update practices',

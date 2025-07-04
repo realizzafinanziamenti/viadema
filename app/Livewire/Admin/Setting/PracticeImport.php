@@ -40,7 +40,7 @@ class PracticeImport extends Component
 
     public function mount()
     {
-        Gate::authorize('import practices', Practice::class);
+        Gate::authorize('importPractice', Practice::class);
     }
 
     public function render()
