@@ -14,10 +14,21 @@ class PracticeImport extends Component
 
     #[Validate(['required', 'file', 'mimes:xlsx,xls'])]
     public $file = null;
+    public bool $isImporting = false;
+
+    /**
+     * Handle the file upload and import.
+     */
+    public function updatedFile()
+    {
+        if ($this->file) {
+            $this->import();
+        }
+    }
 
     public function import()
     {
-
+        $this->isImporting = true;
 
         // Handle the file import logic here
     }
