@@ -3,9 +3,13 @@
 
     <x-card>
         {{-- Filters and Create Button --}}
-        <div class="flex items-center justify-between mb-5">
-            <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca per nome, cognome..." />
+        <div class="flex items-center justify-between gap-4 mb-5">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="w-full max-w-md 2xl:max-w-lg!">
+                    <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search'
+                        icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
+                </div>
+            </div>
 
             @can('create users')
                 <a href="{{ route('user.create') }}" wire:navigate>
