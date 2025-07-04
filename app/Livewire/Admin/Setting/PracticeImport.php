@@ -4,7 +4,9 @@ namespace App\Livewire\Admin\Setting;
 
 use App\Imports\PracticesImport;
 use App\Models\Practice;
+use App\Notifications\PracticesImportCompleted;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -44,6 +46,7 @@ class PracticeImport extends Component
                     Toaster::success('Import completato!');
 
                     // invio notifica
+                    Notification::send(auth()->user(), new PracticesImportCompleted);
                 }
             ]);
 
