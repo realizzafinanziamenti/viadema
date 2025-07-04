@@ -33,20 +33,20 @@
             </div>
         </div>
 
-        <x-table class="mb-5 z-10">
+        <x-table class="mb-5 z-10" minWidth="min-w-[1300px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Id pratica" class="w-[130px]" />
-                <x-table-header label="Cliente" class="w-3/10" />
+                <x-table-header label="Id pratica" class="w-[110px]" />
+                <x-table-header label="Cliente" class="w-3/7" />
 
                 @if (!$productType)
-                    <x-table-header label="Prodotto" class="w-[150px]" />
+                    <x-table-header label="Prodotto" class="w-[160px]" />
                 @endif
 
-                <x-table-header label="Data apertura" class="w-[130px]" />
-                <x-table-header label="Codice fiscale" class="w-3/10" />
+                <x-table-header label="Data apertura" class="w-[110px]" />
+                <x-table-header label="Codice fiscale" class="w-[170px]" />
                 <x-table-header label="Stato pratica" class="w-[140px]" />
-                <x-table-header label="Collaboratore" class="w-4/10" />
+                <x-table-header label="Collaboratore" class="w-4/7" />
                 <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
@@ -69,7 +69,8 @@
                     <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
 
                     @if (!$productType)
-                        <x-table-data truncate class="font-bold!" label="{{ $practice->productType?->name }}" />
+                        <x-table-data truncate class="font-bold! w-[160px]"
+                            label="{{ $practice->productType?->name }}" />
                     @endif
 
                     <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
