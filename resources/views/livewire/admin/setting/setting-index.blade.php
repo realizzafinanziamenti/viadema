@@ -3,6 +3,9 @@
 
     <div class="flex flex-col gap-5">
 
+        {{-- Practice Import --}}
+        <livewire:admin.setting.practice-import />
+
         {{-- Product Subtype Manager --}}
         <livewire:admin.setting.product-subtype-manager />
 
