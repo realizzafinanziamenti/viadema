@@ -9,6 +9,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
+use Masmerise\Toaster\Toaster;
 
 class PracticeImport extends Component
 {
@@ -16,7 +17,7 @@ class PracticeImport extends Component
 
     #[Validate(['required', 'file', 'mimes:xlsx,xls'])]
     public $file = null;
-    public bool $isImporting = false;
+    public bool $queued = false;
 
     /**
      * Handle the file upload and import.
@@ -33,14 +34,20 @@ class PracticeImport extends Component
      */
     public function import()
     {
-        $this->isImporting = true;
-
-        Excel::import(new PracticesImport, $this->file);
-    }
-
-    public function mount()
-    {
         Gate::authorize('importPractice', Practice::class);
+
+        $import = new PracticesImport;
+
+        Excel::queueImport($import, $this->file)
+            ->chain([
+                function () use ($import) {
+                    Toaster::success('Import completato!');
+
+                    // invio notifica
+                }
+            ]);
+
+        $this->queued = true;
     }
 
     public function render()

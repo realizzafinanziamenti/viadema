@@ -10,25 +10,19 @@
                 class="flex items-center justify-center w-44 h-8 cursor-pointer text-sm rounded-md bg-black-custom border-black-custom
                 text-white hover:bg-zinc-700 hover:border-zinc-700">
 
-                <div class="flex items-center gap-2" wire:loading.remove>
+                <div class="flex items-center gap-2">
                     <x-icons.icona-importa />
                     Importa da Excel
-                </div>
 
-                <div wire:loading class="text-white">
-                    <flux:icon.loading class="size-4" />
+                    <div wire:loading class="text-white">
+                        <flux:icon.loading class="size-4" />
+                    </div>
                 </div>
             </label>
 
-            @if ($file)
-                <div class="text-sm text-zinc-600 dark:text-zinc-400">
-                    File selezionato: {{ $file->getClientOriginalName() }}
-                </div>
-            @endif
-
-            @if ($isImporting)
+            @if ($queued)
                 <div class="text-sm text-gray-custom-5">
-                    Importazione in corso...
+                    Import avviato! Riceverai un messaggio al termine.
                 </div>
             @endif
 
