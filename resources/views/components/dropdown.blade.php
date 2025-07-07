@@ -1,4 +1,4 @@
-@props(['align' => 'right', 'width' => 'w-48', 'contentClasses' => 'bg-white'])
+@props(['align' => 'right', 'width' => 'w-48', 'contentClasses' => 'bg-white', 'dropdownClasses' => ''])
 
 @php
     $alignmentClasses = match ($align) {
@@ -14,7 +14,8 @@
     };
 @endphp
 
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+<div class="{{ $dropdownClasses }} relative" x-data="{ open: false }" @click.outside="open = false"
+    @close.stop="open = false">
     <div @click="open = ! open">
         {{ $trigger }}
     </div>

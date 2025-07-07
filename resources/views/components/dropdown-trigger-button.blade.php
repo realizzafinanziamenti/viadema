@@ -1,4 +1,4 @@
-@props(['type' => 'button', 'size' => ''])
+@props(['type' => 'button', 'size' => '', 'bgColor' => 'bg-white'])
 
 @php
     $sizeClasses = match ($size) {
@@ -10,7 +10,7 @@
 @endphp
 
 <button type="{{ $type }}"
-    {{ $attributes->merge(['class' => 'inline-flex justify-between gap-1 items-center ps-4.5 pe-3 text-zinc-500 transition duration-150 ease-in-out bg-white border rounded-sm hover:text-zinc-700 focus:outline-none ' . $sizeClasses]) }}>
+    {{ $attributes->merge(['class' => $bgColor . ' inline-flex justify-between gap-1 items-center ps-4.5 pe-3 text-zinc-500 transition duration-150 ease-in-out rounded-sm hover:text-zinc-700 focus:outline-none ' . $sizeClasses]) }}>
 
     {{ $slot }}
 </button>
