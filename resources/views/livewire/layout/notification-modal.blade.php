@@ -77,7 +77,7 @@
                     </div>
                 @endif
 
-                <div class="max-h-[390px] overflow-y-auto scrollbar-none hover:scrollbar-thin">
+                <div class="max-h-[390px] overflow-y-auto scrollbar-thin">
                     @if ($notifications->isEmpty())
                         <div class="mb-1.5 font-semibold text-gray-custom-4">
                             Nessuna notifica
