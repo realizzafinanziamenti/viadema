@@ -17,6 +17,7 @@ use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Practice\PracticeUpdate;
 use App\Livewire\Admin\Setting\SettingIndex;
+use App\Livewire\Admin\Simulator\SimulatorIndex;
 use App\Livewire\Admin\User\UserCreate;
 use App\Livewire\Admin\User\UserIndex;
 use App\Livewire\Admin\User\UserShow;
@@ -53,6 +54,9 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
     Route::get('practices/details/{id}', PracticeShow::class)->name('practice.show')->middleware('can:view practices');
     Route::get('practices/{id}/edit', PracticeUpdate::class)->name('practice.edit')->middleware('can:update practices');
+
+    // Simulator Routes
+    Route::get('simulator', SimulatorIndex::class)->name('simulator.index')->middleware('can:access simulator');
 
     // Lead Routes
     Route::get('leads', LeadIndex::class)->name('lead.index')->middleware('can:access leads');

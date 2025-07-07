@@ -31,28 +31,36 @@
             {{-- CRM --}}
             <flux:navlist.group heading="Crm" class="grid">
                 {{-- Practices --}}
-                <flux:navlist.group heading="Prodotti" class="grid mb-0!" expandable customIcon="icon-akar-folder">
-                    @php
-                        $productTypes = App\Models\ProductType::all();
-                    @endphp
+                @can('access practices')
+                    <flux:navlist.group heading="Prodotti" class="grid mb-0!" expandable customIcon="icon-akar-folder">
+                        @php
+                            $productTypes = App\Models\ProductType::all();
+                        @endphp
 
-                    @foreach ($productTypes as $type)
-                        <x-sidebar-item :route="['practice.index', ['slug' => $type->slug]]" :activeWhenSlug="$type->slug" routeIs="practice"
-                            label="{{ $type->name }}" bullet />
-                    @endforeach
-                </flux:navlist.group>
+                        @foreach ($productTypes as $type)
+                            <x-sidebar-item :route="['practice.index', ['slug' => $type->slug]]" :activeWhenSlug="$type->slug" routeIs="practice"
+                                label="{{ $type->name }}" bullet />
+                        @endforeach
+                    </flux:navlist.group>
+                @endcan
 
-                <x-sidebar-item route="dashboard" routeIs="#" label="Simulatore">
-                    <x-icons.icon-akar-star />
-                </x-sidebar-item>
+                @can('access simulator')
+                    <x-sidebar-item route="simulator.index" routeIs="simulator" label="Simulatore">
+                        <x-icons.icon-akar-star />
+                    </x-sidebar-item>
+                @endcan
 
-                <x-sidebar-item route="practice.index" routeIs="practice" label="Gestione Pratiche">
-                    <x-icons.icon-akar-paper />
-                </x-sidebar-item>
+                @can('access practices')
+                    <x-sidebar-item route="practice.index" routeIs="practice" label="Gestione Pratiche">
+                        <x-icons.icon-akar-paper />
+                    </x-sidebar-item>
+                @endcan
 
-                <x-sidebar-item :route="['practice.index', ['expired' => 1]]" :activeWhenExpired="true" routeIs="practice" label="Archivio Pratiche">
-                    <x-icons.icon-akar-inbox />
-                </x-sidebar-item>
+                @can('access practices')
+                    <x-sidebar-item :route="['practice.index', ['expired' => 1]]" :activeWhenExpired="true" routeIs="practice" label="Archivio Pratiche">
+                        <x-icons.icon-akar-inbox />
+                    </x-sidebar-item>
+                @endcan
 
                 @can('access customers')
                     <x-sidebar-item route="customer.index" routeIs="customer" label="Anagrafica Clienti">
