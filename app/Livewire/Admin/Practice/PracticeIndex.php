@@ -380,6 +380,21 @@ class PracticeIndex extends Component
     }
 
     /**
+     * This method is called when the user clicks the notes button.
+     * It sets the selected practice to shows notes.
+     */
+    public function selectPracticeForNotes(int $id): void
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Practice::class,
+            property: 'selectedPractice',
+            modalName: 'practice-notes',
+            notFoundMessage: 'Note non trovate'
+        );
+    }
+
+    /**
      * This method is called when the user clicks the delete button.
      * It sets the selected practice to be deleted.
      */

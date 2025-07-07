@@ -91,10 +91,23 @@
                         @endif
                     </x-table-data>
 
+                    {{-- Notes --}}
                     <x-table-data>
-                        <div class="flex items-center justify-center w-full">
-                            <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
-                        </div>
+                        @if ($practice->notes)
+                            <div class="flex items-center justify-center w-full relative">
+                                <button class="relative cursor-pointer"
+                                    wire:click="selectPracticeForNotes({{ $practice->id }})">
+                                    <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                                    <div
+                                        class="absolute right-0 bottom-[2px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
+                                    </div>
+                                </button>
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center w-full">
+                                <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                            </div>
+                        @endif
                     </x-table-data>
 
                     {{-- Actions --}}
@@ -134,4 +147,7 @@
 
     {{-- Filter Modal --}}
     @include('partials.practice.practice-filters-modal')
+
+    {{-- Notes Modal --}}
+    @include('partials.practice.practice-notes-modal')
 </div>
