@@ -76,6 +76,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'update practices',
             'delete practices',
             'assign practice to user',
+            // simulator permissions
+            'access simulator',
+            'view simulator',
             // settings permissions
             'access settings',
             // product subtypes permissions
