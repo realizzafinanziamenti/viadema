@@ -154,24 +154,24 @@ class PracticeObserver
     public function setSnapshotValues(Practice $practice): void
     {
         // Set snapshot values based on the related models
-        $practice->product_subtype_label = $practice->productSubtype
-            ? Str::of($practice->productSubtype->name)->trim()
-            : null;
+        if ($practice->productSubtype) {
+            $practice->product_subtype_label = Str::of($practice->productSubtype->name)->trim();
+        }
 
-        $practice->financial_table_percentage = $practice->financialTable
-            ? $practice->financialTable->percentage
-            : null;
+        if ($practice->financialTable) {
+            $practice->financial_table_percentage = $practice->financialTable->percentage;
+        }
 
-        $practice->insurance_label = $practice->insurance
-            ? Str::of($practice->insurance->name)->trim()
-            : null;
+        if ($practice->insurance) {
+            $practice->insurance_label = Str::of($practice->insurance->name)->trim();
+        }
 
-        $practice->installment_value_label = $practice->installment
-            ? $practice->installment->value
-            : null;
+        if ($practice->installment) {
+            $practice->installment_value_label = $practice->installment->value;
+        }
 
-        $practice->customer_type_label = $practice->customerType
-            ? Str::of($practice->customerType->name)->trim()
-            : null;
+        if ($practice->customerType) {
+            $practice->customer_type_label = Str::of($practice->customerType->name)->trim();
+        }
     }
 }

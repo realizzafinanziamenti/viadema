@@ -58,43 +58,45 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // Recupera i valori di rinnovabilità e percentuale di avviso predefiniti
             $installmentProductDefault = $this->getRenewabilityAndAlertDefaultPercentage($product, $installment);
 
-            return new Practice([
-                'product_type_id'      => $product->id,
-                'product_subtype_id'      => $$productSubtype->id ?? null,
-                'user_id'              => $user->id,
-                'customer_id'          => $customer->id ?? null,
-                'financial_table_id'   => null,
-                'insurance_id'         => $insurance->id ?? null,
-                'installment_id'       => $installment->id ?? null,
-                'customer_type_id'     => $customerType->id ?? null,
+            return Practice::updateOrCreate(
+                ['practice_code' => $row['pratica']],
+                [
+                    'product_type_id'      => $product->id,
+                    'product_subtype_id'      => $$productSubtype->id ?? null,
+                    'user_id'              => $user->id,
+                    'customer_id'          => $customer->id ?? null,
+                    'financial_table_id'   => null,
+                    'insurance_id'         => $insurance->id ?? null,
+                    'installment_id'       => $installment->id ?? null,
+                    'customer_type_id'     => $customerType->id ?? null,
 
-                'product_subtype_label' => optional($productSubtype)->name ?? $row['tipo_prodotto'] ?? null,
-                'financial_table_percentage' => $row['tabella_finanziaria'] ?? null,
-                'insurance_label'      => optional($insurance)->name ?? $row['assicurazione'] ?? null,
-                'installment_value_label' => $row['numero_rate'] ?? null,
-                'customer_type_label'  => optional($customerType)->name ?? $row['tipo_cliente'] ?? null,
+                    'product_subtype_label' => $productSubtype?->name ?? $row['tipo_prodotto'] ?? null,
+                    'financial_table_percentage' => null,
+                    'insurance_label'      => $insurance?->name ?? $row['assicurazione'] ?? null,
+                    'installment_value_label' => $installment?->value ?? $row['numero_rate'] ?? null,
+                    'customer_type_label'  => $customerType?->name ?? $row['tipo_cliente'] ?? null,
 
-                'amount_disbursed'   => $row['finanziato'] ?? null,
-                'total_amount'       => $row['montante'] ?? null,
-                'rate_amount'        => $row['importo_rata'] ?? null,
-                'tan'                => $row['tan'] ?? null,
-                'teg'                => $row['teg'] ?? null,
-                'taeg'               => $row['taeg'] ?? null,
+                    'amount_disbursed'   => $row['finanziato'] ?? null,
+                    'total_amount'       => $row['montante'] ?? null,
+                    'rate_amount'        => $row['importo_rata'] ?? null,
+                    'tan'                => $row['tan'] ?? null,
+                    'teg'                => $row['teg'] ?? null,
+                    'taeg'               => $row['taeg'] ?? null,
 
-                'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
-                'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
-                'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
+                    'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
+                    'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
+                    'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
 
-                'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
-                'percentage_alert'        => $installmentProductDefault->percentage_alert ?? 35.00,
+                    'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
+                    'percentage_alert'        => $installmentProductDefault->percentage_alert ?? 35.00,
 
-                'practice_status' => $practiceStatus,
-                'practice_code' => $row['pratica'],
-                'notes' => null,
+                    'practice_status' => $practiceStatus,
+                    'notes' => null,
 
-                'days_transformation' => $row['trasformazione_gg'] ?? null,
-                'sum_dec_plus_35'     => $row['somma_dec_35'] ?? null,
-            ]);
+                    'days_transformation' => $row['trasformazione_gg'] ?? null,
+                    'sum_dec_plus_35'     => $row['somma_dec_35'] ?? null,
+                ]
+            );
         } catch (Exception $e) {
             Log::channel('import')->warning("Errore alla riga con pratica {$row['pratica']}: {$e->getMessage()}");
             return null;
