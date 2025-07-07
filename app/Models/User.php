@@ -76,15 +76,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Description roles
-     */
-    protected array $roleDescriptions = [
-        'superadmin' => 'SuperAdmin',
-        'team_member' => 'Collaboratore',
-        'observer' => 'Osservatore',
-    ];
-
-    /**
      * Check if the user role is superamin
      */
     public function isSuperAdmin(): bool
@@ -106,7 +97,12 @@ class User extends Authenticatable
     public function getRoleDescription(): string
     {
         $role = $this->getRoleNames()->first();
-        return $this->roleDescriptions[$role] ?? 'Ruolo non definito';
+
+        if ($role === 'superadmin') {
+            return 'SuperAdmin';
+        } else {
+            return UserDepartment::tryFrom($role)->getLabelText() ?? 'Ruolo non definito';
+        }
     }
 
     /**

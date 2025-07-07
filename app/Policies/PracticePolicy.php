@@ -34,6 +34,14 @@ class PracticePolicy
     }
 
     /**
+     * Determine whether the user can import models.
+     */
+    public function importPractice(User $user): bool
+    {
+        return $user->hasPermissionTo('import practices');
+    }
+
+    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Practice $practice): bool
