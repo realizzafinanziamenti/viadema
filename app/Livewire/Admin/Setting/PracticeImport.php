@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Setting;
 
 use App\Imports\PracticesImport;
 use App\Models\Practice;
+use App\Models\User;
 use App\Notifications\PracticesImportCompleted;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
@@ -39,14 +40,15 @@ class PracticeImport extends Component
         Gate::authorize('importPractice', Practice::class);
 
         $import = new PracticesImport;
+        $users = User::role('superadmin')->get();
 
         Excel::queueImport($import, $this->file)
             ->chain([
-                function () use ($import) {
+                function () use ($import, $users) {
                     Toaster::success('Import completato!');
 
                     // invio notifica
-                    Notification::send(auth()->user(), new PracticesImportCompleted);
+                    Notification::send($users, new PracticesImportCompleted);
                 }
             ]);
 

@@ -14,7 +14,6 @@ use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use Carbon\Carbon;
-use Demo\Product;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +24,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Validators\Failure;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading
 {
@@ -45,16 +45,16 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // Imposta il tipo di prodotto
             $product = $this->setProduct($row);
             // cerca il tipo di prodotto corrispondente
-            $productSubtype = getProductSubtype($row);
+            $productSubtype = $this->getProductSubtype($row);
             // Se la data di estinzione è presente, la pratica è considerata liquidata
             // Altrimenti, è in fase di revisione
             $practiceStatus = $row['data_liquidazione'] ? PracticeStatus::DISBURSED->value : PracticeStatus::UNDER_REVIEW->value;
             // cerca l'installment corrispondente
             $installment = Installment::where('value', $row['numero_rate'])->first();
             // Recupera l'assicurazione corrispondente, se esiste
-            $insurance = getInsurance($row);
+            $insurance = $this->getInsurance($row);
             // cerca il tipo di cliente corrispondente
-            $customerType = getCustomerType($row);
+            $customerType = $this->getCustomerType($row);
             // Recupera i valori di rinnovabilità e percentuale di avviso predefiniti
             $installmentProductDefault = $this->getRenewabilityAndAlertDefaultPercentage($product, $installment);
 
@@ -68,11 +68,11 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                 'installment_id'       => $installment->id ?? null,
                 'customer_type_id'     => $customerType->id ?? null,
 
-                'product_subtype_label' => $productSubtype->name ?? $row['tipo_prodotto'] ?? null,
+                'product_subtype_label' => optional($productSubtype)->name ?? $row['tipo_prodotto'] ?? null,
                 'financial_table_percentage' => $row['tabella_finanziaria'] ?? null,
-                'insurance_label'      => $row['assicurazione'] ?? null,
+                'insurance_label'      => optional($insurance)->name ?? $row['assicurazione'] ?? null,
                 'installment_value_label' => $row['numero_rate'] ?? null,
-                'customer_type_label'  => $customerType->name ?? $row['tipo_cliente'] ?? null,
+                'customer_type_label'  => optional($customerType)->name ?? $row['tipo_cliente'] ?? null,
 
                 'amount_disbursed'   => $row['finanziato'] ?? null,
                 'total_amount'       => $row['montante'] ?? null,
@@ -143,7 +143,11 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     protected function parseDate($value)
     {
         if (!$value) return null;
+
         try {
+            if (is_numeric($value)) {
+                return Date::excelToDateTimeObject($value)->format('Y-m-d');
+            }
             return Carbon::parse($value)->format('Y-m-d');
         } catch (Exception $e) {
             return null;
@@ -163,7 +167,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         $user = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $userFullName . '%'])
             ->first();
 
-        return $user ?? User::where('role', 'superadmin')->first(); // Fallback to superadmin if no user found
+        return $user ?? User::role('superadmin')->first(); // Fallback to superadmin if no user found
     }
 
     /**
@@ -217,9 +221,9 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
      * Imposta il tipo di prodotto in base ai dati della riga.
      *
      * @param array $row
-     * @return Product
+     * @return ProductType|null
      */
-    protected function setProduct($row): Product
+    protected function setProduct($row): ?ProductType
     {
         $value = strtolower(trim($row['applicazione'] ?? ''));
 
@@ -293,7 +297,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
      * @param Installment|null $installment
      * @return InstallmentProductDefault|null
      */
-    protected function getRenewabilityAndAlertDefaultPercentage(Product $product, ?Installment $installment): ?InstallmentProductDefault
+    protected function getRenewabilityAndAlertDefaultPercentage(?ProductType $product, ?Installment $installment): ?InstallmentProductDefault
     {
         if (!$installment) {
             return null;
