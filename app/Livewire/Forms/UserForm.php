@@ -43,7 +43,7 @@ class UserForm extends Form
             'phone' => 'nullable|string|min:10|max:24',
             'taxId' => 'nullable|string|size:16',
             'city' => 'nullable|string|max:255',
-            'profilePhoto' => 'nullable|file|mimes:jpeg,png|max:4096',
+            'profilePhoto' => 'nullable|image|max:4096',
         ];
     }
 
