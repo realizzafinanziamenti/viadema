@@ -2,7 +2,7 @@
     <x-card class="max-w-xl mx-auto">
         <x-card-header class="mb-5" label="Modifica password" />
 
-        <form wire:submit.prevent='updatePassword' class="w-md mx-auto mt-10 mb-5">
+        <form wire:submit.prevent='updatePassword' class="w-sm mx-auto mt-10 mb-5">
             <div class="flex flex-col gap-6">
                 {{-- Current Password --}}
                 <div class="flex flex-col gap-1.5">
