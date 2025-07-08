@@ -47,16 +47,6 @@
                 <flux:error name="{{ $form }}.leadStatus" />
             </div>
         </div>
-
-        {{-- Lead Communication --}}
-        <div class="flex flex-col gap-1.5">
-            <flux:label>Comunicazioni</flux:label>
-            <div class="flex flex-col gap-0.5">
-                <x-dropdown-select size="sm" align="right" :selectable-items="$leadCommunications" :selected="$selectedLeadCommunication"
-                    placeholder='Seleziona comunicazione' setFunction="setLeadCommunication" :has-error="$errors->has('{{ $form }}.leadCommunication')" />
-                <flux:error name="{{ $form }}.leadCommunication" />
-            </div>
-        </div>
     @endif
 
     {{-- Phone --}}
@@ -83,6 +73,16 @@
         <div class="flex flex-col gap-0.5">
             <flux:input size="sm" wire:model='{{ $form }}.taxId' />
             <flux:error name="{{ $form }}.taxId" />
+        </div>
+    </div>
+
+    {{-- Amount --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Importo</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
+                wire:model="{{ $form }}.amount" symbol="€" />
+            <flux:error name="{{ $form }}.amount" />
         </div>
     </div>
 

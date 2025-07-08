@@ -17,6 +17,7 @@ use App\Rules\ExceptEnumValues;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -33,9 +34,10 @@ class PracticeIndex extends Component
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
-    public Practice|null $selectedPractice = null;
+    public ?Practice $selectedPractice = null;
     public array $practiceStatuses = [];
     public ?string $selectedPracticeStatus = null;
+    public ?string $disbursementDate = null;
     public string $search = '';
     // Team Member Filter
     public string $teamMemberSearch = '';
@@ -241,7 +243,7 @@ class PracticeIndex extends Component
     }
 
     /**
-     * Set team member for customer form
+     * Set team member
      */
     public function setTeamMember(?int $value = null): void
     {
@@ -344,17 +346,52 @@ class PracticeIndex extends Component
      */
     public function updatePracticeStatus(): void
     {
-        Gate::authorize('update', $this->selectedPractice);
+        Gate::authorize('updateStatus', $this->selectedPractice);
+
+        $rules = [
+            'selectedPracticeStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
+        ];
+
+        // If the selected practice status is DISBURSED, validate the disbursement date
+        if ($this->selectedPracticeStatus === PracticeStatus::DISBURSED->value) {
+            $rules['disbursementDate'] = ['required', 'date'];
+        }
+
+        $this->validate($rules);
 
         try {
-            $this->selectedPractice->update(['practice_status' => $this->selectedPracticeStatus]);
+            $updateData = ['practice_status' => $this->selectedPracticeStatus];
+
+            // If the selected practice status is DISBURSED, set the disbursement date
+            if ($this->selectedPracticeStatus === PracticeStatus::DISBURSED->value) {
+                $updateData['disbursement_date'] = $this->disbursementDate ?? now();
+            }
+
+            $this->selectedPractice->update($updateData);
+
             Toaster::success('Stato della pratica aggiornato con successo');
         } catch (Exception $e) {
             Toaster::error('Errore durante l\'aggiornamento dello stato della pratica');
         }
 
         $this->selectedPractice = null;
+        $this->disbursementDate = now()->format('Y-m-d');
         $this->dispatch('close-modal', 'update-practice-status');
+    }
+
+    /**
+     * This method is called when the user clicks the notes button.
+     * It sets the selected practice to shows notes.
+     */
+    public function selectPracticeForNotes(int $id): void
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Practice::class,
+            property: 'selectedPractice',
+            modalName: 'practice-notes',
+            notFoundMessage: 'Note non trovate'
+        );
     }
 
     /**
@@ -726,6 +763,10 @@ class PracticeIndex extends Component
         $this->type = $slug
             ? ProductType::where('slug', $slug)->firstOrFail()
             : null;
+
+        // Initialize the disbursement date to now
+        // This is used to set the disbursement date when updating the practice status
+        $this->disbursementDate = now()->format('Y-m-d');
 
         // Set the practice status based on the request status parameter
         // This allows the component to be used with or without a specific practice status (for dashboard links)

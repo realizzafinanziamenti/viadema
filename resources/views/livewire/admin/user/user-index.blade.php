@@ -3,9 +3,13 @@
 
     <x-card>
         {{-- Filters and Create Button --}}
-        <div class="flex items-center justify-between mb-5">
-            <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
-                placeholder="Cerca per nome, cognome..." />
+        <div class="flex items-center justify-between gap-4 mb-5">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="w-full max-w-md 2xl:max-w-lg!">
+                    <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search'
+                        icon:trailing="magnifying-glass" placeholder="Cerca per nome, cognome..." />
+                </div>
+            </div>
 
             @can('create users')
                 <a href="{{ route('user.create') }}" wire:navigate>
@@ -35,8 +39,8 @@
                     <x-table-data label="{{ $teamMember->id }}" />
                     <x-table-data truncate label="{{ $teamMember->full_name }}" />
                     <x-table-data truncate
-                        class="uppercase font-semibold {{ $teamMember->profile?->user_department?->getLabelColor() }}"
-                        label="{{ $teamMember->profile?->user_department?->getLabelText() }}" />
+                        class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"
+                        label="{{ $teamMember->department?->getLabelText() }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
                     <x-table-data truncate label="{{ $teamMember->profile?->tax_id ?? 'N/D' }}" />
                     <x-table-data truncate label="{{ $teamMember->email }}" />

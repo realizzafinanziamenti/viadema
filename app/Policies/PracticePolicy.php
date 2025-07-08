@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -33,11 +34,28 @@ class PracticePolicy
     }
 
     /**
+     * Determine whether the user can import models.
+     */
+    public function importPractice(User $user): bool
+    {
+        return $user->hasPermissionTo('import practices');
+    }
+
+    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Practice $practice): bool
     {
         return $user->hasPermissionTo('update practices') && $user->id === $practice->user_id;
+    }
+
+    /**
+     * Determine whether the user can update status of the model.
+     */
+    public function updateStatus(User $user, Practice $practice): bool
+    {
+        return $user->hasPermissionTo('update practices') && $user->id === $practice->user_id
+            && $practice->practice_status !== PracticeStatus::DISBURSED->value;
     }
 
     /**

@@ -19,15 +19,6 @@ class Insurance extends Model
     }
 
     /**
-     * Check if the product subtype can be edited.
-     * A product subtype is editable if it has no associated practices.
-     */
-    public function isEditable(): bool
-    {
-        return !$this->practices()->exists();
-    }
-
-    /**
      * Accessor to ensure the name is always trimmed.
      */
     protected function name(): Attribute

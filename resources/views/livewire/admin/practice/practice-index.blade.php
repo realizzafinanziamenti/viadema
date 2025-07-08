@@ -10,10 +10,11 @@
     <x-card>
         {{-- Filters and Create Button --}}
         <div class="flex items-center justify-between gap-4 mb-5">
-            <div class="flex items-center gap-4">
-                <flux:input class="w-sm! 2xl:w-lg!" wire:model.live.debounce.500ms='search'
-                    icon:trailing="magnifying-glass"
-                    placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+            <div class="flex items-center gap-4 flex-1">
+                <div class="w-full max-w-sm 2xl:max-w-lg">
+                    <flux:input wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
+                        placeholder="Cerca per nome cliente, codice fiscale o id pratica..." />
+                </div>
 
                 <x-dropdown-select width="w-52" :selectable-items="$orderBySelect" :selected="$selectedOrderBy->value" placeholder='Ordina per'
                     setFunction="setOrderBy" :has-error="$errors->has('tempSelectedTeamMemberForFilter')" />
@@ -32,20 +33,20 @@
             </div>
         </div>
 
-        <x-table class="mb-5 z-10">
+        <x-table class="mb-5 z-10" minWidth="min-w-[1300px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Id pratica" class="w-2/16" />
-                <x-table-header label="Cliente" class="w-3/16" />
+                <x-table-header label="Id pratica" class="w-[110px]" />
+                <x-table-header label="Cliente" class="w-3/7" />
 
                 @if (!$productType)
-                    <x-table-header label="Prodotto" class="w-3/16" />
+                    <x-table-header label="Prodotto" class="w-[160px]" />
                 @endif
 
-                <x-table-header label="Data apertura" class="w-2/16" />
-                <x-table-header label="Codice fiscale" class="w-3/16" />
-                <x-table-header label="Stato pratica" class="min-w-[130px] w-2/16" />
-                <x-table-header label="Collaboratore" class="w-4/16" />
+                <x-table-header label="Data apertura" class="w-[110px]" />
+                <x-table-header label="Codice fiscale" class="w-[170px]" />
+                <x-table-header label="Stato pratica" class="w-[140px]" />
+                <x-table-header label="Collaboratore" class="w-4/7" />
                 <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
@@ -68,27 +69,45 @@
                     <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
 
                     @if (!$productType)
-                        <x-table-data truncate class="font-bold!" label="{{ $practice->productType?->name }}" />
+                        <x-table-data truncate class="font-bold! w-[160px]"
+                            label="{{ $practice->productType?->name }}" />
                     @endif
 
                     <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
-                        <x-practice-status-badge :practice="$practice"
-                            wire:click="selectPracticeForStatus({{ $practice->id }})" />
+                        @if (!$expired)
+                            <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
+                                wire:click="selectPracticeForStatus({{ $practice->id }})" />
+                        @else
+                            <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                        @endif
                     </x-table-data>
 
-                    <x-table-data class="inline-flex items-center">
+                    <x-table-data truncate class="inline-flex items-center">
                         @if ($practice->user)
                             <x-user-table-data :user="$practice->user" />
                         @endif
                     </x-table-data>
 
+                    {{-- Notes --}}
                     <x-table-data>
-                        <div class="flex items-center justify-center w-full">
-                            <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
-                        </div>
+                        @if ($practice->notes)
+                            <div class="flex items-center justify-center w-full relative">
+                                <button class="relative cursor-pointer"
+                                    wire:click="selectPracticeForNotes({{ $practice->id }})">
+                                    <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                                    <div
+                                        class="absolute right-0 bottom-[2px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
+                                    </div>
+                                </button>
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center w-full">
+                                <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                            </div>
+                        @endif
                     </x-table-data>
 
                     {{-- Actions --}}
@@ -128,4 +147,7 @@
 
     {{-- Filter Modal --}}
     @include('partials.practice.practice-filters-modal')
+
+    {{-- Notes Modal --}}
+    @include('partials.practice.practice-notes-modal')
 </div>

@@ -1,6 +1,6 @@
 @props(['user', 'size' => '10'])
 
-<div class="inline-flex items-center gap-2.5">
+<div class="inline-flex items-center gap-2.5 truncate">
     {{-- Profile photo --}}
     <img class="object-cover w-{{ $size }} h-{{ $size }} border rounded-full shrink-0"
         src="{{ $user?->getProfilePhotoUrl() }}" alt="Immagine Profilo Utente">

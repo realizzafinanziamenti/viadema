@@ -76,7 +76,7 @@ return [
     | This can be any valid route or URL in your application.
     |
     */
-    'home_route' => '/admin/chats',
+    'home_route' => '/chats',
 
     /*
     |--------------------------------------------------------------------------
@@ -88,7 +88,7 @@ return [
     |
     */
     'routes' => [
-        'prefix' => 'admin/chats',
+        'prefix' => 'chats',
         'middleware' => ['web', 'auth:web'],
         'guards' => ['web'],
     ],

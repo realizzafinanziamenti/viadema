@@ -84,8 +84,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form wire:submit="login" class="flex flex-col px-24 pb-9 gap-4">
         <!-- Email Address -->
-        <flux:input wire:model="email" type="email" required autofocus autocomplete="email" placeholder="Email"
-            size="lg" />
+        <div class="flex flex-col gap-0.5">
+            <flux:input wire:model="email" type="email" required autofocus autocomplete="email" placeholder="Email"
+                size="lg" />
+            <flux:error name="email" />
+        </div>
 
         <!-- Password -->
         <div class="relative">

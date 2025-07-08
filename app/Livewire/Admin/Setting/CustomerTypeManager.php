@@ -3,12 +3,10 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\CustomerType;
-use App\Rules\NotUsedInPractices;
 use App\Rules\UniqueNormalized;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -58,50 +56,6 @@ class CustomerTypeManager extends Component
 
         $this->reset('name');
         $this->dispatch('close-modal', 'create-customer-type');
-    }
-
-    /**
-     * This method is called when the user clicks the update button.
-     * It sets the selected customer type and opens the modal for updating the name.
-     */
-    public function selectCustomerTypeForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: CustomerType::class,
-            property: 'selectedCustomerType',
-            modalName: 'update-customer-type',
-            notFoundMessage: 'Tipologia cliente non trovata'
-        );
-        $this->name = $this->selectedCustomerType->name;
-    }
-
-    /**
-     * This method is called when the user clicks the update button in the modal.
-     * It updates the customer type and resets the name to null.
-     */
-    public function updateCustomerType(): void
-    {
-        Gate::authorize('update', $this->selectedCustomerType);
-
-        $this->validate(['name' => [
-            'required',
-            'string',
-            'max:255',
-            new UniqueNormalized('customer_types', 'name', $this->selectedCustomerType?->id),
-            new NotUsedInPractices($this->selectedCustomerType)  // validazione non legata alla campo 'name' ma all'istanza del modello
-        ]]);
-
-        try {
-            $this->selectedCustomerType->update(['name' => $this->name]);
-            Toaster::success('Tipologia cliente aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento della tipologia cliente: ' . $e->getMessage());
-        }
-
-        $this->reset(['name', 'selectedCustomerType']);
-        $this->dispatch('close-modal', 'update-customer-type');
     }
 
     /**

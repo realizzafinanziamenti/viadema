@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Setting;
 
 use App\Models\Insurance;
-use App\Rules\NotUsedInPractices;
 use App\Traits\HandlesEntityActions;
 use Exception;
 use Illuminate\Support\Facades\Gate;
@@ -57,50 +56,6 @@ class InsuranceManager extends Component
 
         $this->reset('name');
         $this->dispatch('close-modal', 'create-insurance');
-    }
-
-    /**
-     * This method is called when the user clicks the update button.
-     * It sets the selected insurance and opens the modal for updating the name.
-     */
-    public function selectInsuranceForUpdate(int $id)
-    {
-        $this->resetValidation();
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Insurance::class,
-            property: 'selectedInsurance',
-            modalName: 'update-insurance',
-            notFoundMessage: 'Assicurazione non trovata'
-        );
-        $this->name = $this->selectedInsurance->name;
-    }
-
-    /**
-     * This method is called when the user clicks the update button in the modal.
-     * It updates the insurance and resets the name to null.
-     */
-    public function updateInsurance(): void
-    {
-        Gate::authorize('update', $this->selectedInsurance);
-
-        $this->validate(['name' => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('insurances', 'name')->ignore($this->selectedInsurance?->id),
-            new NotUsedInPractices($this->selectedInsurance)  // validazione non legata alla campo 'name' ma all'istanza del modello
-        ]]);
-
-        try {
-            $this->selectedInsurance->update(['name' => $this->name]);
-            Toaster::success('Assicurazione aggiornata con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento dell\' assicurazione: ' . $e->getMessage());
-        }
-
-        $this->reset(['name', 'selectedInsurance']);
-        $this->dispatch('close-modal', 'update-insurance');
     }
 
     /**

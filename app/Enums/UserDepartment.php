@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum UserDepartment: string
 {
-    case DIRECT_PRODUCTION = 'direct-production';
-    case INDIRECT_PRODUCTION = 'indirect-production';
-    case CALL_CENTER = 'call-center';
+    case DIRECT_PRODUCTION = 'direct_production';
+    case INDIRECT_PRODUCTION = 'indirect_production';
+    case CALL_CENTER = 'call_center';
     case CONSULTANT = 'consultant';
     case EXTERNAL = 'external';
     case OBSERVER = 'observer';
@@ -16,14 +16,7 @@ enum UserDepartment: string
      */
     public function getRole(): string
     {
-        return match ($this) {
-            self::DIRECT_PRODUCTION => 'team_member',
-            self::INDIRECT_PRODUCTION => 'team_member',
-            self::CALL_CENTER => 'team_member',
-            self::CONSULTANT => 'team_member',
-            self::EXTERNAL => 'team_member',
-            self::OBSERVER => 'observer',
-        };
+        return $this->value;
     }
 
     /**
@@ -35,6 +28,15 @@ enum UserDepartment: string
             fn(self $department) => $department->getRole(),
             self::cases()
         ));
+    }
+
+    /**
+     * Returns a random department.
+     */
+    public static function randomRole(): self
+    {
+        $cases = self::cases();
+        return $cases[array_rand($cases)];
     }
 
     /**

@@ -36,10 +36,10 @@ class Customer extends Model
         'city',
         'state',
         'postal_code',
+        'amount', // Total amount spent by the customer
         'customer_status', // LEAD or CUSTOMER
         'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
-        'lead_status', // ACTIVE or LOST
-        'lead_communication', // Example: 'Email', 'Phone', etc.
+        'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
     ];
 
     /**
@@ -51,10 +51,10 @@ class Customer extends Model
     {
         return [
             'date_of_birth' => 'datetime',
+            'amount' => 'decimal:2',
             'customer_status' => CustomerStatus::class,
             'lead_source' => LeadSource::class,
             'lead_status' => LeadStatus::class,
-            'lead_communication' => LeadCommunication::class,
         ];
     }
 
@@ -118,6 +118,39 @@ class Customer extends Model
     protected function formattedDateOfBirth(): Attribute
     {
         return Attribute::get(fn() => $this->date_of_birth?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted amount .
+     */
+    protected function formattedAmount(): Attribute
+    {
+        return Attribute::get(fn() => $this->amount !== null ? number_format($this->amount, 2, ',', '.') . '€' : 'N/D');
+    }
+
+    /**
+     * Accessor to obtain formatted created at.
+     */
+    protected function formattedCreatedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->created_at?->format('d/m/Y'));
+    }
+
+    /**
+     * Accessor to obtain formatted updated at.
+     */
+    protected function formattedUpdatedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->updated_at?->format('d/m/Y'));
+    }
+
+    /**
+     * Accessor to obtain formatted number.
+     * Example: T00001
+     */
+    protected function formattedId(): Attribute
+    {
+        return Attribute::get(fn() => 'T' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
     }
 
     // END ACCESSORS

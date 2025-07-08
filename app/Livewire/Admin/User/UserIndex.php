@@ -67,7 +67,7 @@ class UserIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = User::with('profile')
+        $query = User::with('profile', 'roles')
             ->withoutSuperadmin()
             ->orderByDesc('updated_at');
 

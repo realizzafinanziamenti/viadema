@@ -10,14 +10,24 @@
                     setFunction="setPracticeStatus" :has-error="$errors->has('selectedPracticeStatus')" />
 
                 <flux:error name="selectedPracticeStatus" />
+            </div>
+
+            {{-- FOR DISBURSED PRACTICES ONLY --}}
+            @if ($selectedPracticeStatus === App\Enums\PracticeStatus::DISBURSED->value)
+                {{-- Disbursement Date --}}
+                <div wire:transition class="flex flex-col gap-1.5 mt-3">
+                    <flux:label>Data liquidazione</flux:label>
+                    <div class="flex flex-col gap-0.5">
+                        <flux:input type="date" size="sm" wire:model='disbursementDate' />
+                        <flux:error name="disbursementDate" />
+                    </div>
+                </div>
 
                 {{-- Archive Practice Warning --}}
-                @if ($selectedPracticeStatus === App\Enums\PracticeStatus::DISBURSED->value)
-                    <div wire:transition class="text-[13px] text-gray-custom-4 mt-2">
-                        La pratica verrà archiviata
-                    </div>
-                @endif
-            </div>
+                <div wire:transition class="text-[13px] text-gray-custom-4 mt-3">
+                    La pratica verrà archiviata
+                </div>
+            @endif
 
             {{-- Buttons --}}
             <div class="flex gap-3 justify-end mt-16">

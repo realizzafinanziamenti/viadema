@@ -1,5 +1,15 @@
 <div class="w-full">
-    <x-button-back class="mb-2.5" route="practice.index" />
+    <div class="flex items-center justify-between mb-2.5">
+        <x-button-back route="practice.index" />
+
+        <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
+            <flux:button variant="primary" type="submit" size="sm"
+                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                Modifica
+            </flux:button>
+        </a>
+    </div>
+
     <x-page-title label="Dettaglio Pratica" />
 
     <div class="grid grid-cols-2 gap-4">
@@ -33,8 +43,21 @@
 
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
-                    <x-practice-status-badge :practice="$practice" wire:click='openUpdatePracticeStatusModal' />
+
+                    @if ($practice->practice_status !== App\Enums\PracticeStatus::DISBURSED)
+                        <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
+                            wire:click="openUpdatePracticeStatusModal" />
+                    @else
+                        <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                    @endif
                 </div>
+
+                @if ($practice->practice_status === App\Enums\PracticeStatus::DISBURSED)
+                    <div class="text-sm mb-2.5">
+                        <span class="text-gray-custom-4">Data di liquidazione: </span>
+                        <span>{{ $practice->formatted_disbursement_date }}</span>
+                    </div>
+                @endif
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>

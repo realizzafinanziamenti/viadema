@@ -23,7 +23,11 @@ class RolesAndPermissionsSeeder extends Seeder
          * Roles
          */
         Role::updateOrCreate(['name' => 'superadmin']);
-        $teamMember = Role::updateOrCreate(['name' => 'team_member']);
+        $directProduction = Role::updateOrCreate(['name' => 'direct_production']);
+        $indirectProduction = Role::updateOrCreate(['name' => 'indirect_production']);
+        $callCenter = Role::updateOrCreate(['name' => 'call_center']);
+        $consultant = Role::updateOrCreate(['name' => 'consultant']);
+        $external = Role::updateOrCreate(['name' => 'external']);
         $observer = Role::updateOrCreate(['name' => 'observer']);
 
         /**
@@ -32,6 +36,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
+            'update profile',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -66,11 +73,15 @@ class RolesAndPermissionsSeeder extends Seeder
             // practices permissions
             'access practices',
             'create practices',
+            'import practices',
             'view practices',
             'view all practices',
             'update practices',
             'delete practices',
             'assign practice to user',
+            // simulator permissions
+            'access simulator',
+            'view simulator',
             // settings permissions
             'access settings',
             // product subtypes permissions
@@ -117,10 +128,14 @@ class RolesAndPermissionsSeeder extends Seeder
 
         /**
          * Define role permissions for each role
+         * For now, all roles will have the same permissions, except for the observer role.
          */
         $teamMemberPermissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
+            'update profile',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -149,6 +164,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'update practices',
             'delete practices',
+            // simulator permissions
+            'access simulator',
+            'view simulator',
             // document permissions
             'access form documents',
             'view form documents',
@@ -160,6 +178,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $observerPermissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -183,7 +203,11 @@ class RolesAndPermissionsSeeder extends Seeder
         /**
          * Sync permissions to roles
          */
-        $teamMember->syncPermissions($teamMemberPermissions);
+        $directProduction->syncPermissions($teamMemberPermissions);
+        $indirectProduction->syncPermissions($teamMemberPermissions);
+        $callCenter->syncPermissions($teamMemberPermissions);
+        $consultant->syncPermissions($teamMemberPermissions);
+        $external->syncPermissions($teamMemberPermissions);
         $observer->syncPermissions($observerPermissions);
     }
 }

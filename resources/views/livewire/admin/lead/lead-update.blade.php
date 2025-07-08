@@ -2,7 +2,7 @@
     <x-card class="w-3xl mx-auto">
         <x-card-header label="Modifica profilo" />
 
-        <form wire:submit.prevent='save' class="w-full mt-10 mb-5">
+        <form wire:submit.prevent='save' class="w-2xl mx-auto mt-10 mb-5">
             @include('partials.customer.customer-form-fields', [
                 'context' => 'lead',
                 'search' => 'search',
@@ -11,7 +11,6 @@
                 'selectedCustomerTypeId' => $form->customerTypeId,
                 'selectedLeadSource' => $form->leadSource,
                 'selectedLeadStatus' => $form->leadStatus,
-                'selectedLeadCommunication' => $form->leadCommunication,
             ])
 
             {{-- Submit Buttons --}}

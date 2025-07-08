@@ -20,7 +20,6 @@ class UserForm extends Form
 {
     public ?User $user = null;
 
-    public $role = null;
     public $department = null;
     public $firstName = null;
     public $lastName = null;
@@ -37,22 +36,20 @@ class UserForm extends Form
     protected function rules()
     {
         return [
-            'role' => ['required', 'string', Rule::in(UserDepartment::getRoles())],
-            'department' => ['required', 'string', new Enum(UserDepartment::class)],
+            'department' => ['required', 'string', Rule::in(UserDepartment::getRoles())],
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user?->id)],
             'phone' => 'nullable|string|min:10|max:24',
             'taxId' => 'nullable|string|size:16',
             'city' => 'nullable|string|max:255',
-            'profilePhoto' => 'nullable|file|mimes:jpeg,png|max:4096',
+            'profilePhoto' => 'nullable|image|max:4096',
         ];
     }
 
     protected function validationAttributes()
     {
         return [
-            'role' => 'ruolo',
             'department' => 'dipartimento',
             'firstName' => 'nome',
             'lastName' => 'cognome',
@@ -73,8 +70,7 @@ class UserForm extends Form
     {
         $this->user = $user;
 
-        $this->role = $user->getRoleNames()->first();  // Get the first role assigned to the user - correct because a user can have only one role in this context
-        $this->department = $user->profile?->user_department?->value;
+        $this->department = $user->department?->value;
         $this->firstName = $user->first_name;
         $this->lastName = $user->last_name;
         $this->email = $user->email;
@@ -109,10 +105,9 @@ class UserForm extends Form
                     'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
-                $user->assignRole($this->role);
+                $user->assignRole($this->department);
 
                 $user->profile()->create([
-                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,
@@ -168,10 +163,9 @@ class UserForm extends Form
                     'profile_photo_path' => $this->profilePhotoUrl ?: null,
                 ]);
 
-                $this->user->syncRoles($this->role);  // SYNC ROLES
+                $this->user->syncRoles($this->department);  // SYNC ROLES
 
                 $this->user->profile()->update([
-                    'user_department' => $this->department,
                     'phone' => $this->phone,
                     'tax_id' => $this->taxId,
                     'city' => $this->city,

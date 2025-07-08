@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\UserDepartment;
 use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -75,28 +76,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Description roles
-     */
-    protected array $roleDescriptions = [
-        'superadmin' => 'SuperAdmin',
-        'team_member' => 'Collaboratore',
-        'observer' => 'Osservatore',
-    ];
-
-    /**
      * Check if the user role is superamin
      */
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('superadmin');
-    }
-
-    /**
-     * Check if the user role is team_member
-     */
-    public function isTeamMember(): bool
-    {
-        return $this->hasRole('team_member');
     }
 
     /**
@@ -113,7 +97,12 @@ class User extends Authenticatable
     public function getRoleDescription(): string
     {
         $role = $this->getRoleNames()->first();
-        return $this->roleDescriptions[$role] ?? 'Ruolo non definito';
+
+        if ($role === 'superadmin') {
+            return 'SuperAdmin';
+        } else {
+            return UserDepartment::tryFrom($role)->getLabelText() ?? 'Ruolo non definito';
+        }
     }
 
     /**
@@ -133,6 +122,20 @@ class User extends Authenticatable
     {
         return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
     }
+
+    /**
+     * Accessor to obtain the user's department based on their role.
+     *
+     * @return Attribute<UserDepartment|null>
+     */
+    public function department(): Attribute
+    {
+        return Attribute::get(function () {
+            $role = $this->roles->pluck('name')->first();
+            return $role ? UserDepartment::from($role) : null;
+        });
+    }
+
 
     // RELATIONSHIPS
 
@@ -176,7 +179,7 @@ class User extends Authenticatable
      */
     public function scopeTeamMembers(Builder $query)
     {
-        return $query->role('team_member');
+        return $query->role(UserDepartment::cases());
     }
 
     /**
