@@ -1,5 +1,5 @@
 <div class="w-full">
-    <x-card class="max-w-xl mx-auto">
+    <x-card class="max-w-md mx-auto">
         <x-card-header class="mb-5" label="Modifica password" />
 
         <form wire:submit.prevent='updatePassword' class="w-sm mx-auto mt-10 mb-5">

@@ -2,7 +2,7 @@
     <x-card class="w-3xl mx-auto">
         <x-card-header label="Crea nuova pratica" />
 
-        <form wire:submit.prevent='savePractice' class="w-xl mx-auto mt-10 mb-5">
+        <form wire:submit.prevent='savePractice' class="w-2xl mx-auto mt-10 mb-5">
 
             {{-- Toggle Buttons --}}
             <x-forms.step-label-container class="mx-auto w-3/4 mb-6">
