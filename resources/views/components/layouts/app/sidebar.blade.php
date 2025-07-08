@@ -162,11 +162,13 @@
                 </x-slot>
 
                 <x-slot name="content">
-                    <x-dropdown-button class="cursor-pointer">
-                        <a href="{{ route('settings.profile') }}" wire:navigate>
-                            Profilo
-                        </a>
-                    </x-dropdown-button>
+                    @can('view profile')
+                        <x-dropdown-button class="cursor-pointer">
+                            <a href="{{ route('profile.show') }}" wire:navigate>
+                                Profilo
+                            </a>
+                        </x-dropdown-button>
+                    @endcan
 
                     <livewire:layout.logout-button />
                 </x-slot>
