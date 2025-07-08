@@ -1,5 +1,15 @@
 <div class="w-full">
-    <x-button-back class="mb-2.5" route="practice.index" />
+    <div class="flex items-center justify-between mb-2.5">
+        <x-button-back route="practice.index" />
+
+        <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
+            <flux:button variant="primary" type="submit" size="sm"
+                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                Modifica
+            </flux:button>
+        </a>
+    </div>
+
     <x-page-title label="Dettaglio Pratica" />
 
     <div class="grid grid-cols-2 gap-4">

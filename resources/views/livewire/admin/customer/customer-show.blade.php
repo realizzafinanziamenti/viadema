@@ -1,6 +1,16 @@
 <div class="w-full">
-    <x-button-back class="mb-2.5" route="customer.index" />
-    <x-page-title label="Dettaglio Collaboratore" />
+    <div class="flex items-center justify-between mb-2.5">
+        <x-button-back class="mb-2.5" route="customer.index" />
+
+        <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate>
+            <flux:button variant="primary" type="submit" size="sm"
+                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                Modifica
+            </flux:button>
+        </a>
+    </div>
+
+    <x-page-title label="Dettaglio Cliente" />
 
     <x-card class="max-w-3xl mx-auto">
         <x-card-header class="mb-6" label="Informazioni generali" />
