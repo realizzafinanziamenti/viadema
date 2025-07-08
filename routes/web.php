@@ -27,7 +27,7 @@ use Livewire\Volt\Volt;
 
 Route::permanentRedirect('/', 'login');
 
-Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
     // Dasboard Route
     Route::get('dashboard', Dashboard::class)->name('dashboard')->middleware('can:access dashboard');
 
