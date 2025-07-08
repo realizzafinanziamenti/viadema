@@ -18,6 +18,7 @@ use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Practice\PracticeUpdate;
 use App\Livewire\Admin\Profile\ProfileShow;
 use App\Livewire\Admin\Profile\ProfileUpdate;
+use App\Livewire\Admin\Profile\ProfileUpdatePassword;
 use App\Livewire\Admin\Setting\SettingIndex;
 use App\Livewire\Admin\Simulator\SimulatorIndex;
 use App\Livewire\Admin\User\UserCreate;
@@ -76,6 +77,7 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', ProfileShow::class)->name('profile.show')->middleware('can:view profile');
     Route::get('/profile/edit', ProfileUpdate::class)->name('profile.edit')->middleware('can:update profile');
+    Route::get('/profile/edit-password', ProfileUpdatePassword::class)->name('profile.edit.password')->middleware('can:update profile');
 
     // Route::redirect('settings', 'settings/profile');
 

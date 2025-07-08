@@ -39,11 +39,13 @@
         {{-- Buttons --}}
         @can('update profile')
             <div class="flex items-center justify-end gap-x-3 mt-18 mb-5">
-                <flux:button variant="primary" type="button" size="sm"
-                    x-on:click="dispatch('open-modal', 'change-password-modal')"
-                    class="px-10 bg-orange-custom border-orange-custom text-white hover:bg-orange-custom-hover hover:border-orange-custom-hover">
-                    Cambia password
-                </flux:button>
+                <a href="{{ route('profile.edit.password') }}" wire:navigate>
+                    <flux:button variant="primary" type="button" size="sm"
+                        x-on:click="dispatch('open-modal', 'change-password-modal')"
+                        class="px-10 bg-orange-custom border-orange-custom text-white hover:bg-orange-custom-hover hover:border-orange-custom-hover">
+                        Cambia password
+                    </flux:button>
+                </a>
 
                 <a href="{{ route('profile.edit') }}" wire:navigate>
                     <flux:button variant="primary" type="submit" size="sm"
