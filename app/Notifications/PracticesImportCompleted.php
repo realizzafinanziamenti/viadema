@@ -39,7 +39,7 @@ class PracticesImportCompleted extends Notification implements ShouldQueue
         return [
             'title' => 'Import Pratiche Completato',
             'message' => 'Tentativo di import pratiche concluso con successo.',
-            'url' => url('/admin/practices'),
+            'url' => url('/practices'),
             'type' => 'practices-import-completed',
         ];
     }
