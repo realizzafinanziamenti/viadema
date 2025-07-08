@@ -141,29 +141,38 @@
             </div>
 
             <!-- Profile button -->
-            <div class="ms-3.5">
-                <a href="#" wire:navigate
-                    class="flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full">
-                    <div class="flex items-center">
-                        <img class="object-cover w-10 h-10 bg-white rounded-full"
-                            src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
-                    </div>
+            <x-dropdown dropdownClasses="ms-3.5" width="w-32">
+                <x-slot name="trigger">
+                    <button
+                        class="bg-azure-custom flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full cursor-pointer">
+                        <div class="flex items-center">
+                            <img class="object-cover w-10 h-10 bg-white rounded-full"
+                                src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
+                        </div>
 
-                    <div class="flex flex-col items-start gap-1">
-                        <form method="POST" action="{{ route('logout') }}" class="w-full">
-                            @csrf
-
+                        <div class="flex flex-col items-start gap-1">
                             <div x-data="{{ json_encode(['name' => auth()->user()->full_name]) }}" x-text="name" class="font-semibold"
                                 x-on:profile-updated.window="name = $event.detail.name">
                             </div>
-                        </form>
 
+                            <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role"
+                                x-on:profile-updated.window="role = $event.detail.role" class="font-extralight"></div>
+                        </div>
+                    </button>
+                </x-slot>
 
-                        <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role"
-                            x-on:profile-updated.window="role = $event.detail.role" class="font-extralight"></div>
-                    </div>
-                </a>
-            </div>
+                <x-slot name="content">
+                    @can('view profile')
+                        <x-dropdown-button class="cursor-pointer">
+                            <a href="{{ route('profile.show') }}" wire:navigate>
+                                Profilo
+                            </a>
+                        </x-dropdown-button>
+                    @endcan
+
+                    <livewire:layout.logout-button />
+                </x-slot>
+            </x-dropdown>
         </flux:header>
 
         {{-- Notification Modal --}}

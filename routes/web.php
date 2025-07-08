@@ -16,6 +16,9 @@ use App\Livewire\Admin\Practice\PracticeCreate;
 use App\Livewire\Admin\Practice\PracticeIndex;
 use App\Livewire\Admin\Practice\PracticeShow;
 use App\Livewire\Admin\Practice\PracticeUpdate;
+use App\Livewire\Admin\Profile\ProfileShow;
+use App\Livewire\Admin\Profile\ProfileUpdate;
+use App\Livewire\Admin\Profile\ProfileUpdatePassword;
 use App\Livewire\Admin\Setting\SettingIndex;
 use App\Livewire\Admin\Simulator\SimulatorIndex;
 use App\Livewire\Admin\User\UserCreate;
@@ -27,7 +30,7 @@ use Livewire\Volt\Volt;
 
 Route::permanentRedirect('/', 'login');
 
-Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
     // Dasboard Route
     Route::get('dashboard', Dashboard::class)->name('dashboard')->middleware('can:access dashboard');
 
@@ -72,11 +75,15 @@ Route::prefix('admin/')->middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', ProfileShow::class)->name('profile.show')->middleware('can:view profile');
+    Route::get('/profile/edit', ProfileUpdate::class)->name('profile.edit')->middleware('can:update profile');
+    Route::get('/profile/edit-password', ProfileUpdatePassword::class)->name('profile.edit.password')->middleware('can:update profile');
+
     // Route::redirect('settings', 'settings/profile');
 
-    Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
-    Volt::route('settings/password', 'settings.password')->name('settings.password');
-    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+    // Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
+    // Volt::route('settings/password', 'settings.password')->name('settings.password');
+    // Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
 require __DIR__ . '/auth.php';
