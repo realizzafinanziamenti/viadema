@@ -36,6 +36,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
+            'update profile',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -130,6 +133,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $teamMemberPermissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
+            'update profile',
             // calendar and events permissions
             'access calendar',
             'access events',
@@ -158,6 +164,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'update practices',
             'delete practices',
+            // simulator permissions
+            'access simulator',
+            'view simulator',
             // document permissions
             'access form documents',
             'view form documents',
@@ -169,6 +178,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $observerPermissions = [
             // dashboard permissions
             'access dashboard',
+            // profile permissions
+            'view profile',
             // calendar and events permissions
             'access calendar',
             'access events',
