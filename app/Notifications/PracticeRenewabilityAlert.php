@@ -19,7 +19,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function __construct(public Practice $practice)
     {
-        $this->url = url('/admin/practices/details/' . $this->practice->id);
+        $this->url = url('/practices/details/' . $this->practice->id);
         $this->afterCommit();
     }
 
