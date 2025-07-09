@@ -4,6 +4,61 @@
 
         <form wire:submit.prevent='save' class="w-2xl mx-auto mt-10 mb-5">
             <div class="grid grid-cols-2 gap-6">
+                {{-- Profile Photo --}}
+                <div class="flex flex-col items-center gap-1.5 col-span-2 mb-6">
+                    @if ($form->profilePhoto)
+                        {{-- Show temporary new uploaded photo --}}
+                        <x-upload-image-container wire:key="new-photo-preview" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+                            <img src="{{ $form->profilePhoto->temporaryUrl() }}" alt="New profile photo"
+                                class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
+
+                            <x-button-remove-image wire:click="$set('form.profilePhoto', null)"
+                                class="absolute top-2 right-2" />
+                        </x-upload-image-container>
+                    @elseif (auth()->user()->profile_photo_path && !$form->profilePhotoRemoved)
+                        {{-- Show current photo --}}
+                        <x-upload-image-container wire:key="photo-preview" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+                            <img src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="{{ auth()->user()->full_name }}"
+                                class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
+
+                            <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
+                        </x-upload-image-container>
+                    @else
+                        {{-- Show input and label --}}
+                        <div class="flex flex-col items-center gap-1.5 " wire:key="input-photo" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+
+                            <input type="file" id="fileUpload" wire:model.live="form.profilePhoto" class="hidden"
+                                accept="image/jpeg,image/png" />
+                            <flux:error name="form.profilePhoto" />
+
+                            <label for="fileUpload" class="cursor-pointer relative">
+                                <x-upload-image-container class="h-40 w-40 border-dashed text-gray-custom-3">
+
+                                    {{-- Camera icon --}}
+                                    <div wire:loading.remove wire:target="form.profilePhoto">
+                                        <flux:icon.camera class="size-10" />
+                                    </div>
+
+                                    {{-- Loading spinner --}}
+                                    <div wire:loading wire:target="form.profilePhoto">
+                                        <flux:icon.loading class="size-10" />
+                                    </div>
+
+                                    {{-- Restore photo button --}}
+                                    @if (auth()->user()->profile_photo_path && $form->profilePhotoRemoved)
+                                        <x-button-restore-image wire:click="restoreProfilePhoto"
+                                            class="absolute top-2 right-2" />
+                                    @endif
+
+                                </x-upload-image-container>
+                            </label>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- First Name --}}
                 <div class="flex flex-col gap-1.5">
                     <flux:label>Nome</flux:label>
@@ -59,29 +114,6 @@
                         </div>
                     </div>
                 @endif
-
-                {{-- Profile Photo --}}
-                <div class="flex flex-col gap-1.5 col-span-2">
-                    <flux:label>Immagine Profilo</flux:label>
-
-                    @if (auth()->user()->profile_photo_path && !$form->profilePhotoRemoved)
-                        <x-upload-image-container wire:key="photo-preview" wire:transition
-                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
-                            <img src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="{{ auth()->user()->full_name }}"
-                                class="rounded w-profile-photo h-40 w-40" />
-
-                            <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
-                        </x-upload-image-container>
-                    @else
-                        <div wire:key="filepond-upload" wire:transition wire:transition.duration.500ms
-                            wire:transition.scale.95 wire:transition.opacity class="relative">
-                            <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
-                                accepted-file-types="image/jpeg,image/png" />
-
-                            <x-button-restore-image wire:click="restoreProfilePhoto" class="absolute top-2 right-2" />
-                        </div>
-                    @endif
-                </div>
             </div>
 
             {{-- Buttons --}}
