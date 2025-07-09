@@ -6,29 +6,49 @@
             <div class="grid grid-cols-2 gap-6">
                 {{-- Profile Photo --}}
                 <div class="flex flex-col items-center gap-1.5 col-span-2 mb-6">
-                    @if (auth()->user()->profile_photo_path && !$form->profilePhotoRemoved)
-                        <x-upload-image-container wire:key="photo-preview" wire:transition wire:transition.duration.500ms
-                            wire:transition.scale.95 wire:transition.opacity>
+                    @if ($form->profilePhoto)
+                        {{-- Show temporary new uploaded photo --}}
+                        <x-upload-image-container wire:key="new-photo-preview" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+                            <img src="{{ $form->profilePhoto->temporaryUrl() }}" alt="New profile photo"
+                                class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
+
+                            <x-button-remove-image wire:click="$set('form.profilePhoto', null)"
+                                class="absolute top-2 right-2" />
+                        </x-upload-image-container>
+                    @elseif (auth()->user()->profile_photo_path && !$form->profilePhotoRemoved)
+                        {{-- Show current photo --}}
+                        <x-upload-image-container wire:key="photo-preview" wire:transition
+                            wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
                             <img src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="{{ auth()->user()->full_name }}"
-                                class="rounded-full w-profile-photo h-40 w-40" />
+                                class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
 
                             <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
                         </x-upload-image-container>
                     @else
-                        <div class="flex flex-col items-center gap-1.5" wire:key="input-photo" wire:transition
+                        {{-- Show input and label --}}
+                        <div class="flex flex-col items-center gap-1.5 " wire:key="input-photo" wire:transition
                             wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
 
                             <input type="file" id="fileUpload" wire:model.live="form.profilePhoto" class="hidden"
                                 accept="image/jpeg,image/png" />
+                            <flux:error name="form.profilePhoto" />
 
-                            <label for="fileUpload" class="cursor-pointer">
+                            <label for="fileUpload" class="cursor-pointer relative">
                                 <x-upload-image-container class="h-40 w-40 border-dashed text-gray-custom-3">
-                                    <flux:icon.camera class="size-10" />
 
+                                    {{-- Camera icon --}}
+                                    <div wire:loading.remove wire:target="form.profilePhoto">
+                                        <flux:icon.camera class="size-10" />
+                                    </div>
+
+                                    {{-- Loading spinner --}}
+                                    <div wire:loading wire:target="form.profilePhoto">
+                                        <flux:icon.loading class="size-10" />
+                                    </div>
+
+                                    {{-- Restore photo button --}}
                                     @if (auth()->user()->profile_photo_path && $form->profilePhotoRemoved)
-                                        <div class="text-sm text-gray-custom-5">
-                                            Immagine rimossa. Clicca per caricare una nuova immagine.
-                                        </div>
                                         <x-button-restore-image wire:click="restoreProfilePhoto"
                                             class="absolute top-2 right-2" />
                                     @endif
