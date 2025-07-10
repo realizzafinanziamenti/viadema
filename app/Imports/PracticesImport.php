@@ -86,6 +86,8 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
                     'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
                     'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
+                    'early_settlement_date' => $this->parseDate($row['data_estinzione_anticipata']) ?? null,
+                    'disbursement_date' => $this->parseDate($row['data_liquidazione']) ?? null,
 
                     'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
                     'percentage_alert'        => $installmentProductDefault->percentage_alert ?? 35.00,
