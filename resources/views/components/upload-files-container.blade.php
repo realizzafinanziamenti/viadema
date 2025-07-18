@@ -23,7 +23,10 @@
             'border-gray-custom-3 bg-[#F1F0EF] text-gray-custom-5'"
             class="relative w-full h-30 flex justify-center items-center border border-dashed rounded-md">
 
-            <div wire:loading.remove wire:target="{{ $model }}" class="w-48 text-center">
+            <div wire:loading.remove wire:target="{{ $model }}"
+                class="w-48 text-center flex flex-col items-center gap-2">
+                <flux:icon.cloud-arrow-up class="size-8" />
+
                 <div class="text-[13px]">Trascina un file qui o seleziona un file dal tuo <span
                         class="font-semibold">computer</span>
                 </div>
