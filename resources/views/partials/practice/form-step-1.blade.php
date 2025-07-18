@@ -32,12 +32,13 @@
             </div>
         @endif
 
-        {{-- New Attachments --}}
+        {{-- Temporary Attachments --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Allegati</flux:label>
-            <x-filepond::upload wire:model="practiceForm.attachments" multiple max-files='10' max-file-size="10MB"
-                accepted-file-types="{{ $this->acceptedFileTypes() }}" allow-image-preview="false" />
-            <flux:error name="practiceForm.attachments" />
+
+            <x-upload-files-container model="temporaryFiles" />
+
+            <flux:error name="temporaryFiles" />
 
             <div class="text-xs text-gray-custom-4">
                 <div>- Max 10MB per file</div>
@@ -45,6 +46,18 @@
                 <div>- Formati accettati: jpg, png, pdf, doc, docx, xls, xlsm, xlsx, csv</div>
             </div>
         </div>
+
+        {{-- Temporary Attachments Preview --}}
+        @if (!empty($practiceForm->attachments))
+            <div class="flex flex-col gap-1.5">
+                <flux:label class="font-semibold">Allegati temporanei caricati
+                    {{ count($practiceForm->attachments) }}/{{ count($practiceForm->attachments) }}</flux:label>
+
+                @foreach ($practiceForm->attachments as $index => $attachment)
+                    <x-display-preview-file :attachment="$attachment" :index="$index" />
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 

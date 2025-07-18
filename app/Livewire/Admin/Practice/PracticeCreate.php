@@ -31,6 +31,7 @@ class PracticeCreate extends Component
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
     public ?Customer $selectedCustomer = null;
+    public array $temporaryFiles = [];
     public array $productTypes = [];
     public array $productSubtypes = [];
     public array $financialTables = [];
@@ -223,6 +224,47 @@ class PracticeCreate extends Component
         $practice = $this->practiceForm->store();
 
         $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+    }
+
+    /**
+     * This method is called when the user uploads new files.
+     * It updates the practice form attachments with the temporary files.
+     */
+    public function updatedTemporaryFiles(): void
+    {
+        $this->validate([
+            'temporaryFiles' => ['nullable', 'array', 'max:10'],
+            'temporaryFiles.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
+        ], [
+            'temporaryFiles.max' => 'Puoi caricare al massimo 10 file.',
+            'temporaryFiles.*.max' => 'Ogni file non può superare i 10MB.',
+            'temporaryFiles.*.mimetypes' => 'Formato file non valido.',
+        ]);
+
+        foreach ($this->temporaryFiles as $file) {
+            $this->practiceForm->attachments[] = $file;
+        }
+    }
+
+    /**
+     * This method is called when the user deletes a temporary file.
+     * It removes the file from the temporary files array and practice form attachments.
+     *
+     * @param int|string $index The index of the file to delete
+     */
+    public function deleteTemporaryFile(int $index): void
+    {
+        // Rimuovi dal allegati temporanei
+        if (isset($this->practiceForm->attachments[$index])) {
+            unset($this->practiceForm->attachments[$index]);
+            $this->practiceForm->attachments = array_values($this->practiceForm->attachments);
+        }
+
+        // Rimuovi anche da temporaryFiles
+        if (isset($this->temporaryFiles[$index])) {
+            unset($this->temporaryFiles[$index]);
+            $this->temporaryFiles = array_values($this->temporaryFiles);
+        }
     }
 
     /**
