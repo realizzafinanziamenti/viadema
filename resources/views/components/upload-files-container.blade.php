@@ -1,4 +1,4 @@
-@props(['model' => null])
+@props(['model' => null, 'acceptedFileTypes' => 'default', 'multiple' => false])
 
 <div x-data="{
     isDragging: false,
@@ -13,8 +13,13 @@
 }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
     @drop.prevent="handleDrop($event)" class="w-full">
 
-    <input id="files" name="files" type="file" wire:model="{{ $model }}" class="hidden" multiple
-        x-ref="input" accept="{{ $this->acceptedFileTypes() }}" />
+    <input id="files" name="files" type="file" x-ref="input"
+        {{ $attributes->merge([
+            'wire:model.live' => $model,
+            'class' => 'hidden',
+            'accept' => $this->acceptedFileTypes($acceptedFileTypes),
+            'multiple' => $multiple ? true : null,
+        ]) }} />
 
     <label for="files" class="cursor-pointer relative">
         <div :class="isDragging
