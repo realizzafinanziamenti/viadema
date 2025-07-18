@@ -28,6 +28,7 @@ class FormDocumentIndex extends Component
     public ?string $title = null;
     public ?string $description = null;
     public ?TemporaryUploadedFile $file = null;
+    public ?TemporaryUploadedFile $temporaryFile = null;
 
     protected function validationAttributes(): array
     {
@@ -49,6 +50,23 @@ class FormDocumentIndex extends Component
     }
 
     /**
+     * This method is called when the user updates the file input.
+     * It validates the file and updates the file property.
+     */
+    public function updatedTemporaryFile()
+    {
+        $validated = $this->validate([
+            'temporaryFile' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240'],
+        ], [
+            'temporaryFile.required' => 'Il file è obbligatorio.',
+            'temporaryFile.mimetypes' => 'Formato file non valido. I formati accettati sono: pdf, doc, docx, xls, xlsm, xlsx, csv.',
+            'temporaryFile.max' => 'Il file non può superare i 10MB.',
+        ]);
+
+        $this->file = $validated['temporaryFile'];
+    }
+
+    /**
      * This method is called when the user submits the form to create a new document.
      * It validates the input, creates a new FormDocument, and saves it to the database.
      */
@@ -59,7 +77,7 @@ class FormDocumentIndex extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240'],
+            'file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240'],
         ]);
 
         try {
@@ -79,7 +97,7 @@ class FormDocumentIndex extends Component
             $document->attachment()->save($attachment);
 
             Toaster::success('Documento caricato con successo');
-            $this->reset(['title', 'description', 'file']);
+            $this->reset(['title', 'description', 'file', 'temporaryFile']);
             $this->dispatch('close-modal', 'document-create');
         } catch (Exception $e) {
             Log::error('Errore durante il caricamento del documento: ' . $e->getMessage());
@@ -133,6 +151,14 @@ class FormDocumentIndex extends Component
             Toaster::error('File non trovato o errore: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * This method is called when the user clicks the delete temporary file button.
+     */
+    public function deleteTemporaryFile()
+    {
+        $this->reset(['temporaryFile', 'file']);
     }
 
     /**
