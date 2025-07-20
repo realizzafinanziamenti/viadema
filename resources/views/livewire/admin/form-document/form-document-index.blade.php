@@ -110,8 +110,8 @@
                         @if (!$file)
                             <div wire:key="upload-form-document" wire:transition wire:transition.duration.700ms
                                 wire:transition.scale.98 wire:transition.opacity wire:transition.timing.ease-in-out>
-                                <x-upload-files-container model="temporaryFile" :acceptedFileTypes="['documents', 'excel']" />
-                                <flux:error name="temporaryFile" />
+                                <x-upload-files-container model="file" :has-error="$errors->has('file')" :acceptedFileTypes="['documents', 'excel']" />
+
                                 <flux:error name="file" />
 
                                 <div class="text-xs text-gray-custom-4">

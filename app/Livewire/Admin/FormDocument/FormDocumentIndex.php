@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -28,7 +29,6 @@ class FormDocumentIndex extends Component
     public ?string $title = null;
     public ?string $description = null;
     public ?TemporaryUploadedFile $file = null;
-    public ?TemporaryUploadedFile $temporaryFile = null;
 
     protected function validationAttributes(): array
     {
@@ -53,17 +53,28 @@ class FormDocumentIndex extends Component
      * This method is called when the user updates the file input.
      * It validates the file and updates the file property.
      */
-    public function updatedTemporaryFile()
+    public function updatedFile()
     {
-        $validated = $this->validate([
-            'temporaryFile' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240'],
-        ], [
-            'temporaryFile.required' => 'Il file è obbligatorio.',
-            'temporaryFile.mimetypes' => 'Formato file non valido. I formati accettati sono: pdf, doc, docx, xls, xlsm, xlsx, csv.',
-            'temporaryFile.max' => 'Il file non può superare i 10MB.',
-        ]);
+        // Dopo esser stati caricati, i file vengono validati per assicurarsi che siano del tipo corretto
+        $validator = Validator::make(
+            ['file' => $this->file],
+            ['file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240']],
+            [
+                'file.required' => 'Il file è obbligatorio.',
+                'file.mimetypes' => 'Formato file non valido. I formati accettati sono: pdf, doc, docx, xls, xlsm, xlsx, csv.',
+                'file.max' => 'Il file non può superare i 10MB.',
+            ]
+        );
 
-        $this->file = $validated['temporaryFile'];
+        // Se la validazione fallisce, viene aggiunto un errore e il file viene resettato
+        if ($validator->fails()) {
+            $this->addError('file', $validator->errors()->first('file'));
+            $this->reset('file');
+            return;
+        }
+
+        // Se la validazione ha successo, rimuove eventuali errori precedenti e mantiene il file
+        $this->clearValidation('file');
     }
 
     /**
@@ -97,7 +108,7 @@ class FormDocumentIndex extends Component
             $document->attachment()->save($attachment);
 
             Toaster::success('Documento caricato con successo');
-            $this->reset(['title', 'description', 'file', 'temporaryFile']);
+            $this->reset(['title', 'description', 'file']);
             $this->dispatch('close-modal', 'document-create');
         } catch (Exception $e) {
             Log::error('Errore durante il caricamento del documento: ' . $e->getMessage());
@@ -158,7 +169,7 @@ class FormDocumentIndex extends Component
      */
     public function deleteTemporaryFile()
     {
-        $this->reset(['temporaryFile', 'file']);
+        $this->reset(['file']);
     }
 
     /**
