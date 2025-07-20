@@ -108,8 +108,7 @@
                         <flux:label>Allegato *</flux:label>
 
                         @if (!$file)
-                            <div wire:key="upload-form-document" wire:transition wire:transition.duration.700ms
-                                wire:transition.scale.98 wire:transition.opacity wire:transition.timing.ease-in-out>
+                            <div wire:key="upload-form-document" wire:transition>
                                 <x-upload-files-container model="file" :has-error="$errors->has('file')" :acceptedFileTypes="['documents', 'excel']" />
 
                                 <flux:error name="file" />
@@ -123,8 +122,7 @@
 
                         {{-- Temporary File --}}
                         @if ($file)
-                            <div wire:key="new-form-document" wire:transition wire:transition.duration.700ms
-                                wire:transition.scale.98 wire:transition.opacity wire:transition.timing.ease-in-out
+                            <div wire:key="new-form-document" wire:transition
                                 class="w-full flex justify-between items-center truncate pe-3 py-1.5 ps-4.5 leading-[1.125rem] h-8 rounded-md text-sm bg-white border border-zinc-200 text-zinc-500">
 
                                 <div>
