@@ -9,7 +9,6 @@ use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
-use App\Models\InstallmentProductDefault;
 use App\Models\Insurance;
 use App\Models\Practice;
 use App\Models\ProductSubtype;
@@ -18,15 +17,14 @@ use App\Models\User;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
 
 class PracticeCreate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFilePond;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads;
 
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
@@ -254,16 +252,10 @@ class PracticeCreate extends Component
      */
     public function deleteTemporaryFile(int $index): void
     {
-        // Rimuovi dal allegati temporanei
+        // Remove from practice form attachments
         if (isset($this->practiceForm->attachments[$index])) {
             unset($this->practiceForm->attachments[$index]);
             $this->practiceForm->attachments = array_values($this->practiceForm->attachments);
-        }
-
-        // Rimuovi anche da temporaryFiles
-        if (isset($this->temporaryFiles[$index])) {
-            unset($this->temporaryFiles[$index]);
-            $this->temporaryFiles = array_values($this->temporaryFiles);
         }
     }
 

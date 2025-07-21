@@ -20,17 +20,19 @@ use App\Traits\HandlesEntityActions;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
+use Masmerise\Toaster\Toaster;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFilePond, HandlesEntityActions;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, HandlesEntityActions;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
@@ -286,16 +288,10 @@ class PracticeUpdate extends Component
      */
     public function deleteTemporaryFile(int $index): void
     {
-        // Rimuovi dal allegati temporanei
+        // Remove from practice form attachments
         if (isset($this->practiceForm->attachments[$index])) {
             unset($this->practiceForm->attachments[$index]);
             $this->practiceForm->attachments = array_values($this->practiceForm->attachments);
-        }
-
-        // Rimuovi anche da temporaryFiles
-        if (isset($this->temporaryFiles[$index])) {
-            unset($this->temporaryFiles[$index]);
-            $this->temporaryFiles = array_values($this->temporaryFiles);
         }
     }
 

@@ -36,7 +36,7 @@
         <div class="flex flex-col gap-1.5">
             <flux:label>Allegati</flux:label>
 
-            <x-upload-files-container model="temporaryFiles" multiple />
+            <x-upload-files-container model="temporaryFiles" :has-error="$errors->has('temporaryFiles.*')" multiple />
 
             <flux:error name="temporaryFiles" />
 
