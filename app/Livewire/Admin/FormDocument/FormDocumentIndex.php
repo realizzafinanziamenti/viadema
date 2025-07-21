@@ -16,12 +16,12 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FormDocumentIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, AcceptedFileTypes, WithFilePond;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, AcceptedFileTypes, WithFileUploads;
 
     public ?FormDocument $selectedDocument = null;
     public string $search = '';

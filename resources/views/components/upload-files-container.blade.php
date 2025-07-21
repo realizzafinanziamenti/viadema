@@ -26,7 +26,7 @@
             isDragging ?
             'border-blue-custom-hover bg-blue-custom-light text-blue-custom' :
             'border-gray-custom-3 bg-[#F1F0EF] text-gray-custom-5',
-            {{ $hasError ? "'border-red-600 bg-red-50'" : "''" }}
+            {{ $hasError ? "'border-red-600 bg-red-50 text-red-600'" : "''" }}
         ]"
             class="relative w-full h-30 flex justify-center items-center border border-dashed rounded-md">
 
