@@ -28,7 +28,7 @@
                 {{-- Total Practice Count --}}
                 <text x="18" y="18.5" font-size="5" text-anchor="middle"
                     class="font-semibold fill-gray-custom-5">{{ $practiceCount }}</text>
-                <text x="18" y="22" font-size="2.5" text-anchor="middle"
+                <text x="18" y="22" font-size="3" text-anchor="middle"
                     class="font-semibold fill-gray-custom-5">Pratiche
                     totali</text>
             </svg>
