@@ -9,18 +9,19 @@ use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FormDocumentIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, AcceptedFileTypes, WithFilePond;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, AcceptedFileTypes, WithFileUploads;
 
     public ?FormDocument $selectedDocument = null;
     public string $search = '';
@@ -49,6 +50,34 @@ class FormDocumentIndex extends Component
     }
 
     /**
+     * This method is called when the user updates the file input.
+     * It validates the file and updates the file property.
+     */
+    public function updatedFile()
+    {
+        // Dopo esser stati caricati, i file vengono validati per assicurarsi che siano del tipo corretto
+        $validator = Validator::make(
+            ['file' => $this->file],
+            ['file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240']],
+            [
+                'file.required' => 'Il file è obbligatorio.',
+                'file.mimetypes' => 'Formato file non valido. I formati accettati sono: pdf, doc, docx, xls, xlsm, xlsx, csv.',
+                'file.max' => 'Il file non può superare i 10MB.',
+            ]
+        );
+
+        // Se la validazione fallisce, viene aggiunto un errore e il file viene resettato
+        if ($validator->fails()) {
+            $this->addError('file', $validator->errors()->first('file'));
+            $this->reset('file');
+            return;
+        }
+
+        // Se la validazione ha successo, rimuove eventuali errori precedenti e mantiene il file
+        $this->clearValidation('file');
+    }
+
+    /**
      * This method is called when the user submits the form to create a new document.
      * It validates the input, creates a new FormDocument, and saves it to the database.
      */
@@ -59,7 +88,7 @@ class FormDocumentIndex extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240'],
+            'file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240'],
         ]);
 
         try {
@@ -133,6 +162,14 @@ class FormDocumentIndex extends Component
             Toaster::error('File non trovato o errore: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * This method is called when the user clicks the delete temporary file button.
+     */
+    public function deleteTemporaryFile()
+    {
+        $this->reset(['file']);
     }
 
     /**
