@@ -24,7 +24,7 @@ class PracticeSeeder extends Seeder
     {
         $productTypes = ProductType::all();
         $productSubtypes = ProductSubtype::all();
-        $users = User::all();
+        $users = User::assignableUsers();
         $customers = Customer::all();
         $financialTables = FinancialTable::all();
         $insurances = Insurance::all();
