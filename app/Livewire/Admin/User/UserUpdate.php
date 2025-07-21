@@ -5,16 +5,18 @@ namespace App\Livewire\Admin\User;
 use App\Enums\UserDepartment;
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
+use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\InteractsWithDropdowns;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
 
 class UserUpdate extends Component
 {
-    use WithFilePond, InteractsWithDropdowns, EnumHelper;
+    use WithFileUploads, InteractsWithDropdowns, EnumHelper, AcceptedFileTypes;
 
     public User $user;
     // user form component
@@ -49,6 +51,31 @@ class UserUpdate extends Component
         $user = $this->form->update();
 
         $this->redirectRoute('user.show', ['id' => $user->id], navigate: true);
+    }
+
+    /**
+     * update profile photo callback for validation
+     */
+    public function updatedFormProfilePhoto()
+    {
+        $validator = Validator::make(
+            ['profilePhoto' => $this->form->profilePhoto],
+            ['profilePhoto' => ['nullable', 'image', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['images'])), 'max:10240']],
+            [
+                'profilePhoto.image' => 'Il file deve essere un\'immagine valida.',
+                'profilePhoto.mimetypes' => 'Formato immagine non valido. I formati accettati sono: jpg, jpeg, png, webp.',
+                'profilePhoto.max' => 'L\'immagine non può superare i 10MB.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            $this->addError('form.profilePhoto', $validator->errors()->first('profilePhoto'));
+            $this->reset('form.profilePhoto');
+            return;
+        }
+
+        // Se la validazione ha successo, rimuove eventuali errori precedenti e mantiene il file
+        $this->clearValidation('form.profilePhoto');
     }
 
     /**

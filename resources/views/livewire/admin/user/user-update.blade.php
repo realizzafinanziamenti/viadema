@@ -3,33 +3,44 @@
         <x-card-header label="Modifica collaboratore" />
 
         <form wire:submit.prevent='save' class="w-2xl mx-auto mt-10 mb-5">
+            {{-- Profile Photo --}}
+            <div class="flex flex-col items-center gap-1.5 col-span-2 mb-12">
+                @if ($form->profilePhoto)
+                    {{-- Show temporary new uploaded photo --}}
+                    <x-uploaded-image-container wire:key="new-photo-preview" wire:transition
+                        wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+                        <img src="{{ $form->profilePhoto->temporaryUrl() }}" alt="New profile photo"
+                            class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
+
+                        <x-button-remove-image wire:click="$set('form.profilePhoto', null)"
+                            class="absolute top-2 right-2" />
+                    </x-uploaded-image-container>
+                @elseif ($user->profile_photo_path && !$form->profilePhotoRemoved)
+                    {{-- Show current photo --}}
+                    <x-uploaded-image-container wire:key="photo-preview" wire:transition wire:transition.duration.500ms
+                        wire:transition.scale.95 wire:transition.opacity>
+                        <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
+                            class="rounded-full w-profile-photo h-40 w-40 object-cover object-center" />
+
+                        <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
+                    </x-uploaded-image-container>
+                @else
+                    {{-- Show input and label --}}
+                    <div class="flex flex-col items-center justify-center gap-1.5 " wire:key="input-photo"
+                        wire:transition wire:transition.duration.500ms wire:transition.scale.95 wire:transition.opacity>
+
+                        <div class="flex items-center justify-center">
+                            <x-upload-image-container model="form.profilePhoto" :has-error="$errors->has('form.profilePhoto')"
+                                acceptedFileTypes="images" profilePhotoRemoved="form.profilePhotoRemoved" />
+                        </div>
+                        <flux:error name="form.profilePhoto" />
+                    </div>
+                @endif
+            </div>
 
             @include('partials.user.user-form-fields', [
                 'form' => $form,
             ])
-
-            {{-- Profile Photo --}}
-            <div class="flex flex-col gap-1.5 col-span-2 mt-6">
-                <flux:label>Immagine Profilo</flux:label>
-
-                @if ($user->profile_photo_path && !$form->profilePhotoRemoved)
-                    <x-upload-image-container wire:key="photo-preview" wire:transition wire:transition.duration.500ms
-                        wire:transition.scale.95 wire:transition.opacity>
-                        <img src="{{ $user->getProfilePhotoUrl() }}" alt="{{ $user->full_name }}"
-                            class="rounded w-profile-photo h-50 w-auto" />
-
-                        <x-button-remove-image wire:click="removeProfilePhoto" class="absolute top-2 right-2" />
-                    </x-upload-image-container>
-                @else
-                    <div wire:key="filepond-upload" wire:transition wire:transition.duration.500ms
-                        wire:transition.scale.95 wire:transition.opacity class="relative">
-                        <x-filepond::upload wire:model="form.profilePhoto" maxFileSize='4MB'
-                            accepted-file-types="image/jpeg,image/png" />
-
-                        <x-button-restore-image wire:click="restoreProfilePhoto" class="absolute top-2 right-2" />
-                    </div>
-                @endif
-            </div>
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18 }}">
