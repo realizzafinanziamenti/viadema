@@ -49,7 +49,7 @@ class CustomerUpdate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $teamMembers = User::teamMembers()
+        $teamMembers = User::assignableUsers()
             ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')

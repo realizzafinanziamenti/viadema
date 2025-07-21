@@ -298,7 +298,7 @@ class PracticeCreate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $teamMembers = User::teamMembers()
+        $teamMembers = User::assignableUsers()
             ->filterBySearch($this->teamMemberSearch)
             ->orderBy('first_name')
             ->orderBy('last_name')

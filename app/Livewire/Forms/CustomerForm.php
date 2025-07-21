@@ -57,8 +57,24 @@ class CustomerForm extends Form
                 'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
                 'leadStatus' => ['nullable', 'string', new Enum(LeadStatus::class)],
             ],
-            $this->userIdRules()
+            $this->userIdRules(),
+            $this->leadStatusRules()
         );
+    }
+
+    /**
+     * customer status rules
+     * if customer is a lead, lead status is required
+     */
+    protected function leadStatusRules(): array
+    {
+        $leadStatusRules = [$this->customerStatus === CustomerStatus::LEAD->value ? 'required' : 'nullable'];
+        $leadStatusRules[] = 'string';
+        $leadStatusRules[] = new Enum(LeadStatus::class);
+
+        return [
+            'leadStatus' => $leadStatusRules,
+        ];
     }
 
     /**

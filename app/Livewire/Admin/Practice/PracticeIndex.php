@@ -796,7 +796,7 @@ class PracticeIndex extends Component
         $practices = $query->paginate(15);
 
         // Fetch team members and customers for the dropdowns
-        $teamMembers = User::teamMembers()
+        $teamMembers = User::assignableUsers()
             ->filterBySearch($this->teamMemberSearch)
             ->orderBy('first_name')
             ->orderBy('last_name')
