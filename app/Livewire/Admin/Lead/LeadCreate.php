@@ -90,13 +90,15 @@ class LeadCreate extends Component
 
         // Initialize customer status to LEAD
         $this->form->customerStatus = CustomerStatus::LEAD->value;
+        // Initialize lead status to NEW
+        $this->setLeadStatus(LeadStatus::NEW->value);
         $this->initializeLists();
     }
 
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $this->teamMembers = User::teamMembers()
+        $this->teamMembers = User::assignableUsers()
             ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')
