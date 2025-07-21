@@ -187,6 +187,22 @@ class Practice extends Model
     // ACCESSORS
 
     /**
+     * Accessor to obtain formatted inserted at date.
+     */
+    protected function formattedInsertedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->inserted_at?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted created at date.
+     */
+    protected function formattedCreatedAt(): Attribute
+    {
+        return Attribute::get(fn() => $this->created_at?->format('d/m/y'));
+    }
+
+    /**
      * Accessor to obtain formatted first installment date.
      */
     protected function formattedFirstInstallmentDate(): Attribute

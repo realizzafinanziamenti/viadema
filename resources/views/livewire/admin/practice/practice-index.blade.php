@@ -43,7 +43,7 @@
                     <x-table-header label="Prodotto" class="w-[160px]" />
                 @endif
 
-                <x-table-header label="Data apertura" class="w-[110px]" />
+                <x-table-header label="Data inserimento" class="w-[130px]" />
                 <x-table-header label="Codice fiscale" class="w-[170px]" />
                 <x-table-header label="Stato pratica" class="w-[140px]" />
                 <x-table-header label="Collaboratore" class="w-4/7" />
@@ -73,7 +73,8 @@
                             label="{{ $practice->productType?->name }}" />
                     @endif
 
-                    <x-table-data truncate label="{{ $practice->formatted_first_installment_date }}" />
+                    <x-table-data truncate
+                        label="{{ $practice->formatted_inserted_at ?? $practice->formatted_created_at }}" />
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
