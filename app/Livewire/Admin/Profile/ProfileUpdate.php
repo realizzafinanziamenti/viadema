@@ -3,15 +3,39 @@
 namespace App\Livewire\Admin\Profile;
 
 use App\Livewire\Forms\ProfileForm;
+use App\Traits\AcceptedFileTypes;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
 
 class ProfileUpdate extends Component
 {
-    use WithFilePond;
+    use WithFileUploads, AcceptedFileTypes;
 
     public ProfileForm $form;
+
+    public function updatedFormProfilePhoto()
+    {
+        $validator = Validator::make(
+            ['profilePhoto' => $this->form->profilePhoto],
+            ['profilePhoto' => ['nullable', 'image', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['images'])), 'max:10240']],
+            [
+                'profilePhoto.image' => 'Il file deve essere un\'immagine valida.',
+                'profilePhoto.mimetypes' => 'Formato immagine non valido. I formati accettati sono: jpg, jpeg, png, webp.',
+                'profilePhoto.max' => 'L\'immagine non può superare i 10MB.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            $this->addError('form.profilePhoto', $validator->errors()->first('profilePhoto'));
+            $this->reset('form.profilePhoto');
+            return;
+        }
+
+        // Se la validazione ha successo, rimuove eventuali errori precedenti e mantiene il file
+        $this->clearValidation('form.profilePhoto');
+    }
 
     /**
      * edit profile
