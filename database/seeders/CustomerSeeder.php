@@ -15,7 +15,7 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::assignableUsers();
+        $users = User::assignableUsers()->get();
 
         foreach ($users as $user) {
 
