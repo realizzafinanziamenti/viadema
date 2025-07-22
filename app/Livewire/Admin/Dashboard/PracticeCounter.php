@@ -11,18 +11,18 @@ class PracticeCounter extends Component
 {
     public int $practiceCount = 0;
     public string $approvedStatus = PracticeStatus::APPROVED->value;
-    public string $pendingStatus = PracticeStatus::PENDING->value;
+    public string $disbursedStatus = PracticeStatus::DISBURSED->value;
     public string $underReviewStatus = PracticeStatus::UNDER_REVIEW->value;
     public int $approvedPracticeCount = 0;  // deliberate
-    public int $pendingPracticeCount = 0;  // in attesa
-    public int $underReviewPracticeCount = 0;  // nuove
+    public int $disbursedPracticeCount = 0;  // liquidate
+    public int $underReviewPracticeCount = 0;  // istruttoria
 
     /**
      * Get the total count of all practices.
      */
     public function getTotalPartialCount(): int
     {
-        return $this->approvedPracticeCount + $this->pendingPracticeCount + $this->underReviewPracticeCount;
+        return $this->approvedPracticeCount + $this->disbursedPracticeCount + $this->underReviewPracticeCount;
     }
 
     #[Computed]
@@ -33,16 +33,16 @@ class PracticeCounter extends Component
     }
 
     #[Computed]
-    public function pendingPercentage(): float
+    public function disbursedPercentage(): float
     {
         $total = $this->getTotalPartialCount();
-        return $total > 0 ? round(($this->pendingPracticeCount / $total) * 100) : 0;
+        return $total > 0 ? round(($this->disbursedPracticeCount / $total) * 100) : 0;
     }
 
     #[Computed]
     public function underReviewPercentage(): float
     {
-        return max(0, 100 - $this->approvedPercentage - $this->pendingPercentage);
+        return max(0, 100 - $this->approvedPercentage - $this->disbursedPercentage);
     }
 
     public function mount()
@@ -50,16 +50,16 @@ class PracticeCounter extends Component
         $result = Practice::selectRaw("
             COUNT(*) as total,
             SUM(CASE WHEN practice_status = ? THEN 1 ELSE 0 END) as approved_count,
-            SUM(CASE WHEN practice_status = ? THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN practice_status = ? THEN 1 ELSE 0 END) as disbursed_count,
             SUM(CASE WHEN practice_status = ? THEN 1 ELSE 0 END) as under_review_count
         ", [
             $this->approvedStatus,
-            $this->pendingStatus,
+            $this->disbursedStatus,
             $this->underReviewStatus,
         ])->first();
         $this->practiceCount = $result->total;
         $this->approvedPracticeCount = $result->approved_count;
-        $this->pendingPracticeCount = $result->pending_count;
+        $this->disbursedPracticeCount = $result->disbursed_count;
         $this->underReviewPracticeCount = $result->under_review_count;
     }
 
