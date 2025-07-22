@@ -12,17 +12,17 @@
                         stroke-dasharray="{{ $this->approvedPercentage }}, {{ 100 - $this->approvedPercentage }}"
                         stroke-linecap="round" />
 
-                    {{-- Pending --}}
+                    {{-- Disbursed --}}
                     <circle r="16" cx="18" cy="18" fill="transparent" stroke-width="4"
                         class="stroke-oil-custom" stroke-linecap="round"
-                        stroke-dasharray="{{ $this->pendingPercentage }}, {{ 100 - $this->pendingPercentage }}"
+                        stroke-dasharray="{{ $this->disbursedPercentage }}, {{ 100 - $this->disbursedPercentage }}"
                         stroke-dashoffset="-{{ $this->approvedPercentage }}" />
 
                     {{-- Under Review --}}
                     <circle r="16" cx="18" cy="18" fill="transparent" stroke-width="4"
                         class="stroke-blue-custom" stroke-linecap="round"
                         stroke-dasharray="{{ $this->underReviewPercentage }}, {{ 100 - $this->underReviewPercentage }}"
-                        stroke-dashoffset="-{{ $this->approvedPercentage + $this->pendingPercentage }}" />
+                        stroke-dashoffset="-{{ $this->approvedPercentage + $this->disbursedPercentage }}" />
                 </g>
 
                 {{-- Total Practice Count --}}
@@ -41,13 +41,14 @@
                 buttonLabel="Vedi deliberate" :practiceCount="$approvedPracticeCount"
                 href="{{ route('practice.index', ['status' => $approvedStatus]) }}" />
 
-            <x-dashboard.practice-counter-element color="oil" countLabel="Totale pratiche in attesa"
-                buttonLabel="Vedi in attesa" :practiceCount="$pendingPracticeCount"
-                href="{{ route('practice.index', ['status' => $pendingStatus]) }}" />
-
-            <x-dashboard.practice-counter-element color="blue" countLabel="Totale nuove pratiche"
-                buttonLabel="Vedi nuove" :practiceCount="$underReviewPracticeCount"
+            <x-dashboard.practice-counter-element color="oil" countLabel="Totale pratiche in istruttoria"
+                buttonLabel="Vedi in istruttoria" :practiceCount="$underReviewPracticeCount"
                 href="{{ route('practice.index', ['status' => $underReviewStatus]) }}" />
+
+            <x-dashboard.practice-counter-element color="blue" countLabel="Totale pratiche liquidate"
+                buttonLabel="Vedi liquidate" :practiceCount="$disbursedPracticeCount"
+                href="{{ route('practice.index', ['expired' => 1]) }}" />
+
         </div>
 
     </div>
