@@ -9,9 +9,20 @@ class NotificationModal extends Component
 {
     public bool $show = false;
     public $notifications;
-    public int $unreadNotificationsCount = 0;
-    public int $notificationsCount = 0;
-    public int $notificationLimit = 10;
+    public $renewabilityNotifications;
+    public $otherNotifications;
+
+    public int $notificationsCount = 0; // Total count of notifications
+    public int $unreadNotificationsCount = 0; // Count of total unread notifications
+
+    public int $renewabilityNotificationsCount = 0; // Count of renewability notifications
+    public int $unreadRenewabilityNotificationsCount = 0; // Count of unread renewability notifications
+
+    public int $otherNotificationsCount = 0; // Count of other notifications
+    public int $unreadOtherNotificationsCount = 0; // Count of unread other notifications
+
+    public int $renewabilityLimit = 10;
+    public int $otherLimit = 10;
 
     /**
      * Listeners
@@ -21,6 +32,7 @@ class NotificationModal extends Component
         $auth_id = auth()->user()->id;
         return [
             "echo-private:users.{$auth_id},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => 'refreshNotifications',
+            "refresh-notification-modal" => 'refreshNotifications',
         ];
     }
 
@@ -38,17 +50,23 @@ class NotificationModal extends Component
      */
     public function notificationsCount()
     {
-        $this->notificationsCount = auth()->user()
+        $this->renewabilityNotificationsCount = auth()->user()
             ->notifications()
+            ->where('type', 'practice-renewability-alert')
+            ->count();
+
+        $this->otherNotificationsCount = auth()->user()
+            ->notifications()
+            ->where('type', '!=', 'practice-renewability-alert')
             ->count();
     }
 
     /**
      * Increase notification limit
      */
-    public function increaseLimit()
+    public function increaseLimit(string $type)
     {
-        $this->loadMoreNotifications();
+        $this->loadMoreNotifications($type);
     }
 
     /**
@@ -58,27 +76,53 @@ class NotificationModal extends Component
     {
         $user = auth()->user();
 
-        $this->unreadNotificationsCount = $user->unreadNotifications()->count();
+        $unreadNotifications = $user->unreadNotifications()->get();
+        $this->unreadNotificationsCount = $unreadNotifications->count();
 
-        $this->notifications = $user->notifications()
-            ->latest()
-            ->limit($this->notificationLimit)
+        $this->unreadRenewabilityNotificationsCount = $unreadNotifications->where('type', 'practice-renewability-alert')->count();
+        $this->unreadOtherNotificationsCount = $unreadNotifications->where('type', '!=', 'practice-renewability-alert')->count();
+
+        $this->renewabilityNotifications = $user->notifications()
+            ->where('type', 'practice-renewability-alert')
+            ->take($this->renewabilityLimit)
+            ->get();
+
+        $this->otherNotifications = $user->notifications()
+            ->where('type', '!=', 'practice-renewability-alert')
+            ->take($this->otherLimit)
             ->get();
     }
 
     /**
      * Load more notifications
      */
-    public function loadMoreNotifications()
+    public function loadMoreNotifications(string $type)
     {
-        $newNotifications = auth()->user()->notifications()
-            ->latest()
-            ->skip(count($this->notifications))
-            ->take($this->notificationLimit)
-            ->get();
+        $user = auth()->user();
 
-        // Unisce le nuove notifiche a quelle già esistenti
-        $this->notifications = $this->notifications->merge($newNotifications);
+        if ($type === 'renewability') {
+            // Load more renewability notifications
+            $newRenewabilityNotifications = $user->notifications()
+                ->where('type', 'practice-renewability-alert')
+                ->latest()
+                ->skip(count($this->renewabilityNotifications))
+                ->take($this->renewabilityLimit)
+                ->get();
+
+            // Merge new renewability notifications with existing ones
+            $this->renewabilityNotifications = $this->renewabilityNotifications->merge($newRenewabilityNotifications);
+        } elseif ($type === 'others') {
+            // Load more other notifications
+            $newOtherNotifications = $user->notifications()
+                ->where('type', '!=', 'practice-renewability-alert')
+                ->latest()
+                ->skip(count($this->otherNotifications))
+                ->take($this->otherLimit)
+                ->get();
+
+            // Merge new other notifications with existing ones
+            $this->otherNotifications = $this->otherNotifications->merge($newOtherNotifications);
+        }
     }
 
     /**
@@ -146,13 +190,21 @@ class NotificationModal extends Component
         if ($notification && is_null($notification->read_at)) {
             $notification->markAsRead();
 
+            // Decrease the unread notifications count
             $this->unreadNotificationsCount--;
 
-            $id = $notification->id;
-            $this->notifications = $this->notifications->map(function ($n) use ($id) {
-                // Controlla se l'elemento corrente è quello che deve essere aggiornato
-                return $n->id === $id ? $n->fresh() : $n; // Aggiorna solo l'elemento specifico dal db con fresh
-            });
+            // Update the counts and collections based on the notification type
+            if ($notification->type === 'practice-renewability-alert') {
+                $this->unreadRenewabilityNotificationsCount--;
+                $this->renewabilityNotifications = $this->renewabilityNotifications->map(
+                    fn($n) => $n->id === $notification->id ? $n->fresh() : $n
+                );
+            } else {
+                $this->unreadOtherNotificationsCount--;
+                $this->otherNotifications = $this->otherNotifications->map(
+                    fn($n) => $n->id === $notification->id ? $n->fresh() : $n
+                );
+            }
 
             // Dispatch an event to update the notification button
             $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
@@ -160,19 +212,55 @@ class NotificationModal extends Component
     }
 
     /**
+     * Delete a notification
+     */
+    public function deleteNotification(string $id)
+    {
+        $notification = auth()->user()->notifications()->find($id);
+
+        if (!$notification) return;
+
+        $notification->delete();
+
+        // Update the counts and collections based on the notification type
+        if ($notification->type === 'practice-renewability-alert') {
+            $this->renewabilityNotifications = $this->renewabilityNotifications->reject(fn($n) => $n->id === $id);
+            $this->renewabilityNotificationsCount--;
+            // Decrease unread counts if the notification was unread
+            if (is_null($notification->read_at)) {
+                $this->unreadRenewabilityNotificationsCount--;
+                $this->unreadNotificationsCount--;
+            }
+        } else {
+            $this->otherNotifications = $this->otherNotifications->reject(fn($n) => $n->id === $id);
+            $this->otherNotificationsCount--;
+            // Decrease unread counts if the notification was unread
+            if (is_null($notification->read_at)) {
+                $this->unreadOtherNotificationsCount--;
+                $this->unreadNotificationsCount--;
+            }
+        }
+
+        $this->notificationsCount--;
+
+        // Update the badge
+        $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
+    }
+
+    /**
      * Mark all notifications as read
      */
-    public function deleteAllNotifications()
-    {
-        auth()->user()->notifications()->delete();
-        $this->notifications = collect();
-        $this->unreadNotificationsCount = 0;
-        $this->notificationsCount = 0;
+    // public function deleteAllNotifications()
+    // {
+    //     auth()->user()->notifications()->delete();
+    //     $this->notifications = collect();
+    //     $this->unreadNotificationsCount = 0;
+    //     $this->notificationsCount = 0;
 
-        // Dispatch an event to update the notification button
-        $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
-        $this->dispatch('close-modal', 'notification-modal');
-    }
+    //     // Dispatch an event to update the notification button
+    //     $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
+    //     $this->dispatch('close-modal', 'notification-modal');
+    // }
 
     public function mount()
     {

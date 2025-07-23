@@ -53,6 +53,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
+            'practice_id' => $this->practice->id,
             'title' => 'Avviso Scadenza Pratica',
             'message' => 'Scadenza pratica ' . $this->practice->practice_code . ' imminente',
             'url' => $this->url,

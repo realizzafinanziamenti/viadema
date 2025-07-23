@@ -100,7 +100,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                 ]
             );
         } catch (Exception $e) {
-            Log::channel('import')->warning("Errore alla riga con pratica {$row['pratica']}: {$e->getMessage()}");
+            Log::warning("Errore alla riga con pratica {$row['pratica']}: {$e->getMessage()}");
             return null;
         }
     }
