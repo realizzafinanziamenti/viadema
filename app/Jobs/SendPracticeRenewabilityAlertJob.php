@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Practice;
+use App\Models\User;
 use App\Notifications\PracticeRenewabilityAlert;
 use DateTime;
 use Exception;
