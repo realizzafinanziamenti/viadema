@@ -47,11 +47,11 @@ class SendPracticeRenewabilityAlertJob implements ShouldQueue
     {
         try {
             // Refresh the practice to ensure we have the latest data
-            $practice = $this->practice->fresh();
+            $practice = Practice::withTrashed()->find($this->practice->id);
 
             // Check if the practice still exists in the database
             // If it has been deleted, skip the notification
-            if (is_null($practice)) {
+            if (is_null($practice) || $practice->trashed()) {
                 Log::info('Pratica eliminata, notifica skippata.', [
                     'practice_id' => $this->practice->id,
                     'practice_code' => $this->practice->practice_code,
@@ -73,9 +73,17 @@ class SendPracticeRenewabilityAlertJob implements ShouldQueue
                 return;
             }
 
+            // practice's owner
             $user = $this->practice->user;
-
-            if ($user) {
+            // retrieve all superadmins
+            $superadmins = User::role('superadmin')->get();
+            // notify superadmins for every renewability alerts
+            $superadmins->each(function ($superadmin) use ($practice) {
+                $superadmin->notify(new PracticeRenewabilityAlert($practice));
+            });
+            // notify the practice's owner only if they are not a superadmin
+            // to avoid duplicate notifications
+            if ($user && !$superadmins->contains('id', $user->id)) {
                 $user->notify(new PracticeRenewabilityAlert($this->practice));
             }
         } catch (Exception $e) {
