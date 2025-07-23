@@ -10,6 +10,7 @@ use App\Models\Installment;
 use App\Models\Practice;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PracticeObserver
@@ -84,6 +85,11 @@ class PracticeObserver
     {
         // Delete the associated event if it exists
         dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
+
+        DB::table('notifications')
+            ->where('type', 'practice-renewability-alert')
+            ->whereJsonContains('data->practice_id', $practice->id)
+            ->delete();
 
         foreach ($practice->attachments as $attachment) {
             $attachment->delete();
