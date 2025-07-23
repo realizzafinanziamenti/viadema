@@ -36,6 +36,25 @@ class UserSeeder extends Seeder
         ]);
 
         /**
+         * Create observer test user
+         */
+        $observerTest = User::factory()->create([
+            'first_name' => 'Observer',
+            'last_name' => 'Test',
+            'email' => 'observer@test.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $observerTest->assignRole(UserDepartment::OBSERVER->getRole());
+
+        UserProfile::factory()->create([
+            'user_id' => $observerTest->id,
+            'phone' => '1234567890',
+            'tax_id' => 'TMMTST12X34Y123Z',
+            'city' => 'Roma',
+        ]);
+
+        /**
          * Create random team members
          */
         for ($i = 0; $i < 25; $i++) {
