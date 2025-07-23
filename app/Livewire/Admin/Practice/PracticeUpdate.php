@@ -20,23 +20,26 @@ use App\Traits\HandlesEntityActions;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Spatie\LivewireFilepond\WithFilePond;
+use Livewire\WithFileUploads;
+use Masmerise\Toaster\Toaster;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFilePond, HandlesEntityActions;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, HandlesEntityActions;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
     public CustomerForm $customerForm;
     public ?Customer $selectedCustomer = null;
     public ?Attachment $selectedAttachment = null;
+    public array $temporaryFiles = [];
     public array $productTypes = [];
     public array $productSubtypes = [];
     public array $financialTables = [];
@@ -258,6 +261,41 @@ class PracticeUpdate extends Component
     }
 
     /**
+     * This method is called when the user uploads new files.
+     * It updates the practice form attachments with the temporary files.
+     */
+    public function updatedTemporaryFiles(): void
+    {
+        $this->validate([
+            'temporaryFiles' => ['nullable', 'array', 'max:10'],
+            'temporaryFiles.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
+        ], [
+            'temporaryFiles.max' => 'Puoi caricare al massimo 10 file.',
+            'temporaryFiles.*.max' => 'Ogni file non può superare i 10MB.',
+            'temporaryFiles.*.mimetypes' => 'Formato file non valido.',
+        ]);
+
+        foreach ($this->temporaryFiles as $file) {
+            $this->practiceForm->attachments[] = $file;
+        }
+    }
+
+    /**
+     * This method is called when the user deletes a temporary file.
+     * It removes the file from the temporary files array and practice form attachments.
+     *
+     * @param int|string $index The index of the file to delete
+     */
+    public function deleteTemporaryFile(int $index): void
+    {
+        // Remove from practice form attachments
+        if (isset($this->practiceForm->attachments[$index])) {
+            unset($this->practiceForm->attachments[$index]);
+            $this->practiceForm->attachments = array_values($this->practiceForm->attachments);
+        }
+    }
+
+    /**
      * This method is called when the user clicks the download button for an attachment.
      * It retrieves the attachment by ID and returns a download response.
      */
@@ -323,7 +361,7 @@ class PracticeUpdate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $teamMembers = User::teamMembers()
+        $teamMembers = User::assignableUsers()
             ->filterBySearch($this->teamMemberSearch)
             ->orderBy('first_name')
             ->orderBy('last_name')

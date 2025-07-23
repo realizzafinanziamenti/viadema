@@ -13,7 +13,7 @@ class UserList extends Component
 
     public function mount()
     {
-        $this->users = User::with('profile')
+        $this->users = User::with('profile', 'roles')
             ->withCount(['practices as disbursed_practices_count' => function ($query) {
                 $query->where('practice_status', PracticeStatus::DISBURSED);
             }])

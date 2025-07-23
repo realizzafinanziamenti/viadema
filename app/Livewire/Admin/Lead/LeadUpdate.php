@@ -96,7 +96,7 @@ class LeadUpdate extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $this->teamMembers = User::teamMembers()
+        $this->teamMembers = User::assignableUsers()
             ->filterBySearch($this->search)
             ->orderBy('first_name')
             ->orderBy('last_name')

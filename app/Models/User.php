@@ -177,9 +177,21 @@ class User extends Authenticatable
     /**
      * Scope a query to only include users with team member role.
      */
-    public function scopeTeamMembers(Builder $query)
+    public function scopeAssignableUsers(Builder $query)
     {
-        return $query->role(UserDepartment::cases());
+        // Exclude observer role
+        $excluded = UserDepartment::OBSERVER;
+
+        // Push superadmin in roles array
+        $roles = collect(UserDepartment::cases())
+            ->reject(fn($case) => $case === $excluded)
+            ->map(fn($case) => $case->value)
+            ->push('superadmin')
+            ->toArray();
+
+        return $query->whereHas('roles', function ($q) use ($roles) {
+            $q->whereIn('name', $roles);
+        });
     }
 
     /**

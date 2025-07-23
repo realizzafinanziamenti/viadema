@@ -1,10 +1,4 @@
-@props(['model' => null, 'acceptedFileTypes' => 'default', 'hasError' => false, 'profilePhotoRemoved' => null])
-
-@php
-    $errorClass = $hasError
-        ? 'border-red-600 bg-red-50 text-red-600'
-        : 'border-gray-custom-3 bg-[#F1F0EF] text-gray-custom-5';
-@endphp
+@props(['model' => null, 'acceptedFileTypes' => 'default', 'multiple' => false, 'hasError' => false])
 
 <div x-data="{
     isDragging: false,
@@ -19,36 +13,36 @@
 }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
     @drop.prevent="handleDrop($event)" class="w-full">
 
-    <input id="file" name="file" type="file" x-ref="input"
+    <input id="files" name="files" type="file" x-ref="input"
         {{ $attributes->merge([
             'wire:model.live' => $model,
             'class' => 'hidden',
             'accept' => $this->acceptedFileTypes($acceptedFileTypes),
+            'multiple' => $multiple ? true : null,
         ]) }} />
 
-    <label for="file" class="cursor-pointer relative">
+    <label for="files" class="cursor-pointer relative">
         <div :class="[
             isDragging ?
             'border-blue-custom-hover bg-blue-custom-light text-blue-custom' :
             'border-gray-custom-3 bg-[#F1F0EF] text-gray-custom-5',
             {{ $hasError ? "'border-red-600 bg-red-50 text-red-600'" : "''" }}
         ]"
-            class="relative w-40 h-40 flex justify-center items-center border border-dashed rounded-full border-gray-custom-3 bg-[#F1F0EF]">
+            class="relative w-full h-30 flex justify-center items-center border border-dashed rounded-md">
 
-            {{-- Camera icon --}}
-            <div wire:loading.remove wire:target="{{ $model }}">
-                <flux:icon.camera class="size-10" />
+            <div wire:loading.remove wire:target="{{ $model }}"
+                class="w-48 text-center flex flex-col items-center gap-2">
+                <flux:icon.cloud-arrow-up class="size-8" />
+
+                <div class="text-[13px]">Trascina un file qui o seleziona un file dal tuo <span
+                        class="font-semibold">computer</span>
+                </div>
             </div>
 
             {{-- Loading spinner --}}
             <div wire:loading wire:target="{{ $model }}">
                 <flux:icon.loading class="size-10" />
             </div>
-
-            {{-- Restore photo button --}}
-            @if (auth()->user()->profile_photo_path && $profilePhotoRemoved)
-                <x-button-restore-image wire:click="restoreProfilePhoto" class="absolute top-2 right-2" />
-            @endif
 
         </div>
     </label>
