@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
         UserProfile::factory()->create([
             'user_id' => $observerTest->id,
             'phone' => '1234567890',
-            'tax_id' => 'TMMTST12X34Y123Z',
+            'tax_id' => 'OBSTST12X34Y123Z',
             'city' => 'Roma',
         ]);
 
