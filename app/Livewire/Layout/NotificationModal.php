@@ -32,6 +32,7 @@ class NotificationModal extends Component
         $auth_id = auth()->user()->id;
         return [
             "echo-private:users.{$auth_id},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => 'refreshNotifications',
+            "refresh-notification-modal" => 'refreshNotifications',
         ];
     }
 

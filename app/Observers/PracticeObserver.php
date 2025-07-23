@@ -6,6 +6,7 @@ use App\Enums\EventAction;
 use App\Enums\EventType;
 use App\Jobs\ManageRenewabilityEventJob;
 use App\Jobs\SendPracticeRenewabilityAlertJob;
+use App\Livewire\Layout\NotificationModal;
 use App\Models\Installment;
 use App\Models\Practice;
 use Carbon\Carbon;
@@ -86,6 +87,7 @@ class PracticeObserver
         // Delete the associated event if it exists
         dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
 
+        // Delete the renewability alert notification from the database
         DB::table('notifications')
             ->where('type', 'practice-renewability-alert')
             ->whereJsonContains('data->practice_id', $practice->id)

@@ -4,6 +4,8 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Enums\PracticeOrderBy;
 use App\Enums\PracticeStatus;
+use App\Livewire\Layout\NotificationButton;
+use App\Livewire\Layout\NotificationModal;
 use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
@@ -422,6 +424,10 @@ class PracticeIndex extends Component
             modalName: 'delete-practice',
             successMessage: 'Pratica eliminata con successo'
         );
+
+        // Dispatch an event to refresh the notification modal
+        $this->dispatch('refresh-notification-modal')->to(NotificationModal::class);
+        $this->dispatch('refresh-notification-button')->to(NotificationButton::class);
     }
 
     /**
