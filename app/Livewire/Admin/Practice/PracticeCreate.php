@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Practice;
 
+use App\Enums\CustomerStatus;
 use App\Enums\PracticeStatus;
 use App\Livewire\Forms\CustomerForm;
 use App\Livewire\Forms\PracticeForm;
@@ -205,7 +206,7 @@ class PracticeCreate extends Component
      */
     public function saveCustomer(): void
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', [Customer::class, CustomerStatus::CUSTOMER]);
         $customer = $this->customerForm->store();
 
         $this->selectedCustomer = $customer;
@@ -293,6 +294,9 @@ class PracticeCreate extends Component
     {
         Gate::authorize('create', Practice::class);
         $this->initSelectValues();
+
+        // Initialize customer status to CUSTOMER
+        $this->customerForm->customerStatus = CustomerStatus::CUSTOMER->value;
     }
 
     #[Layout('components.layouts.app')]
