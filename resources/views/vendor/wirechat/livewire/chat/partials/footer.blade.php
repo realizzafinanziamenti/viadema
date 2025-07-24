@@ -589,14 +589,14 @@
 
                             // Filter invalid files based on size and type
                             const invalidFiles = Array.from(files).filter((file) => {
-                                const fileType = file.type.split('/')[1].toLowerCase(); // Extract file extension
+                                const fileType = file.name.split('.').pop().toLowerCase(); // Extract file extension
                                 return file.size > this.maxSize || !this.allowedFileTypes.includes(
                                     fileType); // Check size and type
                             });
 
                             // Filter valid files
                             const validFiles = Array.from(files).filter((file) => {
-                                const fileType = file.type.split('/')[1].toLowerCase();
+                                const fileType = file.name.split('.').pop().toLowerCase();
                                 return file.size <= this.maxSize && this.allowedFileTypes.includes(fileType);
                             });
 
