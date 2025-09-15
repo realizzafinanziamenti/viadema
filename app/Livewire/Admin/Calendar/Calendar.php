@@ -4,8 +4,10 @@ namespace App\Livewire\Admin\Calendar;
 
 use App\Livewire\Forms\EventForm;
 use App\Models\Event;
+use App\Models\User;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -36,6 +38,7 @@ class Calendar extends Component
     public string $search = ''; // search property to hold the search term
     public EventForm $form; // form property to hold the event form
     public ?Event $selectedEvent = null; // property to hold the selected event
+    public Collection $possibleParticipants; // property to hold the possible participants for events
 
     /**
      * Set the initial date to the current date.
@@ -197,6 +200,17 @@ class Calendar extends Component
     }
 
     /**
+     * load possible participants for events
+     */
+    public function loadPossibleParticipants()
+    {
+        $this->possibleParticipants = User::assignableUsers()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+    }
+
+    /**
      * refresh calendar function
      */
     protected function refreshCalendar(): void
@@ -282,6 +296,7 @@ class Calendar extends Component
         Gate::authorize('access calendar');
         $this->setInitialDate();
         $this->refreshCalendar();
+        $this->loadPossibleParticipants();
     }
 
     #[Layout('components.layouts.app')]

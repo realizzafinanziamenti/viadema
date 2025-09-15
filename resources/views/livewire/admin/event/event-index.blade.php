@@ -52,7 +52,8 @@
     {{-- Edit Customer Modal --}}
     <x-modal name="event-edit" maxWidth="2xl">
         <x-modal-header label="Modifica evento" />
-        <x-forms.event-form submitFunction="edit" :possibleParticipants="$possibleParticipants" />
+        <x-forms.event-form submitFunction="edit" :possibleParticipants="$possibleParticipants" modalName="event-edit"
+            submitButtonLabel="Modifica" />
     </x-modal>
 
     {{-- Delete User Modal --}}
