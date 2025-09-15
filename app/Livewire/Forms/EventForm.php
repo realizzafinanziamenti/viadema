@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\UserDepartment;
 use App\Models\Event;
+use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +82,7 @@ class EventForm extends Form
         $this->startTime = $event->start_time?->format('H:i');
         $this->endTime = $event->end_time?->format('H:i');
         $this->repeatUntil = null;
-        // $this->participants = $event->participants()->pluck('user_id')->toArray();
+        $this->participants = $event->participants()->pluck('user_id')->toArray();
     }
 
     /**
