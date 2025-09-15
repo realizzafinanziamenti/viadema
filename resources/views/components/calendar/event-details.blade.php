@@ -17,6 +17,11 @@
                 </div>
             @endif
         </div>
+        {{-- Event Owner --}}
+        <div class="mb-2.5">
+            <span class="text-gray-custom-4">Creatore evento: </span>
+            <span>{{ $event?->user?->fullName }}</span>
+        </div>
         {{-- Start Date --}}
         <div class="mb-2.5">
             <span class="text-gray-custom-4">Data evento: </span>
@@ -37,6 +42,13 @@
             <div class="mb-2.5">
                 <span class="text-gray-custom-4">Descrizione: </span>
                 <span>{{ $event?->description }}</span>
+            </div>
+        @endif
+        {{-- Participants --}}
+        @if ($event?->participants && $event?->participants->isNotEmpty())
+            <div class="mb-2.5">
+                <span class="text-gray-custom-4">Partecipanti: </span>
+                <span>{{ $event?->participants->pluck('fullName')->join(', ') }}</span>
             </div>
         @endif
     </div>
