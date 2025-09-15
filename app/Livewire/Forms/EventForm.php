@@ -31,6 +31,16 @@ class EventForm extends Form
             'startTime' => 'required|date_format:H:i|after_or_equal:08:00|before_or_equal:21:00',
             'endTime' => 'required|date_format:H:i|after:startTime|after_or_equal:08:30|before_or_equal:22:00',
             'repeatUntil' => 'nullable|date|after:startDate|before_or_equal:' . Carbon::parse($this->startDate)->addMonths(1)->format('Y-m-d'),
+            'participants' => 'nullable|array',
+            'participants.*' => [
+                'exists:users,id',
+                function ($attribute, $value, $fail) {
+                    $user = User::find($value);
+                    if ($user && $user->hasRole(UserDepartment::OBSERVER->value)) {
+                        $fail('Gli utenti con ruolo osservatore non possono partecipare agli eventi.');
+                    }
+                }
+            ],
         ];
     }
 
@@ -43,6 +53,7 @@ class EventForm extends Form
             'startTime' => 'ora inizio',
             'endTime' => 'ora fine',
             'repeatUntil' => 'ripeti fino a',
+            'participants' => 'partecipanti',
         ];
     }
 
@@ -53,6 +64,7 @@ class EventForm extends Form
             'endTime.after' => 'L\'orario di fine evento deve essere uguale o successivo all\'orario di inizio evento',
             'repeatUntil.after' => 'La data deve essere successiva alla data di inizio evento',
             'repeatUntil.before_or_equal' => 'La data selezionata è oltre il consentito',
+            'participants.*.exists' => 'Uno o più partecipanti selezionati non sono validi',
         ];
     }
 
@@ -68,6 +80,7 @@ class EventForm extends Form
         $this->startTime = $event->start_time?->format('H:i');
         $this->endTime = $event->end_time?->format('H:i');
         $this->repeatUntil = null;
+        // $this->participants = $event->participants()->pluck('user_id')->toArray();
     }
 
     /**
@@ -87,6 +100,11 @@ class EventForm extends Form
                     'start_time' => $this->startTime,
                     'end_time' => $this->endTime,
                 ]);
+
+                // attach participants if any
+                if (!empty($this->participants)) {
+                    $event->participants()->attach($this->participants);
+                }
 
                 // generate recurring events
                 if ($this->repeatUntil) {
@@ -117,6 +135,9 @@ class EventForm extends Form
                     'start_time' => $this->startTime,
                     'end_time' => $this->endTime,
                 ]);
+
+                // sync participants
+                $this->event->participants()->sync($this->participants);
             });
 
             Toaster::success('Evento aggiornato con successo');
@@ -143,6 +164,11 @@ class EventForm extends Form
                 'start_time' => $event->start_time,
                 'end_time' => $event->end_time,
             ]);
+
+            // attach participants if any
+            if (!empty($this->participants)) {
+                $event->participants()->attach($this->participants);
+            }
 
             $nextDate->addDay();
         }
