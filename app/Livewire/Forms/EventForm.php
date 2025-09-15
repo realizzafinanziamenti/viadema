@@ -20,6 +20,7 @@ class EventForm extends Form
     public ?string $startTime = null;
     public ?string $endTime = null;
     public $repeatUntil = null;
+    public array $participants = [];
 
     protected function rules()
     {

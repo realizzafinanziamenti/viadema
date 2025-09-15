@@ -4,7 +4,9 @@ namespace App\Livewire\Admin\Event;
 
 use App\Livewire\Forms\EventForm;
 use App\Models\Event;
+use App\Models\User;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,6 +21,7 @@ class EventIndex extends Component
     public ?Event $selectedEvent = null;
     public EventForm $form;
     public $search = '';
+    public Collection $possibleParticipants;
 
     /**
      * Updated search bar callback function
@@ -100,9 +103,21 @@ class EventIndex extends Component
         $this->dispatch('close-modal', 'event-delete');
     }
 
+    /**
+     * load possible participants for events
+     */
+    public function loadPossibleParticipants()
+    {
+        $this->possibleParticipants = User::assignableUsers()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+    }
+
     public function mount()
     {
         Gate::authorize('viewAny', Event::class);
+        $this->loadPossibleParticipants();
     }
 
     #[Layout('components.layouts.app')]

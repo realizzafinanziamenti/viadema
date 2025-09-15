@@ -46,13 +46,13 @@
     {{-- Create New Customer Modal --}}
     <x-modal name="event-create" maxWidth="2xl">
         <x-modal-header label="Crea nuovo evento" />
-        <x-forms.event-form submitFunction="save" />
+        <x-forms.event-form submitFunction="save" :possibleParticipants="$possibleParticipants" />
     </x-modal>
 
     {{-- Edit Customer Modal --}}
     <x-modal name="event-edit" maxWidth="2xl">
         <x-modal-header label="Modifica evento" />
-        <x-forms.event-form submitFunction="edit" />
+        <x-forms.event-form submitFunction="edit" :possibleParticipants="$possibleParticipants" />
     </x-modal>
 
     {{-- Delete User Modal --}}
