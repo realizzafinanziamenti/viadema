@@ -20,12 +20,12 @@
         {{ $this->isLastOfRange($index) ? 'mb-4' : 'mb-2' }}">
 
      {{-- Left --}}
-     <div class="flex-1 flex flex-col gap-1">
+     <div class="flex-1 flex flex-col gap-1 truncate">
          <div class="font-bold text-sm {{ $titleCss }} truncate">
              {{ $notification->data['title'] }}
          </div>
 
-         <div class="truncate">{{ $notification->data['message'] }}</div>
+         <div title="{{ $notification->data['message'] }}" class="truncate">{{ $notification->data['message'] }}</div>
      </div>
 
      {{-- Right --}}

@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -106,6 +107,7 @@ class EventIndex extends Component
 
             Toaster::success('Evento eliminato con successo');
         } catch (Exception $e) {
+            Log::error('Errore durante l\'eliminazione dell\'evento: ' . $e->getMessage());
             Toaster::error('Si è verificato un errore: ' . $e->getMessage());
         }
 
@@ -132,7 +134,7 @@ class EventIndex extends Component
         if (auth()->id() !== $event->user_id) {
             if ($event->user) {
                 Notification::send(
-                    $$event->user,
+                    $event->user,
                     new EventUpdated($event, 'cancelled')
                 );
             }
