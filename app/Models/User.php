@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -171,6 +172,14 @@ class User extends Authenticatable
         return $this->hasMany(Event::class);
     }
 
+    /**
+     * The events that the user is participating in.
+     */
+    public function sharedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_user', 'user_id', 'event_id')->withTimestamps();
+    }
+
     // END RELATIONSHIPS
 
     // SCOPES
@@ -192,6 +201,26 @@ class User extends Authenticatable
         return $query->whereHas('roles', function ($q) use ($roles) {
             $q->whereIn('name', $roles);
         });
+    }
+
+    /**
+     * Scope a query to exclude the authenticated user.
+     */
+    public function scopeExcludeAuthenticatedUser(Builder $query)
+    {
+        return $query->where('id', '!=', auth()->id());
+    }
+
+    /**
+     * Scope a query to exclude the event owner.
+     */
+    public function scopeExcludeEventOwner(Builder $query, ?int $eventOwnerId)
+    {
+        if ($eventOwnerId) {
+            return $query->where('id', '!=', $eventOwnerId);
+        }
+
+        return $query;
     }
 
     /**
