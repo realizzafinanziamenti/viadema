@@ -113,7 +113,12 @@ class Event extends Model
             return $query;
         }
 
-        return $query->where('user_id', $user->id);
+        return $query->where(function ($query) use ($user) {
+            $query->where('user_id', $user->id)  // events created by the user
+                ->orWhereHas('participants', function ($participantQuery) use ($user) {
+                    $participantQuery->where('user_id', $user->id);  // events the user is participating in
+                });
+        });
     }
 
     /**

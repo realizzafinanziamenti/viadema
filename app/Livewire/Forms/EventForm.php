@@ -5,10 +5,12 @@ namespace App\Livewire\Forms;
 use App\Enums\UserDepartment;
 use App\Models\Event;
 use App\Models\User;
+use App\Notifications\UserAddedToEvent;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
@@ -106,6 +108,12 @@ class EventForm extends Form
                 // attach participants if any
                 if (!empty($this->participants)) {
                     $event->participants()->attach($this->participants);
+
+                    // notify participants
+                    Notification::send(
+                        User::whereIn('id', $this->participants)->get(),
+                        new UserAddedToEvent($event)
+                    );
                 }
 
                 // generate recurring events
@@ -169,7 +177,13 @@ class EventForm extends Form
 
             // attach participants if any
             if (!empty($this->participants)) {
-                $event->participants()->attach($this->participants);
+                $newEvent->participants()->attach($this->participants);
+
+                // notify participants
+                Notification::send(
+                    User::whereIn('id', $this->participants)->get(),
+                    new UserAddedToEvent($newEvent)
+                );
             }
 
             $nextDate->addDay();

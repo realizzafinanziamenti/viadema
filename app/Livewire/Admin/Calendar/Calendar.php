@@ -45,7 +45,10 @@ class Calendar extends Component
      */
     public function setInitialDate()
     {
-        $this->currentDate = Carbon::now();
+        // check if there's a date query parameter in the URL
+        $date = request()->query('date');
+        // set current date to the date from the URL or to today if not present or invalid
+        $this->currentDate = (!empty($date)) ? Carbon::parse($date) : Carbon::now();
         $this->currentYear = $this->currentDate->year;
         $this->currentMonth = $this->currentDate->month;
     }
