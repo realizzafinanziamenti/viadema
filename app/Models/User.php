@@ -212,6 +212,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope a query to exclude the event owner.
+     */
+    public function scopeExcludeEventOwner(Builder $query, ?int $eventOwnerId)
+    {
+        if ($eventOwnerId) {
+            return $query->where('id', '!=', $eventOwnerId);
+        }
+
+        return $query;
+    }
+
+    /**
      * Scope a query to exclude superadmin.
      */
     public function scopeWithoutSuperadmin(Builder $query): Builder
