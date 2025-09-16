@@ -42,6 +42,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
             ->subject('Avviso Scadenza Pratica')
             ->greeting('Ciao!')
             ->line('Scadenza pratica ' . $this->practice->practice_code . ' imminente.')
+            ->line('Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.')
             ->action('Vai alla pratica', $this->url);
     }
 
@@ -55,7 +56,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
         return [
             'practice_id' => $this->practice->id,
             'title' => 'Avviso Scadenza Pratica',
-            'message' => 'Scadenza pratica ' . $this->practice->practice_code . ' imminente',
+            'message' => 'Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.',
             'url' => $this->url,
             'type' => 'practice-renewability-alert',
         ];
