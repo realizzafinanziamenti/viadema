@@ -204,6 +204,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope a query to exclude the authenticated user.
+     */
+    public function scopeExcludeAuthenticatedUser(Builder $query)
+    {
+        return $query->where('id', '!=', auth()->id());
+    }
+
+    /**
      * Scope a query to exclude superadmin.
      */
     public function scopeWithoutSuperadmin(Builder $query): Builder

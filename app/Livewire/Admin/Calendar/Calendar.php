@@ -208,6 +208,7 @@ class Calendar extends Component
     public function loadPossibleParticipants()
     {
         $this->possibleParticipants = User::assignableUsers()
+            ->excludeAuthenticatedUser()
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();

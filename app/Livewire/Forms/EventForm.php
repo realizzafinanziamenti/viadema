@@ -43,6 +43,10 @@ class EventForm extends Form
                     if ($user && $user->hasRole(UserDepartment::OBSERVER->value)) {
                         $fail('Gli utenti con ruolo osservatore non possono partecipare agli eventi.');
                     }
+
+                    if ($user && $user->id === auth()->id()) {
+                        $fail('Non puoi aggiungere te stesso come partecipante all\'evento.');
+                    }
                 }
             ],
         ];
