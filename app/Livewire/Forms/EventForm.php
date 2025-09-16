@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Enums\UserDepartment;
 use App\Models\Event;
 use App\Models\User;
+use App\Notifications\EventUpdated;
 use App\Notifications\UserAddedToEvent;
 use Carbon\Carbon;
 use Exception;
@@ -142,6 +143,9 @@ class EventForm extends Form
 
         try {
             DB::transaction(function () {
+                // get previous participants before update
+                $previousParticipants = $this->event->participants()->pluck('user_id')->toArray();
+
                 $this->event->update([
                     'title' => $this->title,
                     'description' => $this->description ?: null,
@@ -150,8 +154,11 @@ class EventForm extends Form
                     'end_time' => $this->endTime,
                 ]);
 
-                // sync participants
+                // Sync participants
                 $this->event->participants()->sync($this->participants);
+
+                // handle participant notifications
+                $this->handleParticipantNotifications($previousParticipants);
             });
 
             Toaster::success('Evento aggiornato con successo');
@@ -191,6 +198,48 @@ class EventForm extends Form
             }
 
             $nextDate->addDay();
+        }
+    }
+
+    /**
+     * Handle participant notifications
+     */
+    protected function handleParticipantNotifications(array $previousParticipants)
+    {
+        $addedParticipants = array_diff($this->participants, $previousParticipants);
+        $removedParticipants = array_diff($previousParticipants, $this->participants);
+        $unchangedParticipants = array_intersect($previousParticipants, $this->participants);
+
+        // notify new participants
+        if (!empty($addedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $addedParticipants)->get(),
+                new UserAddedToEvent($this->event) // use the same notification as for new event
+            );
+        }
+
+        // notify removed participants
+        if (!empty($removedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $removedParticipants)->get(),
+                new EventUpdated($this->event, 'removed')
+            );
+        }
+
+        // notify unchanged participants
+        if (!empty($unchangedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $unchangedParticipants)->get(),
+                new EventUpdated($this->event, 'modified')
+            );
+        }
+
+        // notify owner if not in participants and event modified
+        if (auth()->id() !== $this->event->user_id) {
+            Notification::send(
+                $this->event->user,
+                new EventUpdated($this->event, 'modified')
+            );
         }
     }
 }

@@ -5,10 +5,13 @@ namespace App\Livewire\Admin\Calendar;
 use App\Livewire\Forms\EventForm;
 use App\Models\Event;
 use App\Models\User;
+use App\Notifications\EventUpdated;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
@@ -205,13 +208,21 @@ class Calendar extends Component
     /**
      * load possible participants for events
      */
-    public function loadPossibleParticipants()
+    public function loadPossibleParticipants(string $action = 'create')
     {
-        $this->possibleParticipants = User::assignableUsers()
-            ->excludeAuthenticatedUser()
+        $query = User::assignableUsers()
             ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->get();
+            ->orderBy('last_name');
+
+        if ($action === 'create') {
+            // Per la creazione, escludi solo l'utente autenticato
+            $query->excludeAuthenticatedUser();
+        } elseif ($action === 'update') {
+            // Per l'aggiornamento, escludi l'owner dell'evento
+            $query->excludeEventOwner($this->selectedEvent?->user_id);
+        }
+
+        $this->possibleParticipants = $query->get();
     }
 
     /**
@@ -242,6 +253,7 @@ class Calendar extends Component
         Gate::authorize('update', $this->selectedEvent);
         $this->resetErrorBag();
         $this->form->setEvent($this->selectedEvent);
+        $this->loadPossibleParticipants('update');
         $this->dispatch('open-modal', 'event-edit');
     }
 
@@ -285,7 +297,11 @@ class Calendar extends Component
     {
         try {
             Gate::authorize('delete', $this->selectedEvent);
-            $this->selectedEvent->delete();
+
+            DB::transaction(function () {
+                $this->sendNotificationOnDeleteEvent($this->selectedEvent);
+                $this->selectedEvent->delete();
+            });
 
             Toaster::success('Evento eliminato con successo');
         } catch (Exception $e) {
@@ -298,12 +314,27 @@ class Calendar extends Component
         $this->dispatch('close-modal', 'event-delete');
     }
 
+    /**
+     * Send notification to participants on event deletion
+     */
+    protected function sendNotificationOnDeleteEvent(Event $event): void
+    {
+        // notify participants about event deletion
+        $participants = $event->participants;
+        if ($participants->isNotEmpty()) {
+            Notification::send(
+                $participants,
+                new EventUpdated($event, 'cancelled')
+            );
+        }
+    }
+
     public function mount()
     {
         Gate::authorize('access calendar');
         $this->setInitialDate();
         $this->refreshCalendar();
-        $this->loadPossibleParticipants();
+        $this->loadPossibleParticipants('create');
     }
 
     #[Layout('components.layouts.app')]

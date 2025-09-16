@@ -38,7 +38,7 @@ class UserAddedToEvent extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Aggiunta a un evento')
-            ->greeting('Ciao ' . $notifiable->name . '!')
+            ->greeting('Ciao ' . $notifiable->full_name . '!')
             ->line('Sei stato aggiunto all\'evento: ' . $this->event->name . ' in data ' . $this->event->formattedStartDate . ' dalle ' . $this->event->formattedStartTime . ' alle ' . $this->event->formattedEndTime . '.')
             ->action('Visualizza Evento', route('calendar', ['date' => $this->event->start_date->format('Y-m-d')]))
             ->line('Grazie per utilizzare la nostra applicazione!');
