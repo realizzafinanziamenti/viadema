@@ -227,6 +227,7 @@ class Calendar extends Component
      */
     public function openCreateEventModal(): void
     {
+        Gate::authorize('create', Event::class);
         $this->resetErrorBag();
         $this->form->reset();
         $this->dispatch('open-modal', 'event-create');
@@ -237,6 +238,7 @@ class Calendar extends Component
      */
     public function openEditEventModal(): void
     {
+        Gate::authorize('update', $this->selectedEvent);
         $this->resetErrorBag();
         $this->form->setEvent($this->selectedEvent);
         $this->dispatch('open-modal', 'event-edit');
@@ -248,6 +250,7 @@ class Calendar extends Component
     public function openDetailEventModal(int $id): void
     {
         $this->selectedEvent = Event::findOrFail($id);
+        Gate::authorize('view', $this->selectedEvent);
         $this->dispatch('open-modal', 'event-detail');
     }
 

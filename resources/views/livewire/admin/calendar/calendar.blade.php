@@ -1,3 +1,7 @@
+@php
+    use App\Models\Event;
+@endphp
+
 <div>
     <x-page-title label="Calendario" class="mt-1" />
 
@@ -55,9 +59,11 @@
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
                 placeholder="Cerca per titolo evento..." />
 
-            <flux:button wire:click="openCreateEventModal" icon="plus"
-                class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
-                Aggiungi Evento</flux:button>
+            @can('create', Event::class)
+                <flux:button wire:click="openCreateEventModal" icon="plus"
+                    class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+                    Aggiungi Evento</flux:button>
+            @endcan
         </div>
 
         {{-- Calendar --}}

@@ -21,7 +21,7 @@ class EventPolicy
      */
     public function view(User $user, Event $event): bool
     {
-        return ($user->hasPermissionTo('view events') && $user->id === $event->user_id)
+        return ($user->hasPermissionTo('view events') && ($user->id === $event->user_id || $event->participants->contains($user->id)))
             || $user->hasPermissionTo('view all events');
     }
 
