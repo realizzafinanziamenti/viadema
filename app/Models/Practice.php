@@ -219,6 +219,14 @@ class Practice extends Model
     }
 
     /**
+     * Accessor to obtain formatted renewability date.
+     */
+    protected function formattedRenewabilityDate(): Attribute
+    {
+        return Attribute::get(fn() => $this->renewability_date?->format('d/m/y'));
+    }
+
+    /**
      * Accessor to obtain formatted disbursement date.
      */
     protected function formattedDisbursementDate(): Attribute
