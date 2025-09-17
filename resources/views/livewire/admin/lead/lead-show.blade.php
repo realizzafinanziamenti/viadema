@@ -95,13 +95,6 @@
             </div>
         @endif
 
-        @if ($lead->amount)
-            <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4">Importo: </span>
-                <span>{{ $lead->formatted_amount }}</span>
-            </div>
-        @endif
-
         {{-- Create/Associate Practice Buttons --}}
         @if ($lead->lead_status === \App\Enums\LeadStatus::FEASIBLE)
             <div class="flex gap-3 justify-end mt-16 mb-5">

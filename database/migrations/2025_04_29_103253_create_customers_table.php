@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('postal_code')->nullable();
-            $table->decimal('amount', 10, 2)->nullable(); // Total amount spent by the customer
             $table->string('customer_status');  // LEAD or CUSTOMER
             $table->string('lead_source')->nullable(); // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
             $table->string('lead_status')->nullable(); // NEW, CONTACTED, WAITING_REPLY, etc.
