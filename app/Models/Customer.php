@@ -39,6 +39,7 @@ class Customer extends Model
         'customer_status', // LEAD or CUSTOMER
         'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
         'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
+        'notes',
     ];
 
     /**

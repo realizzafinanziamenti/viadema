@@ -137,4 +137,10 @@
             <flux:error name="{{ $form }}.userId" />
         </div>
     @endif
+
+    {{-- Notes --}}
+    <div class="flex flex-col gap-1.5 col-span-2">
+        <flux:textarea label="Note" resize="none" wire:model='{{ $form }}.notes' />
+        <flux:error name="{{ $form }}.notes" />
+    </div>
 </div>

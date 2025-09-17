@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('customer_status');  // LEAD or CUSTOMER
             $table->string('lead_source')->nullable(); // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
             $table->string('lead_status')->nullable(); // NEW, CONTACTED, WAITING_REPLY, etc.
+            $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

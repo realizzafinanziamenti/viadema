@@ -30,6 +30,7 @@
                 <x-table-header label="Assegnato a" class="w-1/2" />
                 <x-table-header label="Data creazione" class="w-[100px]" />
                 <x-table-header label="Ultimo contatto" class="w-[100px]" />
+                <x-table-header label="Note" class="w-[50px]" />
                 <x-table-header class="w-[150px]">
                     {{-- Actions --}}
                 </x-table-header>
@@ -57,6 +58,24 @@
                     <x-table-data truncate label="{{ $lead->formatted_created_at }}" />
                     <x-table-data truncate label="{{ $lead->formatted_updated_at }}" />
 
+                    {{-- Notes --}}
+                    <x-table-data>
+                        @if ($lead->notes)
+                            <div class="flex items-center justify-center w-full relative">
+                                <button class="relative cursor-pointer" title="Visualizza note"
+                                    wire:click="selectLeadForNotes({{ $lead->id }})">
+                                    <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                                    <div
+                                        class="absolute right-0 bottom-[2px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
+                                    </div>
+                                </button>
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center w-full" title="Nessuna nota disponibile">
+                                <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                            </div>
+                        @endif
+                    </x-table-data>
 
                     {{-- Actions --}}
                     <x-table-data>

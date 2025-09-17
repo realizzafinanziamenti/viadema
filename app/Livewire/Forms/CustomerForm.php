@@ -32,10 +32,10 @@ class CustomerForm extends Form
     public ?string $city = null;
     public ?string $state = null;
     public ?string $taxId = null;
-    public ?float $amount = null;
     public ?string $customerStatus = null;
     public ?string $leadSource = null;
     public ?string $leadStatus = null;
+    public ?string $notes = null;
 
     protected function rules()
     {
@@ -52,10 +52,10 @@ class CustomerForm extends Form
                 'city' => ['nullable', 'string', 'max:255'],
                 'state' => ['nullable', 'string', 'max:255'],
                 'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
-                'amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
                 'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
                 'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
                 'leadStatus' => ['nullable', 'string', new Enum(LeadStatus::class)],
+                'notes' => ['nullable', 'string', 'max:65535'],
             ],
             $this->userIdRules(),
             $this->leadStatusRules()
@@ -109,10 +109,10 @@ class CustomerForm extends Form
             'city' => 'città',
             'state' => 'provincia',
             'taxId' => 'codice fiscale',
-            'amount' => 'importo',
             'customerStatus' => 'stato cliente',
             'leadSource' => 'canale di acquisizione',
             'leadStatus' => 'stato lead',
+            'notes' => 'note',
         ];
     }
 
@@ -140,10 +140,10 @@ class CustomerForm extends Form
         $this->city = $customer->city;
         $this->state = $customer->state;
         $this->taxId = $customer->tax_id;
-        $this->amount = $customer->amount;
         $this->customerStatus = $customer->customer_status?->value;
         $this->leadSource = $customer->lead_source?->value;
         $this->leadStatus = $customer->lead_status?->value;
+        $this->notes = $customer->notes;
     }
 
     /**
@@ -164,10 +164,10 @@ class CustomerForm extends Form
         $this->city = null;
         $this->state = null;
         $this->taxId = null;
-        $this->amount = null;
         $this->customerStatus = null;
         $this->leadSource = null;
         $this->leadStatus = null;
+        $this->notes = null;
     }
 
     /**
@@ -225,10 +225,10 @@ class CustomerForm extends Form
             'city' => $this->city ?: null,
             'state' => $this->state ?: null,
             'tax_id' => $this->taxId ?: null,
-            'amount' => $this->amount ?: null,
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
+            'notes' => null,
         ];
     }
 }
