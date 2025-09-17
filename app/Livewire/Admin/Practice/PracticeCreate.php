@@ -18,11 +18,16 @@ use App\Models\User;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Masmerise\Toaster\Toaster;
 
 class PracticeCreate extends Component
 {
@@ -44,6 +49,7 @@ class PracticeCreate extends Component
     public string $customerSearch = '';
     public bool $shouldConvertLead = false; // Flag to indicate if converting lead to customer
     public bool $customerPreselected = false; // Flag to indicate if customer is preselected
+    public ?string $creationToken = null; // Token to identify preselected customer
 
     /**
      * Set team member for customer form
@@ -223,9 +229,62 @@ class PracticeCreate extends Component
     public function savePractice(): void
     {
         Gate::authorize('create', Practice::class);
-        $practice = $this->practiceForm->store();
 
-        $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+        try {
+            $practice = DB::transaction(function () {
+                // convert lead to customer if needed
+                if ($this->shouldConvertLead && $this->selectedCustomer) {
+                    Gate::authorize('update', $this->selectedCustomer);
+
+                    try {
+                        // re-fetch customer with lock to prevent race conditions
+                        $this->selectedCustomer = Customer::where('id', $this->selectedCustomer->id)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+                    } catch (ModelNotFoundException $e) {
+                        throw new Exception('Il cliente selezionato non è più disponibile');
+                    }
+
+                    // check if still a lead
+                    if ($this->selectedCustomer->customer_status !== CustomerStatus::LEAD) {
+                        throw new Exception('Il cliente non è più un lead');
+                    }
+
+                    $this->selectedCustomer->update([
+                        'customer_status' => CustomerStatus::CUSTOMER->value,
+                        'lead_status' => null,
+                    ]);
+
+                    Log::info("Lead {$this->selectedCustomer->id} convertito in cliente per la pratica");
+                }
+
+                // create practice
+                $practice = $this->practiceForm->store();
+
+                if (!$practice) {
+                    throw new Exception('Errore durante la creazione della pratica');
+                }
+
+                // remove token only after successful completion
+                if ($this->creationToken) {
+                    Cache::forget("practice_creation_{$this->creationToken}");
+                    Log::info("Token {$this->creationToken} rimosso dalla cache");
+                }
+
+                return $practice;
+            });
+
+            $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+        } catch (Exception $e) {
+            Log::error('Error creating practice: ' . $e->getMessage());
+
+            // specific message for lead conversion errors
+            if (str_contains($e->getMessage(), 'lead')) {
+                Toaster::error('Errore durante la conversione del lead: ' . $e->getMessage());
+            } else {
+                Toaster::error('Si è verificato un errore durante la creazione della pratica: ' . $e->getMessage());
+            }
+        }
     }
 
     /**
@@ -321,7 +380,8 @@ class PracticeCreate extends Component
         $this->selectedCustomer = $customer;
         $this->practiceForm->customerId = $customer->id;
         $this->customerPreselected = true;
-        $this->shouldConvertLead = $data['convert_lead'] && $customer->customer_status === CustomerStatus::LEAD;
+        $this->shouldConvertLead = $data['convert_lead'] && $customer->customer_status?->value === CustomerStatus::LEAD->value;
+        $this->creationToken = $token;
 
         $this->customerForm->setCustomer($this->selectedCustomer);
     }
