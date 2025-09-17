@@ -95,10 +95,10 @@
             </div>
         @endif
 
-        @if ($practice->notes)
+        @if ($lead->notes)
             <div class="text-sm mb-2.5">
                 <span class="text-gray-custom-4">Note: </span>
-                <span>{{ $practice->notes }}</span>
+                <span>{{ $lead->notes }}</span>
             </div>
         @endif
 

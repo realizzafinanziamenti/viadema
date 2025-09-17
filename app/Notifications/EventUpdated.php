@@ -13,6 +13,8 @@ class EventUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public $url;
+
     /**
      * Create a new notification instance.
      */
@@ -20,6 +22,7 @@ class EventUpdated extends Notification implements ShouldQueue
         public Event $event,
         public string $action, // 'removed', 'modified', 'cancelled'
     ) {
+        $this->url = url('/calendar?date=' . $this->event->start_date->format('Y-m-d'));
         $this->afterCommit();
     }
 
@@ -53,7 +56,7 @@ class EventUpdated extends Notification implements ShouldQueue
         // add date, time and action link only for modified actions
         if (in_array($this->action, ['modified'])) {
             $mail->line('Data: ' . $this->event->formattedStartDate . ' dalle ' . $this->event->formattedStartTime . ' alle ' . $this->event->formattedEndTime)
-                ->action('Visualizza Evento', route('calendar', ['date' => $this->event->start_date->format('Y-m-d')]));
+                ->action('Visualizza Evento', $this->url);
         }
 
         return $mail->line('Grazie per utilizzare la nostra applicazione!');
@@ -79,7 +82,7 @@ class EventUpdated extends Notification implements ShouldQueue
             'title' => $databaseMessages ?? 'Aggiornamento evento',
             'message' => $message,
             'url' => in_array($this->action, ['modified'])
-                ? route('calendar', ['date' => $this->event->start_date->format('Y-m-d')])
+                ? $this->url
                 : null,
             'type' => 'event-updated',
             'action' => $this->action,
