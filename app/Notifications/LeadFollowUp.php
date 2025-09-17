@@ -58,9 +58,8 @@ class LeadFollowUp extends Notification implements ShouldQueue
             'title' => 'Follow-up Lead Richiesto',
             'message' => "Il lead {$this->lead->full_name} necessita di essere contattato.",
             'lead_id' => $this->lead->id,
-            'lead_name' => $this->lead->full_name,
-            'hours_elapsed' => 6,
-            'action_url' => $this->url
+            'url' => $this->url,
+            'type' => 'lead-follow-up',
         ];
     }
 

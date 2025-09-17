@@ -2,9 +2,8 @@
 
 namespace App\Observers;
 
-use App\Enums\CustomerStatus;
 use App\Enums\LeadStatus;
-use App\Jobs\SendLeadFollowUpNotification;
+use App\Jobs\SendLeadFollowUpAlertJob;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Log;
 
@@ -18,8 +17,8 @@ class CustomerObserver
         // when a new lead is created with status NEW, schedule a follow-up notification
         if ($customer->isLead() && $customer->lead_status === LeadStatus::NEW) {
             // schedule the notification for 6 hours later
-            dispatch(new SendLeadFollowUpNotification($customer->id))
-                ->delay(now()->addHours(6))
+            dispatch(new SendLeadFollowUpAlertJob($customer->id))
+                ->delay(now()->addMinutes(6))
                 ->afterCommit();
 
             Log::info("Follow-up notification programmata per lead {$customer->id} tra 6 ore");
