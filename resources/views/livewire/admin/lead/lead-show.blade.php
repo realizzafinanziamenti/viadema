@@ -95,10 +95,22 @@
             </div>
         @endif
 
-        @if ($lead->amount)
+        @if ($lead->notes)
             <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4">Importo: </span>
-                <span>{{ $lead->formatted_amount }}</span>
+                <span class="text-gray-custom-4">Note: </span>
+                <span>{{ $lead->notes }}</span>
+            </div>
+        @endif
+
+        {{-- Create/Associate Practice Buttons --}}
+        @if ($lead->lead_status === \App\Enums\LeadStatus::FEASIBLE)
+            <div class="flex gap-3 justify-end mt-16 mb-5">
+                @can('create', App\Models\Practice::class)
+                    <flux:button variant="primary" type="submit" size="sm" wire:click='createPracticeFromLead'
+                        class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                        Crea pratica
+                    </flux:button>
+                @endcan
             </div>
         @endif
     </x-card>

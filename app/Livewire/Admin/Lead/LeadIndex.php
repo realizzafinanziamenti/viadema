@@ -50,6 +50,21 @@ class LeadIndex extends Component
     }
 
     /**
+     * This method is called when the user clicks the notes button.
+     * It sets the selected lead to shows notes.
+     */
+    public function selectLeadForNotes(int $id): void
+    {
+        $this->selectEntityForAction(
+            id: $id,
+            modelClass: Customer::class,
+            property: 'selectedLead',
+            modalName: 'lead-notes',
+            notFoundMessage: 'Note non trovate'
+        );
+    }
+
+    /**
      * This method is called when the user clicks the update button in the modal.
      * It updates the lead status and resets the selected lead to null.
      */

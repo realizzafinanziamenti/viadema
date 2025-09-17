@@ -5,8 +5,10 @@ namespace App\Enums;
 enum LeadStatus: string
 {
     case NEW = 'new';
-    case CONTACTED = 'contacted';
-    case WAITING_REPLY = 'waiting_reply';
+    case TO_RECONTACT = 'to_recontact';
+    case IN_NEGOTIATION = 'in_negotiation';
+    case NOT_FEASIBLE = 'not_feasible';
+    case FEASIBLE = 'feasible';
 
     /**
      * Get the display label for the current lead status
@@ -15,8 +17,10 @@ enum LeadStatus: string
     {
         return match ($this) {
             self::NEW => 'Nuovo',
-            self::CONTACTED => 'Contattato',
-            self::WAITING_REPLY => 'In attesa di risposta',
+            self::TO_RECONTACT => 'Da Ricontattare',
+            self::IN_NEGOTIATION => 'In Trattativa',
+            self::NOT_FEASIBLE => 'Non Fattibile',
+            self::FEASIBLE => 'Fattibile',
         };
     }
 
@@ -27,8 +31,10 @@ enum LeadStatus: string
     {
         return match ($this) {
             self::NEW => 'lead-status-new',
-            self::CONTACTED => 'lead-status-contacted',
-            self::WAITING_REPLY => 'lead-status-waiting-reply',
+            self::NOT_FEASIBLE => 'lead-status-not-feasible',
+            self::TO_RECONTACT => 'lead-status-to-recontact',
+            self::FEASIBLE => 'lead-status-feasible',
+            self::IN_NEGOTIATION => 'lead-status-in-negotiation',
         };
     }
 }

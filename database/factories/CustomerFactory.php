@@ -37,10 +37,10 @@ class CustomerFactory extends Factory
             'city' => fake()->city(),
             'state' => fake()->state(),
             'postal_code' => fake()->postcode(),
-            'amount' => fake()->randomFloat(2, 0, 100000),
             'customer_status' => fake()->randomElement(CustomerStatus::cases())->value,
             'lead_source' => fake()->randomElement(LeadSource::cases())->value,
             'lead_status' => fake()->randomElement(LeadStatus::cases())->value,
+            'notes' => fake()->optional()->paragraph(),
         ];
     }
 }

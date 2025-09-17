@@ -96,7 +96,7 @@
                     <x-table-data>
                         @if ($practice->notes)
                             <div class="flex items-center justify-center w-full relative">
-                                <button class="relative cursor-pointer"
+                                <button class="relative cursor-pointer" title="Visualizza note"
                                     wire:click="selectPracticeForNotes({{ $practice->id }})">
                                     <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
                                     <div
@@ -105,7 +105,7 @@
                                 </button>
                             </div>
                         @else
-                            <div class="flex items-center justify-center w-full">
+                            <div class="flex items-center justify-center w-full" title="Nessuna nota disponibile">
                                 <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
                             </div>
                         @endif
