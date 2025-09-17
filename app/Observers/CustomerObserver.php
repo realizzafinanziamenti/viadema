@@ -18,7 +18,7 @@ class CustomerObserver
         if ($customer->isLead() && $customer->lead_status === LeadStatus::NEW) {
             // schedule the notification for 6 hours later
             dispatch(new SendLeadFollowUpAlertJob($customer->id))
-                ->delay(now()->addMinutes(6))
+                ->delay(now()->addHours(6))
                 ->afterCommit();
 
             Log::info("Follow-up notification programmata per lead {$customer->id} tra 6 ore");
