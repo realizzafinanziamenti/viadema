@@ -49,8 +49,8 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
     // Customer Routes
     Route::get('customers', CustomerIndex::class)->name('customer.index')->middleware('can:access customers');
     Route::get('customers/create/', CustomerCreate::class)->name('customer.create')->middleware('can:create customers');
-    Route::get('customers/{id}', CustomerShow::class)->name('customer.show')->middleware('can:view customers');
-    Route::get('customers/{id}/edit', CustomerUpdate::class)->name('customer.edit')->middleware('can:update customers');
+    Route::get('customers/{id}', CustomerShow::class)->name('customer.show')->middleware(['can:view customers', 'customer.type:customer']);
+    Route::get('customers/{id}/edit', CustomerUpdate::class)->name('customer.edit')->middleware(['can:update customers', 'customer.type:customer']);
 
     // Practice Routes
     Route::get('practices/create/{token?}', PracticeCreate::class)->name('practice.create')->middleware('can:create practices');
@@ -64,8 +64,8 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
     // Lead Routes
     Route::get('leads', LeadIndex::class)->name('lead.index')->middleware('can:access leads');
     Route::get('leads/create', LeadCreate::class)->name('lead.create')->middleware('can:create leads');
-    Route::get('leads/{id}', LeadShow::class)->name('lead.show')->middleware('can:view leads');
-    Route::get('leads/{id}/edit', LeadUpdate::class)->name('lead.edit')->middleware('can:update leads');
+    Route::get('leads/{id}', LeadShow::class)->name('lead.show')->middleware(['can:view leads', 'customer.type:lead']);
+    Route::get('leads/{id}/edit', LeadUpdate::class)->name('lead.edit')->middleware(['can:update leads', 'customer.type:lead']);
 
     // Document Routes
     Route::get('form-documents', FormDocumentIndex::class)->name('form-document.index')->middleware('can:access form documents');
