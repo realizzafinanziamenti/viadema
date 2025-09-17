@@ -129,7 +129,7 @@
             class="flex justify-end px-4 text-white bg-azure-custom h-[78px] shrink-0 sm:px-6 lg:px-10 xl:px-20">
             <div class="flex">
                 {{-- Circle Plus Button --}}
-                <button class="p-1 mx-2.5">
+                <button class="p-1 mx-2.5" title="Importa pratiche">
                     <x-icons.icon-akar-circle-plus />
                 </button>
 

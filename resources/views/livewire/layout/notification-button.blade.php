@@ -1,5 +1,6 @@
 {{-- Bell Icon Button --}}
-<button class="p-1 mx-2.5 relative cursor-pointer" x-on:click="$dispatch('open-modal', 'notification-modal')">
+<button class="p-1 mx-2.5 relative cursor-pointer" x-on:click="$dispatch('open-modal', 'notification-modal')"
+    title="Notifiche">
     <x-icons.icon-akar-bell />
 
     @if ($unreadNotificationsCount > 0)

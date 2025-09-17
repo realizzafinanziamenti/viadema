@@ -36,7 +36,7 @@
             {{-- Table body --}}
             @foreach ($teamMembers as $teamMember)
                 <tr wire:key='{{ $teamMember->id }}' class="border-y border-collapse">
-                    <x-table-data label="{{ $teamMember->id }}" />
+                    <x-table-data label="{{ $teamMember->formatted_id }}" />
                     <x-table-data truncate label="{{ $teamMember->full_name }}" />
                     <x-table-data truncate
                         class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"

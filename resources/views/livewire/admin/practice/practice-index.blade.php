@@ -58,9 +58,13 @@
                 <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
                     <x-table-data truncate class="inline-flex items-center gap-2">
                         @if ($practice->renewability_date <= now())
-                            <x-icons.icon-akar-circle-alert class="text-red-custom" />
+                            <div title="La pratica è rinnovabile dal {{ $practice->formatted_renewability_date }}">
+                                <x-icons.icon-akar-circle-alert class="text-red-custom" />
+                            </div>
                         @elseif ($practice->renewability_date > now() && $practice->alert_date <= now())
-                            <x-icons.icon-akar-circle-alert class="text-orange-custom" />
+                            <div title="La pratica sarà rinnovabile dal {{ $practice->formatted_renewability_date }}">
+                                <x-icons.icon-akar-circle-alert class="text-orange-custom" />
+                            </div>
                         @endif
 
                         <div>{{ $practice->practice_code }}</div>
@@ -80,7 +84,8 @@
                     <x-table-data>
                         @if (!$expired)
                             <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
-                                wire:click="selectPracticeForStatus({{ $practice->id }})" />
+                                wire:click="selectPracticeForStatus({{ $practice->id }})"
+                                title="Cambia stato pratica" />
                         @else
                             <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
                         @endif
