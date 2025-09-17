@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -41,6 +42,8 @@ class PracticeCreate extends Component
     public int $step = 1;
     public string $teamMemberSearch = '';
     public string $customerSearch = '';
+    public bool $shouldConvertLead = false; // Flag to indicate if converting lead to customer
+    public bool $customerPreselected = false; // Flag to indicate if customer is preselected
 
     /**
      * Set team member for customer form
@@ -290,13 +293,55 @@ class PracticeCreate extends Component
             ->toArray();
     }
 
-    public function mount()
+    /**
+     * Load customer from token
+     */
+    private function loadCustomerFromToken(string $token): void
+    {
+        // retrieve data from cache
+        $data = Cache::get("practice_creation_{$token}");
+
+        // if no data or user id does not match, abort
+        if (!$data) {
+            abort(403, 'Sessione di creazione pratica scaduta o non valida. Riprova dal lead.');
+        }
+
+        if ($data['user_id'] !== auth()->id()) {
+            abort(403, 'Non sei autorizzato ad accedere a questa sessione di creazione pratica.');
+        }
+
+        // single use: remove token from cache
+        Cache::forget("practice_creation_{$token}");
+
+        $customer = Customer::find($data['customer_id']);
+
+        if (!$customer) {
+            abort(404, 'Lead non trovato.');
+        }
+
+        Gate::authorize('view', $customer);
+
+        $this->selectedCustomer = $customer;
+        $this->practiceForm->customerId = $customer->id;
+        $this->customerPreselected = true;
+        $this->shouldConvertLead = $data['convert_lead'] && $customer->customer_status === CustomerStatus::LEAD;
+
+        $this->customerForm->setCustomer($this->selectedCustomer);
+    }
+
+
+    public function mount(?string $token = null)
     {
         Gate::authorize('create', Practice::class);
         $this->initSelectValues();
 
         // Initialize customer status to CUSTOMER
         $this->customerForm->customerStatus = CustomerStatus::CUSTOMER->value;
+
+        // If token is provided, load customer from token
+        if ($token) {
+            $this->loadCustomerFromToken($token);
+        }
     }
 
     #[Layout('components.layouts.app')]

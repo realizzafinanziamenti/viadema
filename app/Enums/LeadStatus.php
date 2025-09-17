@@ -5,10 +5,10 @@ namespace App\Enums;
 enum LeadStatus: string
 {
     case NEW = 'new';
-    case NOT_FEASIBLE = 'not_feasible';
     case TO_RECONTACT = 'to_recontact';
-    case FEASIBLE = 'feasible';
     case IN_NEGOTIATION = 'in_negotiation';
+    case NOT_FEASIBLE = 'not_feasible';
+    case FEASIBLE = 'feasible';
 
     /**
      * Get the display label for the current lead status
@@ -17,10 +17,10 @@ enum LeadStatus: string
     {
         return match ($this) {
             self::NEW => 'Nuovo',
-            self::NOT_FEASIBLE => 'Non Fattibile',
             self::TO_RECONTACT => 'Da Ricontattare',
-            self::FEASIBLE => 'Fattibile',
             self::IN_NEGOTIATION => 'In Trattativa',
+            self::NOT_FEASIBLE => 'Non Fattibile',
+            self::FEASIBLE => 'Fattibile',
         };
     }
 

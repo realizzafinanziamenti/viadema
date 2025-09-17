@@ -48,12 +48,12 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
 
     // Customer Routes
     Route::get('customers', CustomerIndex::class)->name('customer.index')->middleware('can:access customers');
-    Route::get('customers/create', CustomerCreate::class)->name('customer.create')->middleware('can:create customers');
+    Route::get('customers/create/', CustomerCreate::class)->name('customer.create')->middleware('can:create customers');
     Route::get('customers/{id}', CustomerShow::class)->name('customer.show')->middleware('can:view customers');
     Route::get('customers/{id}/edit', CustomerUpdate::class)->name('customer.edit')->middleware('can:update customers');
 
     // Practice Routes
-    Route::get('practices/create', PracticeCreate::class)->name('practice.create')->middleware('can:create practices');
+    Route::get('practices/create/{token?}', PracticeCreate::class)->name('practice.create')->middleware('can:create practices');
     Route::get('practices/{slug?}', PracticeIndex::class)->name('practice.index')->middleware('can:access practices');
     Route::get('practices/details/{id}', PracticeShow::class)->name('practice.show')->middleware('can:view practices');
     Route::get('practices/{id}/edit', PracticeUpdate::class)->name('practice.edit')->middleware('can:update practices');

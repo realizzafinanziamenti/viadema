@@ -1,21 +1,24 @@
 <div class="grid grid-cols-2 gap-6">
     {{-- Customer Select --}}
-    <div class="flex flex-col gap-1.5 col-span-2">
-        <div class="flex items-center justify-between">
-            <flux:label>Cerca cliente censito</flux:label>
+    @if (!$customerPreselected)
+        <div class="flex flex-col gap-1.5 col-span-2">
+            <div class="flex items-center justify-between">
+                <flux:label>Cerca cliente censito</flux:label>
 
-            <x-buttons.inline-action-button label="Crea anagrafica nuovo cliente" wire:click="openCreateCustomerModal">
-                <x-slot:icon>
-                    <flux:icon.plus class="size-2.5" />
-                </x-slot:icon>
-            </x-buttons.inline-action-button>
+                <x-buttons.inline-action-button label="Crea anagrafica nuovo cliente"
+                    wire:click="openCreateCustomerModal">
+                    <x-slot:icon>
+                        <flux:icon.plus class="size-2.5" />
+                    </x-slot:icon>
+                </x-buttons.inline-action-button>
+            </div>
+
+            <x-dropdown-select size="sm" :selectable-items="$customers" :selected="$practiceForm->customerId" searchable search="customerSearch"
+                placeholder='Seleziona cliente' setFunction="setCustomer" :has-error="$errors->has('practiceForm.customerId')" />
+
+            <flux:error name="practiceForm.customerId" />
         </div>
-
-        <x-dropdown-select size="sm" :selectable-items="$customers" :selected="$practiceForm->customerId" searchable search="customerSearch"
-            placeholder='Seleziona cliente' setFunction="setCustomer" :has-error="$errors->has('practiceForm.customerId')" />
-
-        <flux:error name="practiceForm.customerId" />
-    </div>
+    @endif
 
     @include('partials.practice.customer-preview-fields')
 
