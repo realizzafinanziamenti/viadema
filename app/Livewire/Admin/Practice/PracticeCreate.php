@@ -310,9 +310,6 @@ class PracticeCreate extends Component
             abort(403, 'Non sei autorizzato ad accedere a questa sessione di creazione pratica.');
         }
 
-        // single use: remove token from cache
-        Cache::forget("practice_creation_{$token}");
-
         $customer = Customer::find($data['customer_id']);
 
         if (!$customer) {
