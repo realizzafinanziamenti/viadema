@@ -137,6 +137,15 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * Accessor to obtain formatted number.
+     * Example: T00001
+     */
+    protected function formattedId(): Attribute
+    {
+        return Attribute::get(fn() => 'T' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
+    }
+
 
     // RELATIONSHIPS
 

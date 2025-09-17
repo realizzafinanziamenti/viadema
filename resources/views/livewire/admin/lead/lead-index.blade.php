@@ -46,7 +46,7 @@
 
                     <x-table-data>
                         <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
-                            wire:click="selectLeadForStatus({{ $lead->id }})" />
+                            wire:click="selectLeadForStatus({{ $lead->id }})" title="Cambia stato lead" />
                     </x-table-data>
 
                     <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />
