@@ -62,17 +62,16 @@ class SendLeadFollowUpNotification implements ShouldQueue
             // Trova utenti da notificare
             if ($lead->user) {
                 $lead->user->notify(new LeadFollowUp($lead));
+            } else {
+                // retrieve all superadmins
+                $superadmins = User::role('superadmin')
+                    ->get();
+
+                // notify superadmins for every renewability alerts
+                $superadmins->each(function ($superadmin) use ($lead) {
+                    $superadmin->notify(new LeadFollowUp($lead));
+                });
             }
-
-            // retrieve all superadmins
-            $superadmins = User::role('superadmin')
-                ->where('id', '!=', $lead->user_id) // exclude the assigned user if exists
-                ->get();
-
-            // notify superadmins for every renewability alerts
-            $superadmins->each(function ($superadmin) use ($lead) {
-                $superadmin->notify(new LeadFollowUp($lead));
-            });
 
             Log::info("Follow-up notification inviata per lead {$this->leadId}");
         } catch (Exception $e) {

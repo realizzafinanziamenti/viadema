@@ -6,6 +6,8 @@ use App\Enums\CustomerStatus;
 use App\Enums\LeadCommunication;
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
+use App\Observers\CustomerObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
 {
     use SoftDeletes, HasFactory;
