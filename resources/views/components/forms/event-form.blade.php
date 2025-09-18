@@ -3,6 +3,7 @@
     'form' => 'form',
     'submitButtonLabel' => 'Crea',
     'modalName' => 'event-create',
+    'possibleParticipants' => [],
 ])
 
 <form wire:submit.prevent='{{ $submitFunction }}' class="w-full mt-10 mb-5">
@@ -76,6 +77,19 @@
         <div class="flex flex-col gap-1.5 col-span-2">
             <flux:textarea label="Descrizione" resize="none" wire:model='{{ $form }}.description' />
             <flux:error name="{{ $form }}.description" />
+        </div>
+        {{-- Possible Participants --}}
+        <div class="flex flex-col gap-3 col-span-2">
+            <flux:label>Partecipanti</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <div class="grid grid-cols-3 gap-x-4 gap-y-3 max-h-52 overflow-y-auto scrollbar-thin">
+                    @foreach ($possibleParticipants as $participant)
+                        <x-checkbox label="{{ $participant->fullName }}" wire:model='{{ $form }}.participants'
+                            value="{{ $participant->id }}" wire:key="participant-{{ $participant->id }}" />
+                    @endforeach
+                </div>
+                <flux:error name="{{ $form }}.participants" />
+            </div>
         </div>
     </div>
 

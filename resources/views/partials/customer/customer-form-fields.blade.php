@@ -76,16 +76,6 @@
         </div>
     </div>
 
-    {{-- Amount --}}
-    <div class="flex flex-col gap-1.5">
-        <flux:label>Importo</flux:label>
-        <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
-                wire:model="{{ $form }}.amount" symbol="€" />
-            <flux:error name="{{ $form }}.amount" />
-        </div>
-    </div>
-
     {{-- Email --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Email</flux:label>
@@ -147,4 +137,10 @@
             <flux:error name="{{ $form }}.userId" />
         </div>
     @endif
+
+    {{-- Notes --}}
+    <div class="flex flex-col gap-1.5 col-span-2">
+        <flux:textarea label="Note" resize="none" wire:model='{{ $form }}.notes' />
+        <flux:error name="{{ $form }}.notes" />
+    </div>
 </div>

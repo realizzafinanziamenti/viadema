@@ -2,24 +2,22 @@
 
 namespace App\Notifications;
 
-use App\Models\Practice;
+use App\Models\Event;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PracticeRenewabilityAlert extends Notification implements ShouldQueue
+class UserAddedToEvent extends Notification implements ShouldQueue
 {
     use Queueable;
-
-    public $url;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Practice $practice)
+    public function __construct(public Event $event)
     {
-        $this->url = url('/practices/details/' . $this->practice->id);
         $this->afterCommit();
     }
 
@@ -39,11 +37,11 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Avviso Scadenza Pratica')
-            ->greeting('Ciao!')
-            ->line('Scadenza pratica ' . $this->practice->practice_code . ' imminente.')
-            ->line('Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.')
-            ->action('Vai alla pratica', $this->url);
+            ->subject('Aggiunta a un evento')
+            ->greeting('Ciao ' . $notifiable->full_name . '!')
+            ->line('Sei stato aggiunto all\'evento: ' . $this->event->name . ' in data ' . $this->event->formattedStartDate . ' dalle ' . $this->event->formattedStartTime . ' alle ' . $this->event->formattedEndTime . '.')
+            ->action('Visualizza Evento', route('calendar', ['date' => $this->event->start_date->format('Y-m-d')]))
+            ->line('Grazie per utilizzare la nostra applicazione!');
     }
 
     /**
@@ -54,11 +52,11 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'practice_id' => $this->practice->id,
-            'title' => 'Avviso Scadenza Pratica',
-            'message' => 'Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.',
-            'url' => $this->url,
-            'type' => 'practice-renewability-alert',
+            'event_id' => $this->event->id,
+            'title' => 'Aggiunta a un evento',
+            'message' => 'Sei stato aggiunto ad un evento in data ' . $this->event->formattedStartDate,
+            'url' => route('calendar', ['date' => $this->event->start_date->format('Y-m-d')]),
+            'type' => 'user-added-to-event',
         ];
     }
 
@@ -67,7 +65,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        return 'practice-renewability-alert';
+        return 'user-added-to-event';
     }
 
     /**
@@ -83,6 +81,6 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        return 'broadcast.practice-renewability-alert';
+        return 'broadcast.user-added-to-event';
     }
 }

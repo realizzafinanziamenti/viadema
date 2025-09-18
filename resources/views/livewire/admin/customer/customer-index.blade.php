@@ -36,7 +36,7 @@
             {{-- Table body --}}
             @foreach ($customers as $customer)
                 <tr wire:key='{{ $customer->id }}' class="border-y border-collapse">
-                    <x-table-data label="{{ $customer->id }}" />
+                    <x-table-data label="{{ $customer->formatted_id }}" />
                     <x-table-data truncate label="{{ $customer->full_name }}" />
                     <x-table-data truncate label="{{ $customer->phone }}" />
                     <x-table-data truncate label="{{ $customer->tax_id ?? 'N/D' }}" />

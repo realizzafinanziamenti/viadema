@@ -4,8 +4,14 @@ namespace App\Livewire\Admin\Event;
 
 use App\Livewire\Forms\EventForm;
 use App\Models\Event;
+use App\Models\User;
+use App\Notifications\EventUpdated;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
@@ -19,6 +25,7 @@ class EventIndex extends Component
     public ?Event $selectedEvent = null;
     public EventForm $form;
     public $search = '';
+    public Collection $possibleParticipants;
 
     /**
      * Updated search bar callback function
@@ -34,6 +41,7 @@ class EventIndex extends Component
     public function openDetailEventModal(int $id): void
     {
         $this->selectedEvent = Event::findOrFail($id);
+        Gate::authorize('view', $this->selectedEvent);
         $this->dispatch('open-modal', 'event-detail');
     }
 
@@ -42,6 +50,7 @@ class EventIndex extends Component
      */
     public function openCreateEventModal(): void
     {
+        Gate::authorize('create', Event::class);
         $this->resetErrorBag();
         $this->form->reset();
         $this->dispatch('open-modal', 'event-create');
@@ -53,6 +62,7 @@ class EventIndex extends Component
     public function openEditEventModal(int $id): void
     {
         $this->selectedEvent = Event::findOrFail($id);
+        Gate::authorize('update', $this->selectedEvent);
         $this->resetErrorBag();
         $this->form->setEvent($this->selectedEvent);
         $this->dispatch('open-modal', 'event-edit');
@@ -76,6 +86,7 @@ class EventIndex extends Component
     {
         Gate::authorize('update', $this->selectedEvent);
         $this->selectedEvent = $this->form->update();
+        $this->loadPossibleParticipants('update');
         // $this->loadEvents();
         $this->dispatch('close-modal', 'event-edit');
     }
@@ -88,10 +99,15 @@ class EventIndex extends Component
         try {
             $event = Event::findOrFail($id);
             Gate::authorize('delete', $event);
-            $event->delete();
+
+            DB::transaction(function () use ($event) {
+                $this->sendNotificationOnDeleteEvent($event);
+                $event->delete();
+            });
 
             Toaster::success('Evento eliminato con successo');
         } catch (Exception $e) {
+            Log::error('Errore durante l\'eliminazione dell\'evento: ' . $e->getMessage());
             Toaster::error('Si è verificato un errore: ' . $e->getMessage());
         }
 
@@ -100,9 +116,55 @@ class EventIndex extends Component
         $this->dispatch('close-modal', 'event-delete');
     }
 
+    /**
+     * Send notification to participants on event deletion
+     */
+    protected function sendNotificationOnDeleteEvent(Event $event): void
+    {
+        // notify participants about event deletion
+        $participants = $event->participants;
+        if ($participants->isNotEmpty()) {
+            Notification::send(
+                $participants,
+                new EventUpdated($event, 'cancelled')
+            );
+        }
+
+        // notify owner if deleted by admin
+        if (auth()->id() !== $event->user_id) {
+            if ($event->user) {
+                Notification::send(
+                    $event->user,
+                    new EventUpdated($event, 'cancelled')
+                );
+            }
+        }
+    }
+
+    /**
+     * load possible participants for events
+     */
+    public function loadPossibleParticipants(string $action = 'create')
+    {
+        $query = User::assignableUsers()
+            ->orderBy('first_name')
+            ->orderBy('last_name');
+
+        if ($action === 'create') {
+            // Per la creazione, escludi solo l'utente autenticato
+            $query->excludeAuthenticatedUser();
+        } elseif ($action === 'update') {
+            // Per l'aggiornamento, escludi l'owner dell'evento
+            $query->excludeEventOwner($this->selectedEvent?->user_id);
+        }
+
+        $this->possibleParticipants = $query->get();
+    }
+
     public function mount()
     {
         Gate::authorize('viewAny', Event::class);
+        $this->loadPossibleParticipants('create');
     }
 
     #[Layout('components.layouts.app')]

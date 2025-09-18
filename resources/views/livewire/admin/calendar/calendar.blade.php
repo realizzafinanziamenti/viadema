@@ -1,3 +1,7 @@
+@php
+    use App\Models\Event;
+@endphp
+
 <div>
     <x-page-title label="Calendario" class="mt-1" />
 
@@ -55,9 +59,11 @@
             <flux:input class="w-sm! xl:w-lg!" wire:model.live.debounce.500ms='search' icon:trailing="magnifying-glass"
                 placeholder="Cerca per titolo evento..." />
 
-            <flux:button wire:click="openCreateEventModal" icon="plus"
-                class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
-                Aggiungi Evento</flux:button>
+            @can('create', Event::class)
+                <flux:button wire:click="openCreateEventModal" icon="plus"
+                    class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+                    Aggiungi Evento</flux:button>
+            @endcan
         </div>
 
         {{-- Calendar --}}
@@ -74,13 +80,14 @@
     {{-- Create New Customer Modal --}}
     <x-modal name="event-create" maxWidth="2xl">
         <x-modal-header label="Crea nuovo evento" />
-        <x-forms.event-form submitFunction="save" />
+        <x-forms.event-form submitFunction="save" :possibleParticipants="$possibleParticipants" />
     </x-modal>
 
     {{-- Edit Customer Modal --}}
     <x-modal name="event-edit" maxWidth="2xl">
         <x-modal-header label="Modifica evento" />
-        <x-forms.event-form submitFunction="edit" modalName="event-edit" submitButtonLabel="Modifica" />
+        <x-forms.event-form submitFunction="edit" :possibleParticipants="$possibleParticipants" modalName="event-edit"
+            submitButtonLabel="Modifica" />
     </x-modal>
 
     {{-- Delete User Modal --}}

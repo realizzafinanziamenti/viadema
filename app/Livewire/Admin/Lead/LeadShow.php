@@ -4,14 +4,17 @@ namespace App\Livewire\Admin\Lead;
 
 use App\Enums\LeadStatus;
 use App\Models\Customer;
+use App\Models\Practice;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
+use Illuminate\Support\Str;
 
 class LeadShow extends Component
 {
@@ -54,6 +57,27 @@ class LeadShow extends Component
         }
 
         $this->dispatch('close-modal', 'update-lead-status');
+    }
+
+    /**
+     * Create practice from lead
+     */
+    public function createPracticeFromLead(): void
+    {
+        Gate::authorize('create', Practice::class);
+
+        // create a unique token
+        $token = Str::random(32);
+
+        // save in cache for 10 minutes
+        Cache::put("practice_creation_{$token}", [
+            'customer_id' => $this->lead->id,
+            'convert_lead' => true,
+            'user_id' => auth()->id(),
+            'expires_at' => now()->addMinutes(10)
+        ], 600);
+
+        $this->redirectRoute('practice.create', ['token' => $token], navigate: true);
     }
 
     /**

@@ -104,23 +104,23 @@ select:focus[data-flux-control] {
     @apply bg-gray-custom-1 text-black-custom border-gray-200;
 }
 
-.rejected {
+.rejected, .lead-status-not-feasible {
     @apply bg-red-custom-light text-red-custom border-red-200;
 }
 
-.approved {
+.approved, .lead-status-feasible {
     @apply bg-green-custom-light text-green-custom border-green-200;
 }
 
-.suspended, .lead-status-new {
+.suspended, .lead-status-in-negotiation {
     @apply bg-orange-custom-light text-orange-custom border-orange-200;
 }
 
-.lead-status-contacted, .pending {
+.lead-status-new, .pending {
     @apply bg-oil-custom-light text-oil-custom border-teal-200;
 }
 
-.lead-status-waiting-reply, .disbursed {
+.lead-status-to-recontact, .disbursed {
     @apply bg-blue-custom-light text-blue-custom border-sky-300;
 }
 

@@ -64,10 +64,10 @@
                     <span>{{ $practice->user?->full_name }}</span>
                 </div>
 
-                @if ($practice->note)
+                @if ($practice->notes)
                     <div class="text-sm mb-2.5">
                         <span class="text-gray-custom-4">Note: </span>
-                        <span>{{ $practice->note }}</span>
+                        <span>{{ $practice->notes }}</span>
                     </div>
                 @endif
             </x-card>

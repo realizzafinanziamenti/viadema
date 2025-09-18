@@ -2,11 +2,16 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\UserDepartment;
 use App\Models\Event;
+use App\Models\User;
+use App\Notifications\EventUpdated;
+use App\Notifications\UserAddedToEvent;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
@@ -20,6 +25,7 @@ class EventForm extends Form
     public ?string $startTime = null;
     public ?string $endTime = null;
     public $repeatUntil = null;
+    public array $participants = [];
 
     protected function rules()
     {
@@ -30,6 +36,20 @@ class EventForm extends Form
             'startTime' => 'required|date_format:H:i|after_or_equal:08:00|before_or_equal:21:00',
             'endTime' => 'required|date_format:H:i|after:startTime|after_or_equal:08:30|before_or_equal:22:00',
             'repeatUntil' => 'nullable|date|after:startDate|before_or_equal:' . Carbon::parse($this->startDate)->addMonths(1)->format('Y-m-d'),
+            'participants' => 'nullable|array',
+            'participants.*' => [
+                'exists:users,id',
+                function ($attribute, $value, $fail) {
+                    $user = User::find($value);
+                    if ($user && $user->hasRole(UserDepartment::OBSERVER->value)) {
+                        $fail('Gli utenti con ruolo osservatore non possono partecipare agli eventi.');
+                    }
+
+                    if ($user && $user->id === auth()->id()) {
+                        $fail('Non puoi aggiungere te stesso come partecipante all\'evento.');
+                    }
+                }
+            ],
         ];
     }
 
@@ -42,6 +62,7 @@ class EventForm extends Form
             'startTime' => 'ora inizio',
             'endTime' => 'ora fine',
             'repeatUntil' => 'ripeti fino a',
+            'participants' => 'partecipanti',
         ];
     }
 
@@ -52,6 +73,7 @@ class EventForm extends Form
             'endTime.after' => 'L\'orario di fine evento deve essere uguale o successivo all\'orario di inizio evento',
             'repeatUntil.after' => 'La data deve essere successiva alla data di inizio evento',
             'repeatUntil.before_or_equal' => 'La data selezionata è oltre il consentito',
+            'participants.*.exists' => 'Uno o più partecipanti selezionati non sono validi',
         ];
     }
 
@@ -67,6 +89,7 @@ class EventForm extends Form
         $this->startTime = $event->start_time?->format('H:i');
         $this->endTime = $event->end_time?->format('H:i');
         $this->repeatUntil = null;
+        $this->participants = $event->participants()->pluck('user_id')->toArray();
     }
 
     /**
@@ -86,6 +109,17 @@ class EventForm extends Form
                     'start_time' => $this->startTime,
                     'end_time' => $this->endTime,
                 ]);
+
+                // attach participants if any
+                if (!empty($this->participants)) {
+                    $event->participants()->attach($this->participants);
+
+                    // notify participants
+                    Notification::send(
+                        User::whereIn('id', $this->participants)->get(),
+                        new UserAddedToEvent($event)
+                    );
+                }
 
                 // generate recurring events
                 if ($this->repeatUntil) {
@@ -109,6 +143,9 @@ class EventForm extends Form
 
         try {
             DB::transaction(function () {
+                // get previous participants before update
+                $previousParticipants = $this->event->participants()->pluck('user_id')->toArray();
+
                 $this->event->update([
                     'title' => $this->title,
                     'description' => $this->description ?: null,
@@ -116,6 +153,12 @@ class EventForm extends Form
                     'start_time' => $this->startTime,
                     'end_time' => $this->endTime,
                 ]);
+
+                // Sync participants
+                $this->event->participants()->sync($this->participants);
+
+                // handle participant notifications
+                $this->handleParticipantNotifications($previousParticipants);
             });
 
             Toaster::success('Evento aggiornato con successo');
@@ -143,7 +186,60 @@ class EventForm extends Form
                 'end_time' => $event->end_time,
             ]);
 
+            // attach participants if any
+            if (!empty($this->participants)) {
+                $newEvent->participants()->attach($this->participants);
+
+                // notify participants
+                Notification::send(
+                    User::whereIn('id', $this->participants)->get(),
+                    new UserAddedToEvent($newEvent)
+                );
+            }
+
             $nextDate->addDay();
+        }
+    }
+
+    /**
+     * Handle participant notifications
+     */
+    protected function handleParticipantNotifications(array $previousParticipants)
+    {
+        $addedParticipants = array_diff($this->participants, $previousParticipants);
+        $removedParticipants = array_diff($previousParticipants, $this->participants);
+        $unchangedParticipants = array_intersect($previousParticipants, $this->participants);
+
+        // notify new participants
+        if (!empty($addedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $addedParticipants)->get(),
+                new UserAddedToEvent($this->event) // use the same notification as for new event
+            );
+        }
+
+        // notify removed participants
+        if (!empty($removedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $removedParticipants)->get(),
+                new EventUpdated($this->event, 'removed')
+            );
+        }
+
+        // notify unchanged participants
+        if (!empty($unchangedParticipants)) {
+            Notification::send(
+                User::whereIn('id', $unchangedParticipants)->get(),
+                new EventUpdated($this->event, 'modified')
+            );
+        }
+
+        // notify owner if not in participants and event modified
+        if (auth()->id() !== $this->event->user_id) {
+            Notification::send(
+                $this->event->user,
+                new EventUpdated($this->event, 'modified')
+            );
         }
     }
 }

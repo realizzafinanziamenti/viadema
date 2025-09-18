@@ -4,9 +4,15 @@ namespace App\Livewire\Admin\Calendar;
 
 use App\Livewire\Forms\EventForm;
 use App\Models\Event;
+use App\Models\User;
+use App\Notifications\EventUpdated;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
@@ -36,13 +42,17 @@ class Calendar extends Component
     public string $search = ''; // search property to hold the search term
     public EventForm $form; // form property to hold the event form
     public ?Event $selectedEvent = null; // property to hold the selected event
+    public Collection $possibleParticipants; // property to hold the possible participants for events
 
     /**
      * Set the initial date to the current date.
      */
     public function setInitialDate()
     {
-        $this->currentDate = Carbon::now();
+        // check if there's a date query parameter in the URL
+        $date = request()->query('date');
+        // set current date to the date from the URL or to today if not present or invalid
+        $this->currentDate = (!empty($date)) ? Carbon::parse($date) : Carbon::now();
         $this->currentYear = $this->currentDate->year;
         $this->currentMonth = $this->currentDate->month;
     }
@@ -197,6 +207,26 @@ class Calendar extends Component
     }
 
     /**
+     * load possible participants for events
+     */
+    public function loadPossibleParticipants(string $action = 'create')
+    {
+        $query = User::assignableUsers()
+            ->orderBy('first_name')
+            ->orderBy('last_name');
+
+        if ($action === 'create') {
+            // Per la creazione, escludi solo l'utente autenticato
+            $query->excludeAuthenticatedUser();
+        } elseif ($action === 'update') {
+            // Per l'aggiornamento, escludi l'owner dell'evento
+            $query->excludeEventOwner($this->selectedEvent?->user_id);
+        }
+
+        $this->possibleParticipants = $query->get();
+    }
+
+    /**
      * refresh calendar function
      */
     protected function refreshCalendar(): void
@@ -210,6 +240,7 @@ class Calendar extends Component
      */
     public function openCreateEventModal(): void
     {
+        Gate::authorize('create', Event::class);
         $this->resetErrorBag();
         $this->form->reset();
         $this->dispatch('open-modal', 'event-create');
@@ -220,8 +251,10 @@ class Calendar extends Component
      */
     public function openEditEventModal(): void
     {
+        Gate::authorize('update', $this->selectedEvent);
         $this->resetErrorBag();
         $this->form->setEvent($this->selectedEvent);
+        $this->loadPossibleParticipants('update');
         $this->dispatch('open-modal', 'event-edit');
     }
 
@@ -231,6 +264,7 @@ class Calendar extends Component
     public function openDetailEventModal(int $id): void
     {
         $this->selectedEvent = Event::findOrFail($id);
+        Gate::authorize('view', $this->selectedEvent);
         $this->dispatch('open-modal', 'event-detail');
     }
 
@@ -264,10 +298,15 @@ class Calendar extends Component
     {
         try {
             Gate::authorize('delete', $this->selectedEvent);
-            $this->selectedEvent->delete();
+
+            DB::transaction(function () {
+                $this->sendNotificationOnDeleteEvent($this->selectedEvent);
+                $this->selectedEvent->delete();
+            });
 
             Toaster::success('Evento eliminato con successo');
         } catch (Exception $e) {
+            Log::error('Errore durante l\'eliminazione dell\'evento: ' . $e->getMessage());
             Toaster::error('Si è verificato un errore: ' . $e->getMessage());
         }
 
@@ -277,11 +316,37 @@ class Calendar extends Component
         $this->dispatch('close-modal', 'event-delete');
     }
 
+    /**
+     * Send notification to participants on event deletion
+     */
+    protected function sendNotificationOnDeleteEvent(Event $event): void
+    {
+        // notify participants about event deletion
+        $participants = $event->participants;
+        if ($participants->isNotEmpty()) {
+            Notification::send(
+                $participants,
+                new EventUpdated($event, 'cancelled')
+            );
+        }
+
+        // notify owner if deleted by admin
+        if (auth()->id() !== $event->user_id) {
+            if ($event->user) {
+                Notification::send(
+                    $event->user,
+                    new EventUpdated($event, 'cancelled')
+                );
+            }
+        }
+    }
+
     public function mount()
     {
         Gate::authorize('access calendar');
         $this->setInitialDate();
         $this->refreshCalendar();
+        $this->loadPossibleParticipants('create');
     }
 
     #[Layout('components.layouts.app')]

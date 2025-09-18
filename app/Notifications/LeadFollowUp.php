@@ -2,13 +2,13 @@
 
 namespace App\Notifications;
 
-use App\Models\Practice;
+use App\Models\Customer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PracticeRenewabilityAlert extends Notification implements ShouldQueue
+class LeadFollowUp extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -17,9 +17,9 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Practice $practice)
+    public function __construct(public Customer $lead)
     {
-        $this->url = url('/practices/details/' . $this->practice->id);
+        $this->url = url('/leads/' . $lead->id);
         $this->afterCommit();
     }
 
@@ -39,11 +39,12 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Avviso Scadenza Pratica')
-            ->greeting('Ciao!')
-            ->line('Scadenza pratica ' . $this->practice->practice_code . ' imminente.')
-            ->line('Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.')
-            ->action('Vai alla pratica', $this->url);
+            ->subject('Follow-up richiesto: Lead non contattato')
+            ->greeting('Ciao ' . $notifiable->name)
+            ->line("Il lead **{$this->lead->full_name}** è stato inserito 6 ore fa e non è stato ancora contattato.")
+            ->line('È necessario contattare il lead il prima possibile.')
+            ->action('Visualizza Lead', $this->url)
+            ->salutation('Grazie');
     }
 
     /**
@@ -54,11 +55,11 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'practice_id' => $this->practice->id,
-            'title' => 'Avviso Scadenza Pratica',
-            'message' => 'Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.',
+            'title' => 'Follow-up Lead Richiesto',
+            'message' => "Il lead {$this->lead->full_name} necessita di essere contattato.",
+            'lead_id' => $this->lead->id,
             'url' => $this->url,
-            'type' => 'practice-renewability-alert',
+            'type' => 'lead-follow-up',
         ];
     }
 
@@ -67,7 +68,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        return 'practice-renewability-alert';
+        return 'lead-follow-up';
     }
 
     /**
@@ -83,6 +84,6 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        return 'broadcast.practice-renewability-alert';
+        return 'broadcast.lead-follow-up';
     }
 }

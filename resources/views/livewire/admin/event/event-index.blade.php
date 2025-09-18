@@ -1,3 +1,7 @@
+@php
+    use App\Models\Event;
+@endphp
+
 <div x-data="{ section: 'section1' }">
     <x-page-title label="Elenco Eventi" class="mt-1" />
 
@@ -8,9 +12,11 @@
                 placeholder="Cerca per titolo evento..." />
 
             {{-- Create Event --}}
-            <flux:button icon="plus" wire:click='openCreateEventModal'
-                class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
-                Aggiungi Evento</flux:button>
+            @can('create', Event::class)
+                <flux:button icon="plus" wire:click='openCreateEventModal'
+                    class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
+                    Aggiungi Evento</flux:button>
+            @endcan
         </div>
 
         {{-- Toggle Buttons --}}
@@ -46,13 +52,14 @@
     {{-- Create New Customer Modal --}}
     <x-modal name="event-create" maxWidth="2xl">
         <x-modal-header label="Crea nuovo evento" />
-        <x-forms.event-form submitFunction="save" />
+        <x-forms.event-form submitFunction="save" :possibleParticipants="$possibleParticipants" />
     </x-modal>
 
     {{-- Edit Customer Modal --}}
     <x-modal name="event-edit" maxWidth="2xl">
         <x-modal-header label="Modifica evento" />
-        <x-forms.event-form submitFunction="edit" />
+        <x-forms.event-form submitFunction="edit" :possibleParticipants="$possibleParticipants" modalName="event-edit"
+            submitButtonLabel="Modifica" />
     </x-modal>
 
     {{-- Delete User Modal --}}
