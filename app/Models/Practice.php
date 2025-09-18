@@ -52,7 +52,7 @@ class Practice extends Model
         'inserted_at',            // inserimento sistema
         'first_installment_date',         // data prima rata
         'last_installment_date',          // data ultima rata
-        'early_settlement_date',                // data liquidazione
+        'early_settlement_date',        // data liquidazione
         'disbursement_date',        // data estinzione anticipata
 
         // Rinnovo
@@ -215,6 +215,14 @@ class Practice extends Model
     protected function formattedFirstInstallmentDate(): Attribute
     {
         return Attribute::get(fn() => $this->first_installment_date?->format('d/m/y'));
+    }
+
+    /**
+     * Accessor to obtain formatted last installment date.
+     */
+    protected function formattedLastInstallmentDate(): Attribute
+    {
+        return Attribute::get(fn() => $this->last_installment_date?->format('d/m/y'));
     }
 
     /**
