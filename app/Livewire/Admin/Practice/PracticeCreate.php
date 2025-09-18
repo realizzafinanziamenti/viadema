@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Enums\CustomerStatus;
 use App\Enums\PracticeStatus;
+use App\Enums\ProductionType;
 use App\Livewire\Forms\CustomerForm;
 use App\Livewire\Forms\PracticeForm;
 use App\Models\Customer;
@@ -16,6 +17,7 @@ use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use App\Traits\AcceptedFileTypes;
+use App\Traits\EnumHelper;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
@@ -31,7 +33,7 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeCreate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, EnumHelper;
 
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
@@ -44,12 +46,21 @@ class PracticeCreate extends Component
     public array $installments = [];
     public array $customerTypes = [];
     public array $practiceStatuses = [];
+    public array $productionTypes = [];
     public int $step = 1;
     public string $teamMemberSearch = '';
     public string $customerSearch = '';
     public bool $shouldConvertLead = false; // Flag to indicate if converting lead to customer
     public bool $customerPreselected = false; // Flag to indicate if customer is preselected
     public ?string $creationToken = null; // Token to identify preselected customer
+
+    /**
+     * Set isRenewal in the form.
+     */
+    public function setIsRenewal(string $value): void
+    {
+        $this->practiceForm->isRenewal = ($value === '1');
+    }
 
     /**
      * Set team member for customer form
@@ -94,6 +105,14 @@ class PracticeCreate extends Component
     public function setProductSubtype(?int $value = null): void
     {
         $this->setFormSelectValue('productSubtypeId', $value, 'practiceForm');
+    }
+
+    /**
+     * Set production type
+     */
+    public function setProductionType(?string $value = null): void
+    {
+        $this->setFormSelectValue('productionType', $value, 'practiceForm');
     }
 
     /**
@@ -350,6 +369,8 @@ class PracticeCreate extends Component
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
+
+        $this->productionTypes = $this->getEnumOptions(ProductionType::class);
     }
 
     /**

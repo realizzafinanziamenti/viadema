@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PracticeStatus;
+use App\Enums\ProductionType;
 use App\Observers\PracticeObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -66,8 +67,12 @@ class Practice extends Model
         'sum_dec_plus_35',        // somma dec + 35%
 
         // Dettagli
-        'previous_finance',       // finanziaria estinta
         'practice_code',          // ID pratica univoco
+        'is_renewal',             // è un rinnovo
+        'production_type',        // tipologia di produzione (diretta, indiretta)
+        'disbursing_institution', // ente erogante
+        'financial_institution',  // istituto finanziario
+        'previous_finance',       // finanziaria estinta
         'notes',                  // note libere
     ];
 
@@ -94,6 +99,8 @@ class Practice extends Model
         'alert_date' => 'datetime',
 
         'practice_status' => PracticeStatus::class,
+        'is_renewal' => 'boolean',
+        'production_type' => ProductionType::class,
         'days_transformation' => 'integer',
         'sum_dec_plus_35' => 'decimal:2',
     ];

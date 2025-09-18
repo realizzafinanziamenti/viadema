@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Practice;
 
 use App\Enums\CustomerStatus;
+use App\Enums\ProductionType;
 use App\Livewire\Forms\CustomerForm;
 use App\Livewire\Forms\PracticeForm;
 use App\Models\Attachment;
@@ -17,6 +18,7 @@ use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use App\Traits\AcceptedFileTypes;
+use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\HandlesPracticeInstallments;
 use App\Traits\InteractsWithDropdowns;
@@ -33,7 +35,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PracticeUpdate extends Component
 {
-    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, HandlesEntityActions;
+    use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, HandlesEntityActions, EnumHelper;
 
     public Practice $practice;
     public PracticeForm $practiceForm;
@@ -48,10 +50,21 @@ class PracticeUpdate extends Component
     public array $installments = [];
     public array $customerTypes = [];
     public array $practiceStatuses = [];
+    public array $productionTypes = [];
     public int $step = 1;
     public string $teamMemberSearch = '';
     public string $customerSearch = '';
     public bool $selectsInitialized = false;
+    public bool $shouldConvertLead = false;
+    public bool $customerPreselected = false;
+
+    /**
+     * Set isRenewal in the form.
+     */
+    public function setIsRenewal(string $value): void
+    {
+        $this->practiceForm->isRenewal = ($value === '1');
+    }
 
     /**
      * Set team member for customer form
@@ -78,6 +91,14 @@ class PracticeUpdate extends Component
 
         $this->resetValidation('practiceForm.customerId');
         $this->selectedCustomer = Customer::find($this->practiceForm->customerId);
+    }
+
+    /**
+     * Set production type
+     */
+    public function setProductionType(?string $value = null): void
+    {
+        $this->setFormSelectValue('productionType', $value, 'practiceForm');
     }
 
     /**
@@ -216,6 +237,8 @@ class PracticeUpdate extends Component
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
+
+        $this->productionTypes = $this->getEnumOptions(ProductionType::class);
     }
 
     /**

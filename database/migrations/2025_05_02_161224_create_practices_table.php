@@ -58,8 +58,12 @@ return new class extends Migration
             $table->decimal('sum_dec_plus_35', 10, 2)->nullable();     // somma dec + 35% (se utile davvero)
 
             // Dettagli
-            $table->string('previous_finance')->nullable();            // finanziaria estinta
             $table->string('practice_code')->unique();                   // ID pratica univoco
+            $table->boolean('is_renewal')->default(false);            // è un rinnovo
+            $table->string('production_type')->nullable();            // tipologia di produzione (diretta, indiretta)
+            $table->string('disbursing_institution')->nullable();     // ente erogante
+            $table->string('financial_institution')->nullable();     // istituto finanziario
+            $table->string('previous_finance')->nullable();            // finanziaria estinta
             $table->text('notes')->nullable();                                  // note libere
 
             $table->timestamps();
