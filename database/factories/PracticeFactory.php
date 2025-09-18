@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\PracticeStatus;
+use App\Enums\ProductionType;
 use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\FinancialTable;
@@ -71,6 +72,10 @@ class PracticeFactory extends Factory
             'practice_status' => fake()->randomElement(PracticeStatus::cases())->value,
             'previous_finance' => fake()->optional()->company(),
             'practice_code' => strtoupper(fake()->bothify('PR#??##')),
+            'is_renewal' => fake()->boolean(20),
+            'production_type' => fake()->randomElement(ProductionType::cases())->value,
+            'disbursing_institution' => fake()->optional()->company(),
+            'financial_institution' => fake()->optional()->company(),
             'notes' => fake()->optional()->sentence(),
         ];
     }
