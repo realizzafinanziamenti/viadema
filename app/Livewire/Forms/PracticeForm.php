@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Enums\PracticeStatus;
+use App\Enums\ProductionType;
 use App\Models\Practice;
 use App\Traits\AcceptedFileTypes;
 use Exception;
@@ -43,6 +44,10 @@ class PracticeForm extends Form
     public $practiceStatus = null;
     public $previousFinance = null;
     public $practiceCode = null;
+    public bool $isRenewal = false;
+    public $productionType = null;
+    public $disbursingInstitution = null;
+    public $financialInstitution = null;
     public $notes = null;
     public array $attachments = [];
 
@@ -72,6 +77,10 @@ class PracticeForm extends Form
                 'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
                 'previousFinance' => ['nullable', 'string', 'max:255'],
                 'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
+                'isRenewal' => ['required', 'boolean'],
+                'productionType' => ['nullable', 'string', new Enum(ProductionType::class)],
+                'disbursingInstitution' => ['nullable', 'string', 'max:255'],
+                'financialInstitution' => ['nullable', 'string', 'max:255'],
                 'notes' => ['nullable', 'string', 'max:65535'],
                 'attachments' => ['nullable', 'array', 'max:10'],
                 'attachments.*' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:10240']
@@ -123,6 +132,10 @@ class PracticeForm extends Form
             'practiceStatus' => "stato pratica",
             'previousFinance' => "finanziaria estinta",
             'practiceCode' => "ID pratica",
+            'isRenewal' => "rinnovo",
+            'productionType' => "produzione",
+            'disbursingInstitution' => "ente erogante",
+            'financialInstitution' => "istituto finanziario",
             'notes' => "note",
             'attachments' => 'allegati',
             'attachments.*' => 'file allegato'
@@ -160,6 +173,10 @@ class PracticeForm extends Form
             'practiceStatus' => $practice->practice_status?->value,
             'previousFinance' => $practice->previous_finance,
             'practiceCode' => $practice->practice_code,
+            'isRenewal' => $practice->is_renewal,
+            'productionType' => $practice->production_type?->value,
+            'disbursingInstitution' => $practice->disbursing_institution,
+            'financialInstitution' => $practice->financial_institution,
             'notes' => $practice->notes
         ]);
     }
@@ -258,6 +275,10 @@ class PracticeForm extends Form
             'practice_status' => $this->practiceStatus,
             'previous_finance' => $this->previousFinance ?? null,
             'practice_code' => $this->practiceCode,
+            'is_renewal' => $this->isRenewal,
+            'production_type' => $this->productionType ?? null,
+            'disbursing_institution' => $this->disbursingInstitution ?? null,
+            'financial_institution' => $this->financialInstitution ?? null,
             'notes' => $this->notes
         ];
     }

@@ -8,6 +8,15 @@
         </div>
     </div>
 
+    {{-- Disbursing Institution --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Ente erogante</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input size="sm" wire:model='practiceForm.disbursingInstitution' />
+            <flux:error name="practiceForm.disbursingInstitution" />
+        </div>
+    </div>
+
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Prodotto *</flux:label>
@@ -27,6 +36,27 @@
                 setFunction="setProductSubtype" :has-error="$errors->has('practiceForm.productSubtypeId')" />
 
             <flux:error name="practiceForm.productSubtypeId" />
+        </div>
+    </div>
+
+    {{-- Is Renewal --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Rinnovo *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-bool-select size="sm" :selected="$practiceForm->isRenewal" yesAction="setIsRenewal('1')"
+                noAction="setIsRenewal('0')" :has-error="$errors->has('practiceForm.isRenewal')" border />
+            <flux:error name="practiceForm.isRenewal" />
+        </div>
+    </div>
+
+    {{-- Production type --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Produzione *</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <x-dropdown-select size="sm" :selectable-items="$productionTypes" :selected="$practiceForm->productionType" placeholder='Seleziona produzione'
+                setFunction="setProductionType" :has-error="$errors->has('practiceForm.productionType')" />
+
+            <flux:error name="practiceForm.productionType" />
         </div>
     </div>
 
@@ -116,8 +146,8 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Totale dovuto</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
-                wire:model="practiceForm.totalAmount" symbol="€" />
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
+                size="sm" wire:model="practiceForm.totalAmount" symbol="€" />
             <flux:error name="practiceForm.totalAmount" />
         </div>
     </div>
@@ -181,6 +211,15 @@
                 placeholder='Seleziona tabella provvigionale' setFunction="setFinancialTable" :has-error="$errors->has('practiceForm.financialTableId')" />
 
             <flux:error name="practiceForm.financialTableId" />
+        </div>
+    </div>
+
+    {{-- Financial Institution --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Istituto finanziario</flux:label>
+        <div class="flex flex-col gap-0.5">
+            <flux:input size="sm" wire:model='practiceForm.financialInstitution' />
+            <flux:error name="practiceForm.financialInstitution" />
         </div>
     </div>
 
