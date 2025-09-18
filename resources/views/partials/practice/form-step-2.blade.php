@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Id pratica *</flux:label>
         <div class="flex flex-col gap-0.5">
-            <flux:input size="sm" wire:model='practiceForm.practiceCode' />
+            <flux:input size="sm" wire:model='practiceForm.practiceCode' placeholder="PR00000" />
             <flux:error name="practiceForm.practiceCode" />
         </div>
     </div>
