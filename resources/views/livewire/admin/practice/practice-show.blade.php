@@ -30,13 +30,28 @@
                 </div>
 
                 <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Ente erogante: </span>
+                    <span>{{ $practice->disbursing_institution ?? 'N/D' }}</span>
+                </div>
+
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Istituto finanziario: </span>
+                    <span>{{ $practice->financial_institution ?? 'N/D' }}</span>
+                </div>
+
+                <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Data di apertura: </span>
                     <span>{{ $practice->formatted_first_installment_date }}</span>
                 </div>
 
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Data ultima rata: </span>
+                    <span>{{ $practice->formatted_last_installment_date }}</span>
+                </div>
+
                 @if ($practice->early_settlement_date)
                     <div class="text-sm mb-2.5">
-                        <span class="text-gray-custom-4">Data di fine: </span>
+                        <span class="text-gray-custom-4">Data di liquidazione: </span>
                         <span>{{ $practice->formatted_early_settlement_date }}</span>
                     </div>
                 @endif
@@ -62,6 +77,16 @@
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Operatore: </span>
                     <span>{{ $practice->user?->full_name }}</span>
+                </div>
+
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Produzione: </span>
+                    <span>{{ $practice->production_type?->getLabelText() ?? 'N/D' }}</span>
+                </div>
+
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Rinnovo: </span>
+                    <span>{{ $practice->is_renewal ? 'Sì' : 'No' }}</span>
                 </div>
 
                 @if ($practice->notes)
