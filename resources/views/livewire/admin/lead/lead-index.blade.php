@@ -111,4 +111,7 @@
     {{-- Delete Lead Modal --}}
     <x-delete-modal name="delete-lead" header="Conferma Eliminazione Lead" function="deleteLead"
         message="Sei sicuro di voler eliminare il lead <strong>{{ $selectedLead?->full_name }}</strong>?" />
+
+    {{-- Notes Modal --}}
+    @include('partials.lead.lead-notes-modal')
 </div>
