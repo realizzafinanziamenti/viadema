@@ -57,6 +57,8 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             $customerType = $this->getCustomerType($row);
             // Recupera i valori di rinnovabilità e percentuale di avviso predefiniti
             $installmentProductDefault = $this->getRenewabilityAndAlertDefaultPercentage($product, $installment);
+            // Determina se la pratica è un rinnovo
+            $isRenewal = $this->parseRenewalValue($row['rinnovo'] ?? 'N');
 
             return Practice::updateOrCreate(
                 ['practice_code' => $row['pratica']],
@@ -93,6 +95,8 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     'percentage_alert'        => $installmentProductDefault->percentage_alert ?? 35.00,
 
                     'practice_status' => $practiceStatus,
+                    'is_renewal' => $isRenewal,
+
                     'notes' => null,
 
                     'days_transformation' => $row['trasformazione_gg'] ?? null,
@@ -137,6 +141,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             'data_prima_rata' => ['required', 'date'],
             'data_ultima_rata' => ['required', 'date'],
 
+            'rinnovo' => ['nullable', 'string', Rule::in(['S', 's', 'N', 'n', 'SI', 'si', 'NO', 'no', 'Y', 'y', '1', '0'])],
             'trasformazione_gg' => ['nullable', 'integer'],
             'somma_dec_35' => ['nullable', 'numeric'],
 
@@ -312,5 +317,26 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             ->first();
 
         return $installmentProductDefault;
+    }
+
+    /**
+     * Parse renewal value from Excel (S/N to true/false)
+     *
+     * @param string|null $value
+     * @return bool
+     */
+    protected function parseRenewalValue(?string $value): bool
+    {
+        if (!$value) {
+            return false;
+        }
+
+        $normalizedValue = strtoupper(trim($value));
+
+        return match ($normalizedValue) {
+            'S', 'SI', 'SÌ', 'YES', 'Y', '1' => true,
+            'N', 'NO', '0' => false,
+            default => false, // Default a false per valori non riconosciuti
+        };
     }
 }
