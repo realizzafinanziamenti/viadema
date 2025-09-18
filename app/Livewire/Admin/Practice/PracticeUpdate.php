@@ -55,6 +55,8 @@ class PracticeUpdate extends Component
     public string $teamMemberSearch = '';
     public string $customerSearch = '';
     public bool $selectsInitialized = false;
+    public bool $shouldConvertLead = false;
+    public bool $customerPreselected = false;
 
     /**
      * Set isRenewal in the form.
