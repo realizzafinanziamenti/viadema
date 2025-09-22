@@ -53,39 +53,34 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 return null;
             }
 
-            return Customer::updateOrCreate(
-                [
-                    // Trova per codice fiscale o email
-                    'tax_id' => $row['codice_fiscale'] ?? null,
-                    'email' => $row['email'] ?? null,
-                ],
-                [
-                    'user_id' => $user->id,
-                    'customer_type_id' => $customerType?->id,
+            $customerData = [
+                'user_id' => $user->id,
+                'customer_type_id' => $customerType?->id,
 
-                    // Dati anagrafici semplificati
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'phone' => $this->cleanPhone($row['telefono']),
-                    'email' => $row['email'] ?? null,
-                    'date_of_birth' => $this->parseDate($row['data_nascita']) ?? null,
-                    'tax_id' => $row['codice_fiscale'] ?? null,
+                // Dati anagrafici semplificati
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $this->cleanPhone($row['telefono']),
+                'email' => $row['email'] ?? null,
+                'date_of_birth' => $this->parseDate($row['data_nascita']) ?? null,
+                'tax_id' => $row['codice_fiscale'] ?? null,
 
-                    // Indirizzo
-                    'address' => $row['indirizzo'] ?? null,
-                    'city' => $row['citta'] ?? $row['città'] ?? null,
-                    'state' => $row['provincia'] ?? null,
-                    'postal_code' => $row['cap'] ?? null,
+                // Indirizzo
+                'address' => $row['indirizzo'] ?? null,
+                'city' => $row['citta'] ?? $row['città'] ?? null,
+                'state' => $row['provincia'] ?? null,
+                'postal_code' => $row['cap'] ?? null,
 
-                    // Status e classificazione
-                    'customer_status' => CustomerStatus::LEAD,
-                    'lead_source' => $leadSource,
-                    'lead_status' => $leadStatus,
+                // Status e classificazione
+                'customer_status' => CustomerStatus::LEAD,
+                'lead_source' => $leadSource,
+                'lead_status' => $leadStatus,
 
-                    // Note
-                    'notes' => $row['note'] ?? null,
-                ]
-            );
+                // Note
+                'notes' => $row['note'] ?? null,
+            ];
+
+            return $this->findOrCreateCustomer($row, $customerData);
         } catch (Exception $e) {
             Log::warning("Errore nell'import lead alla riga con nome '{$row['nome']} {$row['cognome']}': {$e->getMessage()}");
             return null;
@@ -110,23 +105,13 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             'nome' => ['nullable', 'string', 'max:255'],
             'cognome' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'min:10', 'max:24'],
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('customers', 'email')
-            ],
-            'codice_fiscale' => [
-                'nullable',
-                'string',
-                'max:16',
-                Rule::unique('customers', 'tax_id')
-            ],
+            'email' => ['nullable', 'email', 'max:255'],
+            'codice_fiscale' => ['nullable', 'string', 'max:16'],
             'data_nascita' => ['nullable', 'date'],
-            'provenienza_lead' => ['nullable', 'string', new Enum(LeadSource::class)],
-            'stato_lead' => ['nullable', 'string', new Enum(LeadStatus::class)],
-            'tipologia_cliente' => ['nullable', 'exists:customer_types,id'],
-            'collaboratore_associato' => ['nullable', 'exists:users,id'],
+            'provenienza_lead' => ['nullable', 'string', 'max:100'],
+            'stato_lead' => ['nullable', 'string', 'max:100'],
+            'tipologia_cliente' => ['nullable', 'string', 'max:255'],
+            'collaboratore_associato' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -243,5 +228,40 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         }
 
         return null;
+    }
+
+    /**
+     * Find existing customer or create new one based on tax_id OR email
+     */
+    protected function findOrCreateCustomer(array $row, array $customerData): Customer
+    {
+        $taxId = trim($row['codice_fiscale'] ?? '');
+        $email = trim($row['email'] ?? '');
+
+        // Se non c'è né codice fiscale né email, crea sempre nuovo
+        if (empty($taxId) && empty($email)) {
+            return Customer::create($customerData);
+        }
+
+        // Cerca per tax_id (priorità 1)
+        if (!empty($taxId)) {
+            $customer = Customer::where('tax_id', $taxId)->first();
+            if ($customer) {
+                $customer->update($customerData);
+                return $customer;
+            }
+        }
+
+        // Cerca per email (priorità 2)
+        if (!empty($email)) {
+            $customer = Customer::where('email', $email)->first();
+            if ($customer) {
+                $customer->update($customerData);
+                return $customer;
+            }
+        }
+
+        // Crea nuovo customer
+        return Customer::create($customerData);
     }
 }
