@@ -78,7 +78,7 @@ class PracticeForm extends Form
                 'previousFinance' => ['nullable', 'string', 'max:255'],
                 'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
                 'isRenewal' => ['required', 'boolean'],
-                'productionType' => ['nullable', 'string', new Enum(ProductionType::class)],
+                'productionType' => ['required', 'string', new Enum(ProductionType::class)],
                 'disbursingInstitution' => ['nullable', 'string', 'max:255'],
                 'financialInstitution' => ['nullable', 'string', 'max:255'],
                 'notes' => ['nullable', 'string', 'max:65535'],
