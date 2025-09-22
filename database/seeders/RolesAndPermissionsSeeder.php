@@ -65,6 +65,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // leads permissions
             'access leads',
             'create leads',
+            'import leads',
             'view leads',
             'view all leads',
             'update leads',
