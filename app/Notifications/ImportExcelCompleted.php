@@ -39,7 +39,7 @@ class ImportExcelCompleted extends Notification implements ShouldQueue
         return [
             'title' => $this->setTitle(),
             'message' => $this->setMessage(),
-            'url' => url('/practices'),
+            'url' => $this->setUrl(),
             'type' => $this->importType,
         ];
     }
@@ -74,7 +74,7 @@ class ImportExcelCompleted extends Notification implements ShouldQueue
     protected function setTitle(): string
     {
         return match ($this->importType) {
-            'leads' => 'Import Lead Completato',
+            'leads' => 'Import Leads Completato',
             'practices' => 'Import Pratiche Completato',
             default => 'Import Completato',
         };
@@ -86,9 +86,21 @@ class ImportExcelCompleted extends Notification implements ShouldQueue
     protected function setMessage(): string
     {
         return match ($this->importType) {
-            'leads' => 'Tentativo di import lead completato',
+            'leads' => 'Tentativo di import leads completato',
             'practices' => 'Tentativo di import pratiche completato',
             default => 'Tentativo di import completato',
+        };
+    }
+
+    /**
+     * Set the URL based on import type
+     */
+    protected function setUrl(): string
+    {
+        return match ($this->importType) {
+            'leads' => url('/leads'),
+            'practices' => url('/practices'),
+            default => url('/'),
         };
     }
 }

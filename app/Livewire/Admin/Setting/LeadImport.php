@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Setting;
 
-use App\Imports\PracticesImport;
-use App\Models\Practice;
+use App\Imports\LeadsImport;
+use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\ImportExcelCompleted;
 use Illuminate\Support\Facades\Gate;
@@ -14,7 +14,7 @@ use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
 
-class PracticeImport extends Component
+class LeadImport extends Component
 {
     use WithFileUploads;
 
@@ -28,18 +28,18 @@ class PracticeImport extends Component
     public function updatedFile()
     {
         if ($this->file) {
-            $this->import();
+            $this->importLeads();
         }
     }
 
     /**
-     * Import the practices from the uploaded file.
+     * Import the leads from the uploaded file.
      */
-    public function import()
+    public function importLeads()
     {
-        Gate::authorize('importPractice', Practice::class);
+        Gate::authorize('importLead', Customer::class);
 
-        $import = new PracticesImport;
+        $import = new LeadsImport;
         $users = User::role('superadmin')->get();
 
         Excel::queueImport($import, $this->file)
@@ -48,7 +48,7 @@ class PracticeImport extends Component
                     Toaster::success('Import completato!');
 
                     // invio notifica
-                    Notification::send($users, new ImportExcelCompleted('practices'));
+                    Notification::send($users, new ImportExcelCompleted('leads'));
                 }
             ]);
 
@@ -57,6 +57,6 @@ class PracticeImport extends Component
 
     public function render()
     {
-        return view('livewire.admin.setting.practice-import');
+        return view('livewire.admin.setting.lead-import');
     }
 }

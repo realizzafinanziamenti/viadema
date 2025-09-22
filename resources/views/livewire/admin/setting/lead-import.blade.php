@@ -1,12 +1,12 @@
 <div>
     <x-card class="max-w-3xl mx-auto">
-        <x-card-header class="mb-5" label="Import pratiche da excel" />
+        <x-card-header class="mb-5" label="Import leads da excel" />
 
-        <form wire:submit.prevent='import' class="flex flex-col gap-1.5 items-start">
+        <form wire:submit.prevent='importLeads' class="flex flex-col gap-1.5 items-start">
 
-            <input type="file" id="practiceFileUpload" wire:model.live="file" class="hidden" accept=".xlsx,.xls" />
+            <input type="file" id="leadFileUpload" wire:model.live="file" class="hidden" accept=".xlsx,.xls" />
 
-            <label for="practiceFileUpload"
+            <label for="leadFileUpload"
                 class="flex items-center justify-center w-44 h-8 cursor-pointer text-sm rounded-md bg-black-custom border-black-custom
                 text-white hover:bg-zinc-700 hover:border-zinc-700">
 

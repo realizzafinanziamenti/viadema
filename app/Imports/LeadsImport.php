@@ -44,8 +44,8 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $leadStatus = $this->parseLeadStatus($row['stato_lead'] ?? 'nuovo');
 
             // Parsing semplificato nome e cognome
-            $firstName = trim($row['nome'] ?? '');
-            $lastName = trim($row['cognome'] ?? '');
+            $firstName = strtolower(preg_replace('/\s+/', ' ', trim($row['nome'] ?? '')));
+            $lastName = strtolower(preg_replace('/\s+/', ' ', trim($row['cognome'] ?? '')));
 
             // Validazione base: nome e cognome devono essere presenti
             if (empty($firstName) || empty($lastName)) {
@@ -90,7 +90,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     public function failed(Failure ...$failures)
     {
         foreach ($failures as $failure) {
-            Log::channel('import')->warning("Import lead fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
+            Log::warning("Import lead fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
         }
     }
 
@@ -137,7 +137,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
      */
     protected function getUser($row): User
     {
-        $userFullName = strtolower(trim($row['collaboratore_associato'] ?? ''));
+        $userFullName = strtolower(preg_replace('/\s+/', ' ', trim($row['collaboratore_associato'] ?? '')));
 
         if ($userFullName) {
             $user = User::whereRaw("CONCAT(LOWER(first_name), ' ', LOWER(last_name)) LIKE ?", ['%' . $userFullName . '%'])
@@ -157,15 +157,29 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
      */
     protected function getCustomerType($row): ?CustomerType
     {
-        $customerTypeName = strtolower(trim($row['tipologia_cliente'] ?? ''));
+        $customerTypeName = strtolower(preg_replace('/\s+/', ' ', trim($row['tipologia_cliente'] ?? '')));
 
         if (!$customerTypeName) {
             return null;
         }
 
-        return CustomerType::whereRaw('LOWER(name) = ?', [$customerTypeName])
-            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $customerTypeName . '%'])
+        // Prima prova match esatto
+        $customerType = CustomerType::whereRaw('LOWER(name) = ?', [$customerTypeName])->first();
+
+        if ($customerType) {
+            return $customerType;
+        }
+
+        // Poi prova match parziale (ordinato per specificità)
+        $customerType = CustomerType::whereRaw('LOWER(name) LIKE ?', ['%' . $customerTypeName . '%'])
+            ->orderByRaw('LENGTH(name) DESC') // Prima i più lunghi (più specifici)
             ->first();
+
+        if ($customerType) {
+            return $customerType;
+        }
+
+        return null;
     }
 
     /**
@@ -177,7 +191,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             return LeadSource::OTHER;
         }
 
-        $normalized = strtolower(trim($source));
+        $normalized = strtolower(preg_replace('/\s+/', ' ', trim($source)));
 
         return match (true) {
             str_contains($normalized, 'tik tok') => LeadSource::TIK_TOK,
@@ -198,7 +212,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             return LeadStatus::NEW;
         }
 
-        $normalized = strtolower(trim($status));
+        $normalized = strtolower(preg_replace('/\s+/', ' ', trim($status)));
 
         return match (true) {
             str_contains($normalized, 'nuovo') => LeadStatus::NEW,
@@ -262,6 +276,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         }
 
         // Crea nuovo customer
-        return Customer::create($customerData);
+        $lead = Customer::create($customerData);
+        return $lead;
     }
 }
