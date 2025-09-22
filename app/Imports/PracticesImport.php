@@ -112,7 +112,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     public function failed(Failure ...$failures)
     {
         foreach ($failures as $failure) {
-            Log::channel('import')->warning("Import fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
+            Log::warning("Import fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
         }
     }
 
