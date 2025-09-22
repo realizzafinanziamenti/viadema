@@ -43,28 +43,29 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $leadSource = $this->parseLeadSource($row['provenienza_lead'] ?? 'sconosciuto');
             $leadStatus = $this->parseLeadStatus($row['stato_lead'] ?? 'nuovo');
 
-            // 🔹 Parsing semplificato nome e cognome
+            // Parsing semplificato nome e cognome
             $firstName = trim($row['nome'] ?? '');
             $lastName = trim($row['cognome'] ?? '');
 
-            // Validazione base: almeno uno tra nome e cognome deve essere presente
-            if (empty($firstName) && empty($lastName)) {
+            // Validazione base: nome e cognome devono essere presenti
+            if (empty($firstName) || empty($lastName)) {
                 Log::warning("Saltata riga senza nome e cognome");
                 return null;
             }
 
             return Customer::updateOrCreate(
                 [
-                    // 🔹 Trova per codice fiscale O email O telefono
+                    // Trova per codice fiscale o email
                     'tax_id' => $row['codice_fiscale'] ?? null,
+                    'email' => $row['email'] ?? null,
                 ],
                 [
                     'user_id' => $user->id,
                     'customer_type_id' => $customerType?->id,
 
-                    // 🔹 Dati anagrafici semplificati
-                    'first_name' => $firstName ?: 'Nome',
-                    'last_name' => $lastName ?: 'Cognome',
+                    // Dati anagrafici semplificati
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
                     'phone' => $this->cleanPhone($row['telefono']),
                     'email' => $row['email'] ?? null,
                     'date_of_birth' => $this->parseDate($row['data_nascita']) ?? null,
@@ -108,7 +109,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         return [
             'nome' => ['nullable', 'string', 'max:255'],
             'cognome' => ['nullable', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:24'],
+            'telefono' => ['nullable', 'string', 'min:10', 'max:24'],
             'email' => [
                 'nullable',
                 'email',
@@ -236,8 +237,8 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         // Rimuovi spazi, trattini, parentesi
         $cleaned = preg_replace('/[\s\-\(\)]/', '', $phone);
 
-        // Verifica che sia un numero valido (almeno 8 cifre, massimo 15)
-        if (preg_match('/^\d{8,15}$/', $cleaned)) {
+        // Verifica che sia un numero valido (almeno 10 cifre, massimo 24)
+        if (preg_match('/^\d{10,24}$/', $cleaned)) {
             return $cleaned;
         }
 
