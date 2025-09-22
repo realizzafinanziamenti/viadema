@@ -7,14 +7,14 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PracticesImportCompleted extends Notification implements ShouldQueue
+class ImportExcelCompleted extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(public string $importType = 'practices')  // 'leads' or 'practices'
     {
         //
     }
@@ -37,10 +37,10 @@ class PracticesImportCompleted extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Import Pratiche Completato',
-            'message' => 'Tentativo di import pratiche concluso con successo.',
+            'title' => $this->setTitle(),
+            'message' => $this->setMessage(),
             'url' => url('/practices'),
-            'type' => 'practices-import-completed',
+            'type' => $this->importType,
         ];
     }
 
@@ -49,7 +49,7 @@ class PracticesImportCompleted extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        return 'practices-import-completed';
+        return 'import-excel-completed';
     }
 
     /**
@@ -65,6 +65,30 @@ class PracticesImportCompleted extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        return 'practices-import-completed';
+        return 'import-excel-completed';
+    }
+
+    /**
+     * Set the title based on import type
+     */
+    protected function setTitle(): string
+    {
+        return match ($this->importType) {
+            'leads' => 'Import Lead Completato',
+            'practices' => 'Import Pratiche Completato',
+            default => 'Import Completato',
+        };
+    }
+
+    /**
+     * Set the message based on import type
+     */
+    protected function setMessage(): string
+    {
+        return match ($this->importType) {
+            'leads' => 'Tentativo di import lead completato',
+            'practices' => 'Tentativo di import pratiche completato',
+            default => 'Tentativo di import completato',
+        };
     }
 }
