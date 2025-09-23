@@ -5,11 +5,11 @@
         <x-table class="mb-5 z-10">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
-                <x-table-header label="Descrizione" />
-                <x-table-header label="Tipo" class="w-[200px]" />
-                <x-table-header label="Azione" class="w-[200px]" />
-                <x-table-header label="Effettuato da" class="w-[200px]" />
-                <x-table-header label="Data e ora" class="w-[160px]" />
+                <x-table-header label="Descrizione" class="w-4/12" />
+                <x-table-header label="Tipo" class="w-2/12" />
+                <x-table-header label="Azione" class="w-2/12" />
+                <x-table-header label="Effettuato da" class="w-2/12" />
+                <x-table-header label="Data e ora" class="w-2/12" />
                 <x-table-header class="w-[60px]">
                     {{-- Actions --}}
                 </x-table-header>
