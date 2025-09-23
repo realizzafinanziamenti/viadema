@@ -299,6 +299,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 'customer_name' => $lead->full_name,
                 'email' => $lead->email,
                 'import_action' => $lead->wasRecentlyCreated ? 'created' : 'updated',
+                'url' => route('customers.show', $lead->id),
             ]);
         }
 

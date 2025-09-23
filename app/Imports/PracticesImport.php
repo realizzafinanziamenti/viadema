@@ -362,6 +362,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                 'practice_code' => $practice->practice_code,
                 'customer_name' => $practice->customer?->full_name,
                 'import_action' => $practice->wasRecentlyCreated ? 'created' : 'updated',
+                'url' => route('practices.show', $practice->id),
             ]);
         }
 
