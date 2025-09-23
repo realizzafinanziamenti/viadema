@@ -47,6 +47,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'view all events',
             'update events',
             'delete events',
+            // activity log permissions
+            'access activity log',
+            'view activity log',
             // team members permissions
             'access users',
             'create users',
