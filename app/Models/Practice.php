@@ -16,11 +16,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[ObservedBy(PracticeObserver::class)]
 class Practice extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, LogsActivity;
 
     protected $fillable = [
         // Relazioni
@@ -104,6 +107,146 @@ class Practice extends Model
         'days_transformation' => 'integer',
         'sum_dec_plus_35' => 'decimal:2',
     ];
+
+    // ACTIVITY LOGGING
+    /**
+     * Activity log options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                // Relazioni principali
+                'product_type_id',
+                'product_subtype_id',
+                'user_id',
+                'customer_id',
+                'financial_table_id',
+                'insurance_id',
+                'installment_id',
+                'customer_type_id',
+
+                // Snapshot (campi che vengono salvati come snapshot)
+                'product_subtype_label',
+                'financial_table_percentage',
+                'insurance_label',
+                'installment_value_label',
+                'customer_type_label',
+
+                // Importi finanziari
+                'amount_disbursed',
+                'total_amount',
+                'rate_amount',
+                'tan',
+                'teg',
+                'taeg',
+
+                // Date principali
+                'inserted_at',
+                'first_installment_date',
+                'last_installment_date',
+                'early_settlement_date',
+                'disbursement_date',
+
+                // Rinnovo
+                'renewability_percentage',
+                'renewability_date',
+                'percentage_alert',
+                'alert_date',
+
+                // Stato e flag
+                'practice_status',
+                'days_transformation',
+                'sum_dec_plus_35',
+
+                // Dettagli
+                'practice_code',
+                'is_renewal',
+                'production_type',
+                'disbursing_institution',
+                'financial_institution',
+                'previous_finance',
+                'notes',
+            ])
+            ->logOnlyDirty() // Solo campi che sono stati modificati
+            ->useLogName('practice') // Nome del log
+            ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Pratica {$this->full_name} creata",
+                'updated' => "Pratica {$this->full_name} modificata",
+                'deleted' => "Pratica {$this->full_name} eliminata",
+                'restored' => "Pratica {$this->full_name} ripristinata",
+                default => "Pratica {$eventName}"
+            });
+    }
+
+    /**
+     * Customize activity before saving
+     */
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        // Aggiunge l'URL della pratica (se non è stata eliminata)
+        if ($eventName !== 'deleted') {
+            $activity->properties = $activity->properties->put('url', route('practice.show', $this->id));
+        }
+
+        $activity->properties = $activity->properties->merge([
+            'field_translations' => [
+                // Relazioni
+                'product_type_id' => 'Prodotto',
+                'product_subtype_id' => 'Tipo prodotto',
+                'user_id' => 'Collaboratore',
+                'customer_id' => 'Cliente',
+                'financial_table_id' => 'Tabella provvigione',
+                'insurance_id' => 'Assicurazione',
+                'installment_id' => 'Numero rate',
+                'customer_type_id' => 'Tipologia cliente',
+
+                // Snapshot
+                'product_subtype_label' => 'Etichetta tipo prodotto',
+                'financial_table_percentage' => 'Percentuale tabella finanziaria',
+                'insurance_label' => 'Etichetta assicurazione',
+                'installment_value_label' => 'Valore rate',
+                'customer_type_label' => 'Etichetta tipologia cliente',
+
+                // Importi finanziari
+                'amount_disbursed' => 'Finanziato',
+                'total_amount' => 'Totale dovuto',
+                'rate_amount' => 'Importo rata',
+                'tan' => 'TAN',
+                'teg' => 'TEG',
+                'taeg' => 'TAEG',
+
+                // Date
+                'inserted_at' => 'Data inserimento sistema',
+                'first_installment_date' => 'Data prima rata',
+                'last_installment_date' => 'Data ultima rata',
+                'early_settlement_date' => 'Data liquidazione',
+                'disbursement_date' => 'Data estinzione anticipata',
+
+                // Rinnovo
+                'renewability_percentage' => 'Percentuale di rinnovo',
+                'renewability_date' => 'Data rinnovabilità',
+                'percentage_alert' => 'Percentuale alert',
+                'alert_date' => 'Data alert',
+
+                // Stato e flag
+                'practice_status' => 'Stato pratica',
+                'days_transformation' => 'Trasformazione GG',
+                'sum_dec_plus_35' => 'Somma dec + 35%',
+
+                // Dettagli
+                'practice_code' => 'Codice pratica',
+                'is_renewal' => 'È un rinnovo',
+                'production_type' => 'Tipologia produzione',
+                'disbursing_institution' => 'Ente erogante',
+                'financial_institution' => 'Istituto finanziario',
+                'previous_finance' => 'Finanziaria estinta',
+                'notes' => 'Note',
+            ],
+        ]);
+    }
+    // END ACTIVITY LOGGING
 
     // RELATIONSHIPS
 
