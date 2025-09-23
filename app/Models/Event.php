@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Event extends Model
 {
     /** @use HasFactory<\Database\Factories\EventFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -45,6 +48,64 @@ class Event extends Model
         'end_time' => 'datetime:H:i',
         'is_all_day' => 'boolean',
     ];
+
+    // ACTIVITY LOGGING
+    /**
+     * Activity log options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                // Relazioni
+                'user_id' => 'Creatore',
+                'practice_id' => 'Pratica associata',
+
+                // Dati evento
+                'event_type' => 'Tipo evento',
+                'title' => 'Titolo',
+                'description' => 'Descrizione',
+                'start_date' => 'Data evento',
+                'start_time' => 'Ora inizio',
+                'end_time' => 'Ora fine',
+                'is_all_day' => 'Tutto il giorno',
+            ])
+            ->logOnlyDirty() // Solo campi che sono stati modificati
+            ->useLogName('user') // Nome del log
+            ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Evento {$this->full_name} creato",
+                'updated' => "Evento {$this->full_name} modificato",
+                'deleted' => "Evento {$this->full_name} eliminato",
+                'restored' => "Evento {$this->full_name} ripristinato",
+                default => "Evento {$eventName}"
+            });
+    }
+
+    /**
+     * Customize activity before saving
+     */
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        // Prepara le properties base
+        $activity->properties = $activity->properties->merge([
+            'field_translations' => [
+                // Relazioni
+                'user_id' => 'Creatore',
+                'practice_id' => 'Pratica associata',
+
+                // Dati evento
+                'event_type' => 'Tipo evento',
+                'title' => 'Titolo',
+                'description' => 'Descrizione',
+                'start_date' => 'Data evento',
+                'start_time' => 'Ora inizio',
+                'end_time' => 'Ora fine',
+                'is_all_day' => 'Tutto il giorno',
+            ],
+        ]);
+    }
+    // END ACTIVITY LOGGING
 
     // RELATIONSHIPS
 
