@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Enums\PracticeOrderBy;
 use App\Enums\PracticeStatus;
+use App\Imports\PracticesImport;
 use App\Livewire\Layout\NotificationButton;
 use App\Livewire\Layout\NotificationModal;
 use App\Models\Customer;
@@ -15,6 +16,7 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Notifications\ImportExcelCompleted;
 use App\Rules\ExceptEnumValues;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
@@ -23,16 +25,19 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
 
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
@@ -130,6 +135,7 @@ class PracticeIndex extends Component
     // Order by select
     public array $orderBySelect = [];
     public PracticeOrderBy $selectedOrderBy = PracticeOrderBy::UPDATED_AT_DESC;
+    public $importFile = null;
 
     protected function rules(): array
     {
@@ -234,6 +240,48 @@ class PracticeIndex extends Component
             'tempTaegMin' => 'TAEG minimo',
             'tempTaegMax' => 'TAEG massimo',
         ];
+    }
+
+    /**
+     * Handle the file upload and import.
+     */
+    public function updatedImportFile()
+    {
+        if ($this->importFile) {
+            $this->importPractices();
+        }
+    }
+
+    /**
+     * Import the practices from the uploaded file.
+     */
+    public function importPractices()
+    {
+        Gate::authorize('importPractice', Practice::class);
+
+        try {
+            $this->validate([
+                'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+            ]);
+        } catch (Exception $e) {
+            Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
+            $this->reset('importFile');
+            return;
+        }
+
+        $import = new PracticesImport;
+        $users = User::role('superadmin')->get();
+
+        Excel::queueImport($import, $this->importFile)
+            ->chain([
+                function () use ($import, $users) {
+                    // Invio notifica
+                    Notification::send($users, new ImportExcelCompleted('practices'));
+                }
+            ]);
+
+        Toaster::success('Import avviato! Riceverai una notifica al termine.');
+        $this->reset('importFile');
     }
 
     /**

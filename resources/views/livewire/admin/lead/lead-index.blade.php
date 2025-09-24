@@ -11,11 +11,17 @@
                 </div>
             </div>
 
-            @can('create leads')
-                <a href="{{ route('lead.create') }}" wire:navigate>
-                    <x-buttons.create-button label="Crea nuovo profilo" />
-                </a>
-            @endcan
+            <div class="flex items-center gap-4">
+                @can('import practices')
+                    <x-buttons.import-button />
+                @endcan
+
+                @can('create leads')
+                    <a href="{{ route('lead.create') }}" wire:navigate>
+                        <x-buttons.create-button label="Crea nuovo profilo" />
+                    </a>
+                @endcan
+            </div>
         </div>
 
         <x-table class="mb-5" minWidth="min-w-[1600px]">
