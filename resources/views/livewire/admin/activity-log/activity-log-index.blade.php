@@ -23,7 +23,7 @@
                     <x-table-data truncate label="{{ $this->formatFieldValue($log->log_name) ?? '-' }}" />
                     <x-table-data truncate label="{{ $this->formatFieldValue($log->event) ?? '-' }}" />
                     <x-table-data truncate label="{{ $log->causer?->full_name ?? 'Sistema' }}" />
-                    <x-table-data truncate label="{{ $log->created_at->format('d/m/Y H:i') }}" />
+                    <x-table-data truncate label="{{ $log->created_at->format('d/m/y H:i') }}" />
 
                     {{-- Actions --}}
                     <x-table-data>

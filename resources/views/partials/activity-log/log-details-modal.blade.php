@@ -7,12 +7,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                     <flux:label>Descrizione</flux:label>
-                    <p class="text-sm text-black-custom">{{ $selectedLog->description }}</p>
+                    @if ($selectedLog->properties['url'] ?? null)
+                        <div class="h-[20px] flex items-center">
+                            <a href="{{ $selectedLog->properties['url'] }}" wire:navigate
+                                class="text-azure-custom text-sm underline">
+                                {{ $selectedLog->description }}
+                            </a>
+                        </div>
+                    @else
+                        <p class="text-sm text-black-custom">{{ $selectedLog->description }}</p>
+                    @endif
                 </div>
 
                 <div>
                     <flux:label>Data e ora</flux:label>
-                    <p class="text-sm text-black-custom">{{ $selectedLog->created_at->format('d/m/Y H:i:s') }}</p>
+                    <p class="text-sm text-black-custom">{{ $selectedLog->created_at->format('d/m/y H:i') }}</p>
                 </div>
 
                 <div>
@@ -26,19 +35,6 @@
                     <flux:label>Tipo log</flux:label>
                     <p class="text-sm text-black-custom">{{ $this->formatFieldValue($selectedLog->log_name) }}</p>
                 </div>
-
-                {{-- Link alla risorsa (se presente) --}}
-                @if ($selectedLog->properties['url'] ?? null)
-                    <div>
-                        <flux:label>Link alla risorsa</flux:label>
-                        <p class="text-sm text-black-custom">
-                            <a href="{{ $selectedLog->properties['url'] }}" wire:navigate
-                                class="text-azure-custom text-sm underline">
-                                Clicca qui per visualizzare
-                            </a>
-                        </p>
-                    </div>
-                @endif
             </div>
 
             {{-- Modifiche ai campi (se presenti) --}}
@@ -80,6 +76,40 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            @endif
+
+            {{-- Modifiche partecipanti evento (se presenti) --}}
+            @if ($selectedLog->log_name === 'event_participants')
+                <div class="mb-6">
+                    <flux:label>Modifiche partecipanti</flux:label>
+
+                    <div class="bg-gray-custom-1 rounded-lg p-3 max-h-56 overflow-y-auto">
+                        @php
+                            $participants = $selectedLog->properties['participants'] ?? [];
+                        @endphp
+
+                        {{-- Modifiche --}}
+                        <div class="space-y-2">
+                            <div class="text-sm">
+                                <div class="text-[13px]">Prima:</div>
+                                @if (!empty($participants['old']))
+                                    {{ implode(', ', $participants['old']) }}
+                                @else
+                                    Nessuno
+                                @endif
+                            </div>
+
+                            <div class="text-sm">
+                                <div class="text-[13px]">Dopo:</div>
+                                @if (!empty($participants['new']))
+                                    {{ implode(', ', $participants['new']) }}
+                                @else
+                                    Nessuno
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif

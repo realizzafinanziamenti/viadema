@@ -45,9 +45,46 @@ class ActivityLogIndex extends Component
             'user' => 'Collaboratori',
             'customer' => 'Clienti',
             'practice' => 'Pratiche',
+            'customer' => 'Clienti',
+            'lead' => 'Lead',
+            'event' => 'Eventi',
+            'event_participants' => 'Partecipanti Evento',
+            'form_document' => 'Moduli',
             'import_success' => 'Import completato',
             'import_failure' => 'Import fallito',
             'import_validation_failure' => 'Import fallito',
+
+            // Event Types (aggiungi i valori del tuo EventType enum)
+            'appointment' => 'Appuntamento',
+            'meeting' => 'Riunione',
+            'call' => 'Chiamata',
+            'reminder' => 'Promemoria',
+            'deadline' => 'Scadenza',
+            'follow_up' => 'Follow-up',
+
+            // Customer Status
+            'lead' => 'Lead',
+            'customer' => 'Cliente',
+
+            // Lead Status
+            'new' => 'Nuovo',
+            'contacted' => 'Contattato',
+            'waiting_reply' => 'In attesa di risposta',
+            'qualified' => 'Qualificato',
+            'converted' => 'Convertito',
+            'lost' => 'Perso',
+
+            // Lead Source
+            'tiktok' => 'TikTok',
+            'meta' => 'Meta',
+            'google' => 'Google',
+            'referral' => 'Passaparola',
+            'other' => 'Altro',
+
+            // Boolean values
+            'notifications_enabled' => $value ? 'Abilitate' : 'Disabilitate',
+            'is_all_day' => $value ? 'Sì' : 'No',
+            'profile_photo_path' => $value ? 'Presente' : 'Non impostata',
 
             // User fields
             'notifications_enabled' => $value ? 'Abilitate' : 'Disabilitate',

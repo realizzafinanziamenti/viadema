@@ -57,21 +57,14 @@ class Event extends Model
     {
         return LogOptions::defaults()
             ->logOnly([
-                // Relazioni
-                'user_id' => 'Creatore',
-                'practice_id' => 'Pratica associata',
-
-                // Dati evento
-                'event_type' => 'Tipo evento',
-                'title' => 'Titolo',
-                'description' => 'Descrizione',
-                'start_date' => 'Data evento',
-                'start_time' => 'Ora inizio',
-                'end_time' => 'Ora fine',
-                'is_all_day' => 'Tutto il giorno',
+                'title',
+                'description',
+                'start_date',
+                'start_time',
+                'end_time',
             ])
             ->logOnlyDirty() // Solo campi che sono stati modificati
-            ->useLogName('user') // Nome del log
+            ->useLogName('event') // Nome del log
             ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
             ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
                 'created' => "Evento {$this->full_name} creato",
@@ -87,21 +80,19 @@ class Event extends Model
      */
     public function tapActivity(Activity $activity, string $eventName): void
     {
-        // Prepara le properties base
+        // Aggiunge l'URL dell'evento (se non è stata eliminato)
+        if ($eventName !== 'deleted') {
+            $activity->properties = $activity->properties->put('url', url('/calendar?date=' . $this->start_date->format('Y-m-d')));
+        }
+
+        // Aggiunge le traduzioni dei campi
         $activity->properties = $activity->properties->merge([
             'field_translations' => [
-                // Relazioni
-                'user_id' => 'Creatore',
-                'practice_id' => 'Pratica associata',
-
-                // Dati evento
-                'event_type' => 'Tipo evento',
                 'title' => 'Titolo',
                 'description' => 'Descrizione',
                 'start_date' => 'Data evento',
                 'start_time' => 'Ora inizio',
                 'end_time' => 'Ora fine',
-                'is_all_day' => 'Tutto il giorno',
             ],
         ]);
     }
