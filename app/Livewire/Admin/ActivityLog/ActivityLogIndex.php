@@ -49,7 +49,7 @@ class ActivityLogIndex extends Component
             'lead' => 'Lead',
             'event' => 'Eventi',
             'event_participants' => 'Partecipanti Evento',
-            'form_document' => 'Moduli',
+            'form_document' => 'Modulistica',
             'import_success' => 'Import completato',
             'import_failure' => 'Import fallito',
             'import_validation_failure' => 'Import fallito',
@@ -80,11 +80,6 @@ class ActivityLogIndex extends Component
             'google' => 'Google',
             'referral' => 'Passaparola',
             'other' => 'Altro',
-
-            // Boolean values
-            'notifications_enabled' => $value ? 'Abilitate' : 'Disabilitate',
-            'is_all_day' => $value ? 'Sì' : 'No',
-            'profile_photo_path' => $value ? 'Presente' : 'Non impostata',
 
             // User fields
             'notifications_enabled' => $value ? 'Abilitate' : 'Disabilitate',

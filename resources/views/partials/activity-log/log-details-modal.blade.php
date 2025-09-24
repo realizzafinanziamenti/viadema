@@ -38,7 +38,7 @@
             </div>
 
             {{-- Modifiche ai campi (se presenti) --}}
-            @if ($selectedLog->changes()['attributes'] ?? null)
+            @if ($selectedLog->changes()['attributes'] && $selectedLog->event === 'updated')
                 <div class="mb-6">
                     <flux:label>Campi modificati</flux:label>
 
