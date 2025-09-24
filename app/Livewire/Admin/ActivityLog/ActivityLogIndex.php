@@ -43,6 +43,7 @@ class ActivityLogIndex extends Component
 
             // Log names
             'user' => 'Collaboratori',
+            'changed_department' => 'Cambio Dipartimento',
             'customer' => 'Clienti',
             'practice' => 'Pratiche',
             'customer' => 'Clienti',

@@ -8,9 +8,9 @@
                 <div>
                     <flux:label>Descrizione</flux:label>
                     @if ($selectedLog->properties['url'] ?? null)
-                        <div class="h-[20px] flex items-center">
+                        <div class="h-[20px] flex items-center truncate">
                             <a href="{{ $selectedLog->properties['url'] }}" wire:navigate
-                                class="text-azure-custom text-sm underline">
+                                class="text-azure-custom text-sm underline truncate">
                                 {{ $selectedLog->description }}
                             </a>
                         </div>
@@ -38,7 +38,7 @@
             </div>
 
             {{-- Modifiche ai campi (se presenti) --}}
-            @if ($selectedLog->changes()['attributes'] && $selectedLog->event === 'updated')
+            @if (($selectedLog->changes()['attributes'] ?? null) && $selectedLog->event === 'updated')
                 <div class="mb-6">
                     <flux:label>Campi modificati</flux:label>
 
@@ -66,16 +66,47 @@
                                         </span>
                                     @else
                                         <span>
-                                            {{ $oldValue }}
+                                            {{ $oldValue ?? 'Nessuno' }}
                                         </span>
                                         <span class="text-gray-custom-5">→</span>
                                         <span>
-                                            {{ $newValue }}
+                                            {{ $newValue ?? 'Nessuno' }}
                                         </span>
                                     @endif
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            @endif
+
+            {{-- Modifiche partecipanti evento (se presenti) --}}
+            @if ($selectedLog->log_name === 'changed_department')
+                <div class="mb-6">
+                    <flux:label>Cambio dipartimento</flux:label>
+
+                    <div class="bg-gray-custom-1 rounded-lg p-3 max-h-56 overflow-y-auto">
+                        @php
+                            $old = $selectedLog->properties['old_department'];
+                            $new = $selectedLog->properties['new_department'];
+                        @endphp
+
+                        {{-- Modifiche --}}
+                        <div class="space-y-2">
+                            <div class="text-sm">
+                                <div class="text-[13px]">Prima:</div>
+                                @if (!empty($old))
+                                    {{ $old }}
+                                @endif
+                            </div>
+
+                            <div class="text-sm">
+                                <div class="text-[13px]">Dopo:</div>
+                                @if (!empty($new))
+                                    {{ $new }}
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif

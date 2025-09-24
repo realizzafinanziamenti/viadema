@@ -82,7 +82,6 @@ class User extends Authenticatable
                 'profile_photo_path',
                 'notifications_enabled',
                 'password',
-                // 'roles.name'
             ])
             ->logOnlyDirty() // Solo campi che sono stati modificati
             ->useLogName('user') // Nome del log
@@ -135,7 +134,6 @@ class User extends Authenticatable
                 'profile_photo_path' => 'Foto profilo',
                 'notifications_enabled' => 'Notifiche abilitate',
                 'password' => 'Password',
-                // 'roles.name' => 'Dipartimento',
             ],
         ]);
     }
