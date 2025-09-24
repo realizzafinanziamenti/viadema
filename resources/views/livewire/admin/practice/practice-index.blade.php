@@ -24,6 +24,10 @@
                 <x-buttons.filter-modal-button />
 
                 @if (!$expired)
+                    @can('import practices')
+                        <x-buttons.import-button />
+                    @endcan
+
                     @can('create practices')
                         <a href="{{ route('practice.create') }}" wire:navigate>
                             <x-buttons.create-button label="Crea nuova pratica" />
