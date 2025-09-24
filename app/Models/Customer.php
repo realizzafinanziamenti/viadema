@@ -69,6 +69,8 @@ class Customer extends Model
      */
     public function getActivitylogOptions(): LogOptions
     {
+        $logName = $this->isLead() ? 'lead' : 'customer';
+
         return LogOptions::defaults()
             ->logOnly([
                 'user_id',
@@ -89,7 +91,7 @@ class Customer extends Model
                 'notes',
             ])
             ->logOnlyDirty() // Solo campi che sono stati modificati
-            ->useLogName('customer') // Nome del log
+            ->useLogName($logName) // Nome del log
             ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
             ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
                 'created' => $this->isLead() ? "Lead {$this->full_name} creato" : "Cliente {$this->full_name} creato",

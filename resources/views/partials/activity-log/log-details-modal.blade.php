@@ -66,11 +66,11 @@
                                         </span>
                                     @else
                                         <span>
-                                            {{ $oldValue ?? 'Nessuno' }}
+                                            {{ $this->convertValue($oldValue, $field) ?? 'Nessuno' }}
                                         </span>
                                         <span class="text-gray-custom-5">→</span>
                                         <span>
-                                            {{ $newValue ?? 'Nessuno' }}
+                                            {{ $this->convertValue($newValue, $field) ?? 'Nessuno' }}
                                         </span>
                                     @endif
                                 </div>

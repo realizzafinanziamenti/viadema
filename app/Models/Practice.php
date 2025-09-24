@@ -117,16 +117,9 @@ class Practice extends Model
         return LogOptions::defaults()
             ->logOnly([
                 // Relazioni principali
-                'product_type_id',
-                'product_subtype_id',
                 'user_id',
                 'customer_id',
-                'financial_table_id',
-                'insurance_id',
-                'installment_id',
-                'customer_type_id',
-
-                // Snapshot (campi che vengono salvati come snapshot)
+                'product_type_id',
                 'product_subtype_label',
                 'financial_table_percentage',
                 'insurance_label',
@@ -193,21 +186,14 @@ class Practice extends Model
         $activity->properties = $activity->properties->merge([
             'field_translations' => [
                 // Relazioni
-                'product_type_id' => 'Prodotto',
-                'product_subtype_id' => 'Tipo prodotto',
                 'user_id' => 'Collaboratore',
                 'customer_id' => 'Cliente',
-                'financial_table_id' => 'Tabella provvigione',
-                'insurance_id' => 'Assicurazione',
-                'installment_id' => 'Numero rate',
-                'customer_type_id' => 'Tipologia cliente',
-
-                // Snapshot
-                'product_subtype_label' => 'Etichetta tipo prodotto',
-                'financial_table_percentage' => 'Percentuale tabella finanziaria',
-                'insurance_label' => 'Etichetta assicurazione',
-                'installment_value_label' => 'Valore rate',
-                'customer_type_label' => 'Etichetta tipologia cliente',
+                'product_type_id' => 'Prodotto',
+                'product_subtype_label' => 'Tipo prodotto',
+                'financial_table_percentage' => 'Tabella finanziaria',
+                'insurance_label' => 'Assicurazione',
+                'installment_value_label' => 'Rate',
+                'customer_type_label' => 'Tipologia cliente',
 
                 // Importi finanziari
                 'amount_disbursed' => 'Finanziato',
