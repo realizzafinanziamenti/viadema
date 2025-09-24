@@ -135,6 +135,9 @@ class UserForm extends Form
 
         try {
             DB::transaction(function () {
+                // get department role
+                $previousDepartment = $this->user->getRoleDescription();
+
                 // check the password update
                 $password = $this->password
                     ? Hash::make($this->password)
@@ -164,6 +167,7 @@ class UserForm extends Form
                 ]);
 
                 $this->user->syncRoles($this->department);  // SYNC ROLES
+                $this->logDepartmentChange($previousDepartment); // log department change if changed
 
                 $this->user->profile()->update([
                     'phone' => $this->phone,
@@ -177,6 +181,28 @@ class UserForm extends Form
         } catch (Exception $e) {
             Log::error('Errore durante l\'aggiornamento dell\'utente: ' . $e->getMessage());
             Toaster::error('Errore durante l\'aggiornamento dell\'utente: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Log department change if it has changed
+     */
+    protected function logDepartmentChange($previousDepartment)
+    {
+        $currentDepartment = $this->user->getRoleDescription();
+
+        if ($previousDepartment !== $currentDepartment) {
+            // Log the department change
+            activity('changed_department')
+                ->causedBy(auth()->user())
+                ->performedOn($this->user)
+                ->event('updated')
+                ->withProperties([
+                    'old_department' => $previousDepartment,
+                    'new_department' => $currentDepartment,
+                    'url' => route('user.show', $this->user->id),
+                ])
+                ->log($this->user->full_name . ' spostato da ' . $previousDepartment . ' a ' . $currentDepartment);
         }
     }
 }

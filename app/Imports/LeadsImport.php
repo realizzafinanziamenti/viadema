@@ -12,8 +12,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -44,8 +42,8 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $leadStatus = $this->parseLeadStatus($row['stato_lead'] ?? 'nuovo');
 
             // Parsing semplificato nome e cognome
-            $firstName = strtolower(preg_replace('/\s+/', ' ', trim($row['nome'] ?? '')));
-            $lastName = strtolower(preg_replace('/\s+/', ' ', trim($row['cognome'] ?? '')));
+            $firstName = trim($row['nome'] ?? '');
+            $lastName = trim($row['cognome'] ?? '');
 
             // Validazione base: nome e cognome devono essere presenti
             if (empty($firstName) || empty($lastName)) {
@@ -80,8 +78,11 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 'notes' => $row['note'] ?? null,
             ];
 
-            return $this->findOrCreateCustomer($row, $customerData);
+            $lead = $this->findOrCreateCustomer($row, $customerData);
+            $this->createActivityLog($lead, 'import_success', 'Lead importato con successo', $row);
+            return $lead;
         } catch (Exception $e) {
+            $this->createActivityLog(null, 'import_failure', 'Errore durante l\'importazione del lead', $row, $e);
             Log::warning("Errore nell'import lead alla riga con nome '{$row['nome']} {$row['cognome']}': {$e->getMessage()}");
             return null;
         }
@@ -90,6 +91,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     public function failed(Failure ...$failures)
     {
         foreach ($failures as $failure) {
+            $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione del lead', $failure->values(), null, $failure);
             Log::warning("Import lead fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
         }
     }
@@ -254,29 +256,71 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
 
         // Se non c'è né codice fiscale né email, crea sempre nuovo
         if (empty($taxId) && empty($email)) {
-            return Customer::create($customerData);
+            $lead = Customer::create($customerData);
+            return $lead;
         }
 
         // Cerca per tax_id (priorità 1)
         if (!empty($taxId)) {
-            $customer = Customer::where('tax_id', $taxId)->first();
-            if ($customer) {
-                $customer->update($customerData);
-                return $customer;
+            $lead = Customer::where('tax_id', $taxId)->first();
+            if ($lead) {
+                $lead->update($customerData);
+                return $lead;
             }
         }
 
         // Cerca per email (priorità 2)
         if (!empty($email)) {
-            $customer = Customer::where('email', $email)->first();
-            if ($customer) {
-                $customer->update($customerData);
-                return $customer;
+            $lead = Customer::where('email', $email)->first();
+            if ($lead) {
+                $lead->update($customerData);
+                return $lead;
             }
         }
 
         // Crea nuovo customer
         $lead = Customer::create($customerData);
         return $lead;
+    }
+
+    /**
+     * Crea un log di attività per l'importazione.
+     */
+    protected function createActivityLog($lead, $logName, $message, $row = [], $e = null, $failure = null)
+    {
+        $properties = [
+            'import_type' => 'leads',
+            'raw_data' => $row,
+            'file_name' => request()->file('file')?->getClientOriginalName(),
+        ];
+
+        if ($lead) {
+            $properties = array_merge($properties, [
+                'customer_name' => $lead->full_name,
+                'email' => $lead->email,
+                'import_action' => $lead->wasRecentlyCreated ? 'created' : 'updated',
+                'url' => route('customer.show', $lead->id),
+            ]);
+        }
+
+        if ($e) {
+            $properties = array_merge($properties, [
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
+        if ($failure) {
+            $properties = array_merge($properties, [
+                'row_number' => $failure->row(),
+                'validation_errors' => $failure->errors(),
+                'failed_data' => $failure->values(),
+            ]);
+        }
+
+        activity($logName)
+            ->when($lead, fn($activity) => $activity->performedOn($lead))
+            ->causedBy(auth()->user())
+            ->withProperties($properties)
+            ->log($message);
     }
 }

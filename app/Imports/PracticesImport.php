@@ -60,11 +60,11 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // Determina se la pratica è un rinnovo
             $isRenewal = $this->parseRenewalValue($row['rinnovo'] ?? 'N');
 
-            return Practice::updateOrCreate(
+            $practice = Practice::updateOrCreate(
                 ['practice_code' => $row['pratica']],
                 [
                     'product_type_id'      => $product->id,
-                    'product_subtype_id'      => $$productSubtype->id ?? null,
+                    'product_subtype_id'      => $productSubtype->id ?? null,
                     'user_id'              => $user->id,
                     'customer_id'          => $customer->id ?? null,
                     'financial_table_id'   => null,
@@ -103,7 +103,12 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     'sum_dec_plus_35'     => $row['somma_dec_35'] ?? null,
                 ]
             );
+
+            $this->createActivityLog($practice, 'import_success', 'Pratica importata con successo', $row);
+
+            return $practice;
         } catch (Exception $e) {
+            $this->createActivityLog(null, 'import_failure', 'Errore durante l\'importazione della pratica', $row, $e);
             Log::warning("Errore alla riga con pratica {$row['pratica']}: {$e->getMessage()}");
             return null;
         }
@@ -112,6 +117,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     public function failed(Failure ...$failures)
     {
         foreach ($failures as $failure) {
+            $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione della pratica', $failure->values(), null, $failure);
             Log::warning("Import fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
         }
     }
@@ -338,5 +344,46 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             'N', 'NO', '0' => false,
             default => false, // Default a false per valori non riconosciuti
         };
+    }
+
+    /**
+     * Crea un log di attività per l'importazione.
+     */
+    protected function createActivityLog($practice, $logName, $message, $row = [], $e = null, $failure = null)
+    {
+        $properties = [
+            'import_type' => 'practices',
+            'raw_data' => $row,
+            'file_name' => request()->file('file')?->getClientOriginalName(),
+        ];
+
+        if ($practice) {
+            $properties = array_merge($properties, [
+                'practice_code' => $practice->practice_code,
+                'customer_name' => $practice->customer?->full_name,
+                'import_action' => $practice->wasRecentlyCreated ? 'created' : 'updated',
+                'url' => route('practice.show', $practice->id),
+            ]);
+        }
+
+        if ($e) {
+            $properties = array_merge($properties, [
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
+        if ($failure) {
+            $properties = array_merge($properties, [
+                'row_number' => $failure->row(),
+                'validation_errors' => $failure->errors(),
+                'failed_data' => $failure->values(),
+            ]);
+        }
+
+        activity($logName)
+            ->when($practice, fn($activity) => $activity->performedOn($practice))
+            ->causedBy(auth()->user())
+            ->withProperties($properties)
+            ->log($message);
     }
 }

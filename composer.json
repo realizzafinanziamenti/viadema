@@ -18,6 +18,7 @@
         "maatwebsite/excel": "^3.1",
         "masmerise/livewire-toaster": "^2.7",
         "namu/wirechat": "^0.2.9",
+        "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.17",
         "spatie/livewire-filepond": "^1.4"
     },

@@ -227,7 +227,7 @@ class CustomerForm extends Form
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
-            'notes' => null,
+            'notes' => $this->notes ?: null,
         ];
     }
 }

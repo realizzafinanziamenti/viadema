@@ -19,13 +19,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Namu\WireChat\Traits\Chatable;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -64,6 +67,77 @@ class User extends Authenticatable
             'notifications_enabled' => 'boolean',
         ];
     }
+
+    // ACTIVITY LOGGING
+    /**
+     * Activity log options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'first_name',
+                'last_name',
+                'email',
+                'profile_photo_path',
+                'notifications_enabled',
+                'password',
+            ])
+            ->logOnlyDirty() // Solo campi che sono stati modificati
+            ->useLogName('user') // Nome del log
+            ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Collaboratore {$this->full_name} creato",
+                'updated' => "Collaboratore {$this->full_name} modificato",
+                'deleted' => "Collaboratore {$this->full_name} eliminato",
+                'restored' => "Collaboratore {$this->full_name} ripristinato",
+                default => "Collaboratore {$eventName}"
+            });
+    }
+
+    /**
+     * Customize activity before saving
+     */
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        // Nasconde il valore della password
+        if (isset($activity->properties['attributes']['password'])) {
+            $activity->properties = $activity->properties->put(
+                'attributes',
+                collect($activity->properties['attributes'])
+                    ->except('password')
+                    ->put('password', '[NASCOSTA]')
+                    ->toArray()
+            );
+
+            if (isset($activity->properties['old']['password'])) {
+                $activity->properties = $activity->properties->put(
+                    'old',
+                    collect($activity->properties['old'])
+                        ->except('password')
+                        ->put('password', '[NASCOSTA]')
+                        ->toArray()
+                );
+            }
+        }
+
+        // Aggiunge l'URL del collaboratore (se non è stato eliminato)
+        if ($eventName !== 'deleted') {
+            $activity->properties = $activity->properties->put('url', route('user.show', $this->id));
+        }
+
+        $activity->properties = $activity->properties->merge([
+            'field_translations' => [
+                'first_name' => 'Nome',
+                'last_name' => 'Cognome',
+                'email' => 'Email',
+                'profile_photo_path' => 'Foto profilo',
+                'notifications_enabled' => 'Notifiche abilitate',
+                'password' => 'Password',
+            ],
+        ]);
+    }
+    // END ACTIVITY LOGGING
 
     /**
      * Get the user's initials
