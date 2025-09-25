@@ -18,6 +18,7 @@ class LatestDisbursedPractices extends Component
         $this->practices = Practice::with(['customer' => function ($query) {
             $query->withCount('practices');
         }])
+            ->filteredForDepartment()
             ->where('practice_status', PracticeStatus::DISBURSED)
             ->latest('disbursement_date')
             ->take(5)
