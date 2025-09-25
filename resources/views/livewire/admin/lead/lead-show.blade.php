@@ -30,7 +30,11 @@
         @if ($lead->lead_status)
             <div class="text-sm mb-2.5 flex items-center gap-2">
                 <span class="text-gray-custom-4">Stato lead: </span>
-                <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" wire:click="openUpdateLeadStatusModal" />
+                @if (Gate::allows('updateLeadStatus', $lead))
+                    <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" wire:click="openUpdateLeadStatusModal" />
+                @else
+                    <x-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" />
+                @endif
             </div>
         @endif
 

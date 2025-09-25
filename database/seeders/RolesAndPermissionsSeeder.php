@@ -37,12 +37,12 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // dashboard permissions
             'access dashboard',
-            'view disbursed comparison',
-            'view latest disbursed practices',
-            'view practice counters',
-            'view user list',
-            'view monthly expenses',
-            'view practices by sector',
+            'view disbursed comparison', // liquidato
+            'view latest disbursed practices', // ultime pratiche liquidate
+            'view practice counters', // numero pratiche
+            'view user list', // lista collaboratori
+            'view monthly expenses', // spese mensili team
+            'view practices by sector', // pratiche per comparto
             // profile permissions
             'view profile',
             'update profile',
@@ -79,6 +79,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view leads',
             'view all leads',
             'update leads',
+            'update lead status',
             'delete leads',
             'assign lead to user',
             // practices permissions
@@ -88,6 +89,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view practices',
             'view all practices',
             'update practices',
+            'update practice status',
             'delete practices',
             'assign practice to user',
             // simulator permissions
@@ -144,9 +146,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $floorManagerPermissions = [
             // dashboard permissions
             'access dashboard',
-            'view disbursed comparison',
-            'view latest disbursed practices',
             'view practice counters',
+            'view latest disbursed practices',
+            'view disbursed comparison',
             'view user list',
             // profile permissions
             'view profile',
@@ -170,6 +172,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'import leads',
             'view leads',
             'update leads',
+            'update lead status',
             'delete leads',
             // assign practices permissions
             'access practices',
@@ -177,6 +180,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'import practices',
             'update practices',
+            'update practice status',
             'delete practices',
             // simulator permissions
             'access simulator',
@@ -230,6 +234,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view leads',
             'view all leads',
             'update leads',
+            'update lead status',
             'delete leads',
             'assign lead to user',
             // practices permissions
@@ -239,6 +244,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view practices',
             'view all practices',
             'update practices',
+            'update practice status',
             'delete practices',
             'assign practice to user',
             // simulator permissions
