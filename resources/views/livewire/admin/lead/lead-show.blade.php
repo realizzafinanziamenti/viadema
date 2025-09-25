@@ -2,12 +2,14 @@
     <div class="flex items-center justify-between mb-2.5">
         <x-button-back class="mb-2.5" route="lead.index" />
 
-        <a href="{{ route('lead.edit', ['id' => $lead->id]) }}" wire:navigate>
-            <flux:button variant="primary" type="submit" size="sm"
-                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                Modifica
-            </flux:button>
-        </a>
+        @can('update', $lead)
+            <a href="{{ route('lead.edit', ['id' => $lead->id]) }}" wire:navigate>
+                <flux:button variant="primary" type="submit" size="sm"
+                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                    Modifica
+                </flux:button>
+            </a>
+        @endcan
     </div>
 
     <x-page-title label="Dettaglio Lead" />

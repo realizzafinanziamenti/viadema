@@ -37,9 +37,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // dashboard permissions
             'access dashboard',
-            'view disbursed comparison', // liquidato
-            'view latest disbursed practices', // ultime pratiche liquidate
             'view practice counters', // numero pratiche
+            'view latest disbursed practices', // ultime pratiche liquidate
+            'view disbursed comparison', // liquidato
             'view user list', // lista collaboratori
             'view monthly expenses', // spese mensili team
             'view practices by sector', // pratiche per comparto
@@ -209,9 +209,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view all events',
             'update events',
             'delete events',
-            // activity log permissions
-            'access activity log',
-            'view activity log',
             // team members permissions
             'access users',
             'create users',
@@ -254,29 +251,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'access settings',
             // product subtypes permissions
             'manage product subtypes',
-            'create product subtypes',
-            'update product subtypes',
-            'delete product subtypes',
             // financial table permissions
             'manage financial tables',
-            'create financial tables',
-            'update financial tables',
-            'delete financial tables',
             // insurance permissions
             'manage insurances',
-            'create insurances',
-            'update insurances',
-            'delete insurances',
             // installments permissions
             'manage installments',
-            'create installments',
-            'update installments',
-            'delete installments',
             // customer types permissions
             'manage customer types',
-            'create customer types',
-            'update customer types',
-            'delete customer types',
             // document permissions
             'access form documents',
             'create form documents',
@@ -290,9 +272,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $consultantPermissions = [
             // dashboard permissions
             'access dashboard',
-            'view disbursed comparison',
-            'view latest disbursed practices',
             'view practice counters',
+            'view latest disbursed practices',
+            'view disbursed comparison',
             // profile permissions
             'view profile',
             'update profile',
@@ -327,6 +309,9 @@ class RolesAndPermissionsSeeder extends Seeder
             // document permissions
             'access form documents',
             'view form documents',
+            'view all form documents',
+            'update form documents',
+            'delete form documents',
             'download form documents',
         ];
 
@@ -354,6 +339,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create practices',
             'import practices',
             'update practices',
+            'update practice status',
             'delete practices',
             // simulator permissions
             'access simulator',
@@ -381,6 +367,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $observerPermissions = [
             // dashboard permissions
             'access dashboard',
+            'view disbursed comparison',
+            'view latest disbursed practices',
             // profile permissions
             'view profile',
             // calendar and events permissions
@@ -401,6 +389,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'view practices',
             // document permissions
             'access form documents',
+            'view form documents',
+            'view all form documents',
+            'download form documents',
         ];
 
         /**
