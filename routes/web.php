@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\ActivityLog\ActivityLogIndex;
 use App\Livewire\Admin\Calendar\Calendar;
 use App\Livewire\Admin\Customer\CustomerCreate;
 use App\Livewire\Admin\Customer\CustomerIndex;
@@ -36,6 +37,9 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
 
     // Calendar Route
     Route::get('calendar', Calendar::class)->name('calendar')->middleware('can:access calendar');
+
+    // Activity Log Route
+    Route::get('activity-log', ActivityLogIndex::class)->name('activity-log.index')->middleware('can:access activity log');
 
     // Event Routes
     Route::get('events', EventIndex::class)->name('event.index')->middleware('can:access events');

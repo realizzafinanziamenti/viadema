@@ -3,11 +3,6 @@
 
     <div class="flex flex-col gap-5">
 
-        {{-- Practice Import --}}
-        @can('import practices')
-            <livewire:admin.setting.practice-import />
-        @endcan
-
         {{-- Product Subtype Manager --}}
         <livewire:admin.setting.product-subtype-manager />
 

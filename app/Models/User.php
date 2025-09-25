@@ -19,13 +19,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Namu\WireChat\Traits\Chatable;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, Chatable, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -65,6 +68,77 @@ class User extends Authenticatable
         ];
     }
 
+    // ACTIVITY LOGGING
+    /**
+     * Activity log options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'first_name',
+                'last_name',
+                'email',
+                'profile_photo_path',
+                'notifications_enabled',
+                'password',
+            ])
+            ->logOnlyDirty() // Solo campi che sono stati modificati
+            ->useLogName('user') // Nome del log
+            ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Collaboratore {$this->full_name} creato",
+                'updated' => "Collaboratore {$this->full_name} modificato",
+                'deleted' => "Collaboratore {$this->full_name} eliminato",
+                'restored' => "Collaboratore {$this->full_name} ripristinato",
+                default => "Collaboratore {$eventName}"
+            });
+    }
+
+    /**
+     * Customize activity before saving
+     */
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        // Nasconde il valore della password
+        if (isset($activity->properties['attributes']['password'])) {
+            $activity->properties = $activity->properties->put(
+                'attributes',
+                collect($activity->properties['attributes'])
+                    ->except('password')
+                    ->put('password', '[NASCOSTA]')
+                    ->toArray()
+            );
+
+            if (isset($activity->properties['old']['password'])) {
+                $activity->properties = $activity->properties->put(
+                    'old',
+                    collect($activity->properties['old'])
+                        ->except('password')
+                        ->put('password', '[NASCOSTA]')
+                        ->toArray()
+                );
+            }
+        }
+
+        // Aggiunge l'URL del collaboratore (se non è stato eliminato)
+        if ($eventName !== 'deleted') {
+            $activity->properties = $activity->properties->put('url', route('user.show', $this->id));
+        }
+
+        $activity->properties = $activity->properties->merge([
+            'field_translations' => [
+                'first_name' => 'Nome',
+                'last_name' => 'Cognome',
+                'email' => 'Email',
+                'profile_photo_path' => 'Foto profilo',
+                'notifications_enabled' => 'Notifiche abilitate',
+                'password' => 'Password',
+            ],
+        ]);
+    }
+    // END ACTIVITY LOGGING
+
     /**
      * Get the user's initials
      */
@@ -89,7 +163,47 @@ class User extends Authenticatable
      */
     public function isObserver(): bool
     {
-        return $this->hasRole('observer');
+        return $this->hasRole(UserDepartment::OBSERVER->value);
+    }
+
+    /**
+     * Check if the user role is floor manager
+     */
+    public function isFloorManager(): bool
+    {
+        return $this->hasRole(UserDepartment::FLOOR_MANAGER->value);
+    }
+
+    /**
+     * Check if the user role is web
+     */
+    public function isWeb(): bool
+    {
+        return $this->hasRole(UserDepartment::WEB->value);
+    }
+
+    /**
+     * Check if the user role is consultant
+     */
+    public function isConsultant(): bool
+    {
+        return $this->hasRole(UserDepartment::CONSULTANT->value);
+    }
+
+    /**
+     * Check if the user role is external (consultant)
+     */
+    public function isExternal(): bool
+    {
+        return $this->hasRole(UserDepartment::EXTERNAL->value);
+    }
+
+    /**
+     * Check if the user role is back office
+     */
+    public function isBackOffice(): bool
+    {
+        return $this->hasRole(UserDepartment::BACK_OFFICE->value);
     }
 
     /**
@@ -240,6 +354,20 @@ class User extends Authenticatable
         return $query->whereDoesntHave('roles', function ($q) {
             $q->where('name', 'superadmin');
         });
+    }
+
+    /**
+     * Scope a query to only include users with consultant role for floor managers.
+     */
+    public function scopeOnlyForFloorManagers(Builder $query): Builder
+    {
+        if (auth()->user()->isFloorManager()) {
+            return $query->whereHas('roles', function ($q) {
+                $q->where('name', UserDepartment::CONSULTANT->value);
+            });
+        }
+
+        return $query;
     }
 
     /**

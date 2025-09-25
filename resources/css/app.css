@@ -128,7 +128,7 @@ select:focus[data-flux-control] {
     @apply text-orange-custom;
 }
 
-.direct-production {
+.floor-manager {
     @apply text-azure-custom;
 }
 
@@ -136,11 +136,11 @@ select:focus[data-flux-control] {
     @apply text-black-custom;
 }
 
-.indirect-production {
+.web {
     @apply text-blue-custom;
 }
 
-.call-center {
+.back-office {
     @apply text-pink-custom;
 }
 

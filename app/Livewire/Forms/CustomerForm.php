@@ -54,7 +54,6 @@ class CustomerForm extends Form
                 'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
                 'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
                 'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
-                'leadStatus' => ['nullable', 'string', new Enum(LeadStatus::class)],
                 'notes' => ['nullable', 'string', 'max:65535'],
             ],
             $this->userIdRules(),
@@ -228,7 +227,7 @@ class CustomerForm extends Form
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
-            'notes' => null,
+            'notes' => $this->notes ?: null,
         ];
     }
 }

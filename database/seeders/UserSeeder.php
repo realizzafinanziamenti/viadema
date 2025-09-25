@@ -17,21 +17,97 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         /**
-         * Create team member test user
+         * Create floor manager test user
          */
-        $teamMemberTest = User::factory()->create([
-            'first_name' => 'Team Member',
-            'last_name' => 'Test',
-            'email' => 'team@test.com',
+        $floorManagerTest = User::factory()->create([
+            'first_name' => 'Utente',
+            'last_name' => 'Test1',
+            'email' => 'user@test1.com',
             'password' => Hash::make('password'),
         ]);
 
-        $teamMemberTest->assignRole(UserDepartment::DIRECT_PRODUCTION->getRole());
+        $floorManagerTest->assignRole(UserDepartment::FLOOR_MANAGER->getRole());
 
         UserProfile::factory()->create([
-            'user_id' => $teamMemberTest->id,
+            'user_id' => $floorManagerTest->id,
             'phone' => '1234567890',
             'tax_id' => 'TMMTST12X34Y123Z',
+            'city' => 'Roma',
+        ]);
+
+        /**
+         * Create web test user
+         */
+        $webTest = User::factory()->create([
+            'first_name' => 'Utente',
+            'last_name' => 'Test2',
+            'email' => 'user@test2.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $webTest->assignRole(UserDepartment::WEB->getRole());
+
+        UserProfile::factory()->create([
+            'user_id' => $webTest->id,
+            'phone' => '1234567890',
+            'tax_id' => 'TMMTST12X34Y123A',
+            'city' => 'Roma',
+        ]);
+
+        /**
+         * Create consultant test user
+         */
+        $consultantTest = User::factory()->create([
+            'first_name' => 'User',
+            'last_name' => 'Test3',
+            'email' => 'user@test3.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $consultantTest->assignRole(UserDepartment::CONSULTANT->getRole());
+
+        UserProfile::factory()->create([
+            'user_id' => $consultantTest->id,
+            'phone' => '1234567890',
+            'tax_id' => 'CSTTST12X34Y123B',
+            'city' => 'Roma',
+        ]);
+
+        /**
+         * Create external permission test user
+         */
+        $externalTest = User::factory()->create([
+            'first_name' => 'User',
+            'last_name' => 'Test4',
+            'email' => 'user@test4.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $externalTest->assignRole(UserDepartment::EXTERNAL->getRole());
+
+        UserProfile::factory()->create([
+            'user_id' => $externalTest->id,
+            'phone' => '1234567890',
+            'tax_id' => 'CSTTST12X34Y123D',
+            'city' => 'Roma',
+        ]);
+
+        /**
+         * Create back office permission test user
+         */
+        $backOfficeTest = User::factory()->create([
+            'first_name' => 'User',
+            'last_name' => 'Test5',
+            'email' => 'user@test5.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $backOfficeTest->assignRole(UserDepartment::BACK_OFFICE->getRole());
+
+        UserProfile::factory()->create([
+            'user_id' => $backOfficeTest->id,
+            'phone' => '1234567890',
+            'tax_id' => 'CSTTST12X34Y123C',
             'city' => 'Roma',
         ]);
 

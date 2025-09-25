@@ -89,8 +89,8 @@
                     </x-sidebar-item>
                 @endcan
 
-                @can('access events')
-                    <x-sidebar-item route="event.index" routeIs="event" label="Elenco Eventi">
+                @can('access activity log')
+                    <x-sidebar-item route="activity-log.index" routeIs="activity-log" label="Elenco Attività">
                         <x-icons.icon-akar-grid />
                     </x-sidebar-item>
                 @endcan

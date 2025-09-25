@@ -159,6 +159,9 @@ class EventForm extends Form
 
                 // handle participant notifications
                 $this->handleParticipantNotifications($previousParticipants);
+
+                // log participant changes
+                $this->logParticipantChanges($previousParticipants);
             });
 
             Toaster::success('Evento aggiornato con successo');
@@ -241,5 +244,49 @@ class EventForm extends Form
                 new EventUpdated($this->event, 'modified')
             );
         }
+    }
+
+    /**
+     * Log participant changes
+     */
+    protected function logParticipantChanges(array $previousParticipants)
+    {
+        $currentParticipants = $this->participants;
+
+        sort($previousParticipants);
+        sort($currentParticipants);
+
+        // Se sono identici (stesso contenuto, stesso ordine), esci
+        if ($previousParticipants === $currentParticipants) {
+            return;
+        }
+
+        $previousParticipantsNames = User::whereIn('id', $previousParticipants)
+            ->get()
+            ->map(fn($user) => $user->full_name)
+            ->toArray();
+
+        $currentParticipantsNames = User::whereIn('id', $currentParticipants)
+            ->get()
+            ->map(fn($user) => $user->full_name)
+            ->toArray();
+
+        activity('event_participants')
+            ->causedBy(auth()->user())
+            ->performedOn($this->event)
+            ->event('updated')
+            ->withProperties([
+                'participants' => [
+                    'old' => $previousParticipantsNames,
+                    'new' => $currentParticipantsNames,
+                ],
+                'event_info' => [
+                    'title' => $this->event->title,
+                    'start_date' => $this->event->start_date?->format('d/m/Y'),
+                    'start_time' => $this->event->start_time?->format('H:i'),
+                ],
+                'url' => url('/calendar?date=' . $this->event->start_date->format('Y-m-d')),
+            ])
+            ->log('Partecipanti evento aggiornati');
     }
 }

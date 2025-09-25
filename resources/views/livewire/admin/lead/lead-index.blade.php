@@ -11,11 +11,17 @@
                 </div>
             </div>
 
-            @can('create leads')
-                <a href="{{ route('lead.create') }}" wire:navigate>
-                    <x-buttons.create-button label="Crea nuovo profilo" />
-                </a>
-            @endcan
+            <div class="flex items-center gap-4">
+                @can('import practices')
+                    <x-buttons.import-button />
+                @endcan
+
+                @can('create leads')
+                    <a href="{{ route('lead.create') }}" wire:navigate>
+                        <x-buttons.create-button label="Crea nuovo profilo" />
+                    </a>
+                @endcan
+            </div>
         </div>
 
         <x-table class="mb-5" minWidth="min-w-[1600px]">
@@ -45,8 +51,12 @@
                     <x-table-data truncate label="{{ $lead->phone ?? 'N/D' }}" />
 
                     <x-table-data>
-                        <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
-                            wire:click="selectLeadForStatus({{ $lead->id }})" title="Cambia stato lead" />
+                        @if (Gate::allows('updateLeadStatus', $lead))
+                            <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
+                                wire:click="selectLeadForStatus({{ $lead->id }})" title="Cambia stato lead" />
+                        @else
+                            <x-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" />
+                        @endif
                     </x-table-data>
 
                     <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />

@@ -2,12 +2,14 @@
     <div class="flex items-center justify-between mb-2.5">
         <x-button-back route="practice.index" />
 
-        <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
-            <flux:button variant="primary" type="submit" size="sm"
-                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                Modifica
-            </flux:button>
-        </a>
+        @can('update', $practice)
+            <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
+                <flux:button variant="primary" type="submit" size="sm"
+                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                    Modifica
+                </flux:button>
+            </a>
+        @endcan
     </div>
 
     <x-page-title label="Dettaglio Pratica" />
@@ -59,7 +61,7 @@
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
 
-                    @if ($practice->practice_status !== App\Enums\PracticeStatus::DISBURSED)
+                    @if (Gate::allows('updateStatus', $practice))
                         <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
                             wire:click="openUpdatePracticeStatusModal" />
                     @else

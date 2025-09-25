@@ -15,11 +15,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -59,6 +62,91 @@ class Customer extends Model
             'lead_status' => LeadStatus::class,
         ];
     }
+
+    // ACTIVITY LOGGING
+    /**
+     * Activity log options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        $logName = $this->isLead() ? 'lead' : 'customer';
+
+        return LogOptions::defaults()
+            ->logOnly([
+                'user_id',
+                'customer_type_id',
+                'first_name',
+                'last_name',
+                'phone',
+                'email',
+                'date_of_birth',
+                'tax_id',
+                'address',
+                'city',
+                'state',
+                'postal_code',
+                'customer_status',
+                'lead_source',
+                'lead_status',
+                'notes',
+            ])
+            ->logOnlyDirty() // Solo campi che sono stati modificati
+            ->useLogName($logName) // Nome del log
+            ->dontSubmitEmptyLogs() // Non creare log se non ci sono modifiche
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => $this->isLead() ? "Lead {$this->full_name} creato" : "Cliente {$this->full_name} creato",
+                'updated' => $this->isLead() ? "Lead {$this->full_name} modificato" : "Cliente {$this->full_name} modificato",
+                'deleted' => $this->isLead() ? "Lead {$this->full_name} eliminato" : "Cliente {$this->full_name} eliminato",
+                'restored' => $this->isLead() ? "Lead {$this->full_name} ripristinato" : "Cliente {$this->full_name} ripristinato",
+                default => $this->isLead() ? "Lead {$eventName}" : "Cliente {$eventName}"
+            });
+    }
+
+    /**
+     * Customize activity before saving
+     */
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        // Aggiunge l'URL della pratica (se non è stata eliminata)
+        if ($eventName !== 'deleted') {
+            if ($this->isLead()) {
+                $activity->properties = $activity->properties->put('url', route('lead.show', $this->id));
+            } elseif ($this->isCustomer()) {
+                $activity->properties = $activity->properties->put('url', route('customer.show', $this->id));
+            }
+        }
+
+        $activity->properties = $activity->properties->merge([
+            'field_translations' => [
+                // Relazioni
+                'user_id' => 'Collaboratore',
+                'customer_type_id' => 'Tipologia cliente',
+
+                // Dati anagrafici
+                'first_name' => 'Nome',
+                'last_name' => 'Cognome',
+                'email' => 'Email',
+                'phone' => 'Telefono',
+                'date_of_birth' => 'Data di nascita',
+                'tax_id' => 'Codice fiscale',
+
+                // Indirizzo
+                'address' => 'Indirizzo',
+                'city' => 'Città',
+                'state' => 'Provincia',
+                'postal_code' => 'CAP',
+
+                // Status e lead
+                'customer_status' => 'Stato cliente',
+                'lead_source' => 'Canale di acquisizione',
+                'lead_status' => 'Stato lead',
+
+                // Note
+                'notes' => 'Note',
+            ],
+        ]);
+    }
+    // END ACTIVITY LOGGING
 
     /**
      * Check if the customer is a CUSTOMER.
@@ -179,6 +267,19 @@ class Customer extends Model
                 ->orWhere('last_name', 'like', "%{$search}%")
                 ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
         });
+    }
+
+    /**
+     * Scope a query to filter practices for a given department/role.
+     */
+    public function scopeFilteredForDepartment(Builder $query)
+    {
+        if (auth()->user()->isConsultant() || auth()->user()->isExternal()) {
+            return $query->where('customer_status', CustomerStatus::LEAD->value)
+                ->where('user_id', auth()->id());
+        }
+
+        return $query;
     }
 
     // END SCOPES

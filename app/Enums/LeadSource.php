@@ -8,6 +8,7 @@ enum LeadSource: string
     case META = 'meta';
     case SEARCH_ENGINE = 'search_engine';
     case REFERRAL = 'referral';
+    case OTHER = 'other';
 
     /**
      * Get the display label for the current lead source
@@ -19,7 +20,7 @@ enum LeadSource: string
             self::META => 'Meta',
             self::SEARCH_ENGINE => 'Motore di Ricerca',
             self::REFERRAL => 'Passaparola',
-            self::OTHER => 'Other',
+            self::OTHER => 'Altro',
         };
     }
 }

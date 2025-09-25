@@ -24,6 +24,10 @@
                 <x-buttons.filter-modal-button />
 
                 @if (!$expired)
+                    @can('import practices')
+                        <x-buttons.import-button />
+                    @endcan
+
                     @can('create practices')
                         <a href="{{ route('practice.create') }}" wire:navigate>
                             <x-buttons.create-button label="Crea nuova pratica" />
@@ -82,7 +86,7 @@
                     <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
                     <x-table-data>
-                        @if (!$expired)
+                        @if (Gate::allows('updateStatus', $practice))
                             <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
                                 wire:click="selectPracticeForStatus({{ $practice->id }})"
                                 title="Cambia stato pratica" />

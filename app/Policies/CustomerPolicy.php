@@ -64,6 +64,14 @@ class CustomerPolicy
     }
 
     /**
+     * Determine whether the user can import models.
+     */
+    public function importLead(User $user): bool
+    {
+        return $user->hasPermissionTo('import leads');
+    }
+
+    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Customer $customer): bool
@@ -79,6 +87,14 @@ class CustomerPolicy
         }
 
         return false;  // Default to false if no conditions are met
+    }
+
+    /**
+     * Determine whether the user can update status of the model.
+     */
+    public function updateLeadStatus(User $user, Customer $customer): bool
+    {
+        return $user->hasPermissionTo('update lead status') && $user->id === $customer->user_id;
     }
 
     /**

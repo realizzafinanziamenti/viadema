@@ -4,26 +4,75 @@ namespace App\Livewire\Admin\Lead;
 
 use App\Enums\CustomerStatus;
 use App\Enums\LeadStatus;
+use App\Imports\LeadsImport;
 use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\ImportExcelCompleted;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
 
 class LeadIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads;
 
     public ?Customer $selectedLead = null;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
     public $search = '';
+    public $importFile = null;
+
+    /**
+     * Handle the file upload and import.
+     */
+    public function updatedImportFile()
+    {
+        if ($this->importFile) {
+            $this->importLeads();
+        }
+    }
+
+    /**
+     * Import the leads from the uploaded file.
+     */
+    public function importLeads()
+    {
+        Gate::authorize('importLead', Customer::class);
+
+        try {
+            $this->validate([
+                'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+            ]);
+        } catch (Exception $e) {
+            Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
+            $this->reset('importFile');
+            return;
+        }
+
+        $import = new LeadsImport;
+        $users = User::role('superadmin')->get();
+
+        Excel::queueImport($import, $this->importFile)
+            ->chain([
+                function () use ($import, $users) {
+                    // Invio notifica
+                    Notification::send($users, new ImportExcelCompleted('leads'));
+                }
+            ]);
+
+        Toaster::success('Import avviato! Riceverai una notifica al termine.');
+        $this->reset('importFile');
+    }
 
     /**
      * Set lead status for the selected lead.
@@ -70,7 +119,7 @@ class LeadIndex extends Component
      */
     public function updateLeadStatus(): void
     {
-        Gate::authorize('update', $this->selectedLead);
+        Gate::authorize('updateLeadStatus', $this->selectedLead);
 
         try {
             $this->selectedLead->update(['lead_status' => $this->selectedLeadStatus]);
@@ -133,6 +182,7 @@ class LeadIndex extends Component
     {
         $query = Customer::with('user', 'customerType')
             ->leads()
+            ->filteredForDepartment()
             ->orderByDesc('updated_at');
 
         $query = $query->filterBySearch($this->search);
