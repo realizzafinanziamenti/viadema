@@ -119,7 +119,7 @@ class LeadIndex extends Component
      */
     public function updateLeadStatus(): void
     {
-        Gate::authorize('update', $this->selectedLead);
+        Gate::authorize('updateLeadStatus', $this->selectedLead);
 
         try {
             $this->selectedLead->update(['lead_status' => $this->selectedLeadStatus]);

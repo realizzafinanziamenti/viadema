@@ -387,6 +387,7 @@ class PracticeIndex extends Component
             modalName: 'update-practice-status',
             notFoundMessage: 'Pratica non trovata'
         );
+
         $this->setPracticeStatus($this->selectedPractice->practice_status?->value);
     }
 
