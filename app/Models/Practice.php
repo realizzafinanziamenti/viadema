@@ -463,5 +463,17 @@ class Practice extends Model
         });
     }
 
+    /**
+     * Scope a query to filter practices for a given department/role.
+     */
+    public function scopeFilteredForDepartment(Builder $query)
+    {
+        if (auth()->user()->isConsultant() || auth()->user()->isExternal()) {
+            return $query->where('user_id', auth()->id());
+        }
+
+        return $query;
+    }
+
     // END SCOPES
 }

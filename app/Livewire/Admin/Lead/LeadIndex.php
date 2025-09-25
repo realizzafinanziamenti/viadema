@@ -182,6 +182,7 @@ class LeadIndex extends Component
     {
         $query = Customer::with('user', 'customerType')
             ->leads()
+            ->filteredForDepartment()
             ->orderByDesc('updated_at');
 
         $query = $query->filterBySearch($this->search);

@@ -842,6 +842,7 @@ class PracticeIndex extends Component
     public function render()
     {
         $query = Practice::with('customer', 'user', 'productType')
+            ->filteredForDepartment()
             ->filterByProductType($this->type)
             ->isExpired($this->expired)
             ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction());
