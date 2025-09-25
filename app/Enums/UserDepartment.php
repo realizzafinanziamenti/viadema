@@ -4,11 +4,11 @@ namespace App\Enums;
 
 enum UserDepartment: string
 {
-    case DIRECT_PRODUCTION = 'direct_production';
-    case INDIRECT_PRODUCTION = 'indirect_production';
-    case CALL_CENTER = 'call_center';
+    case FLOOR_MANAGER = 'floor_manager';
+    case WEB = 'web';
     case CONSULTANT = 'consultant';
     case EXTERNAL = 'external';
+    case BACK_OFFICE = 'back_office';
     case OBSERVER = 'observer';
 
     /**
@@ -45,11 +45,11 @@ enum UserDepartment: string
     public function getLabelText(): string
     {
         return match ($this) {
-            self::DIRECT_PRODUCTION => 'Produzione Diretta',
-            self::INDIRECT_PRODUCTION => 'Produzione Indiretta',
-            self::CALL_CENTER => 'Call Center',
+            self::FLOOR_MANAGER => 'Coordinatore di Sala',
+            self::WEB => 'Web',
             self::CONSULTANT => 'Sala Consulente',
             self::EXTERNAL => 'Collaboratore Esterno',
+            self::BACK_OFFICE => 'Back Office',
             self::OBSERVER => 'Osservatore',
         };
     }
@@ -60,11 +60,11 @@ enum UserDepartment: string
     public function getLabelColor(): string
     {
         return match ($this) {
-            self::DIRECT_PRODUCTION => 'direct-production',
-            self::INDIRECT_PRODUCTION => 'indirect-production',
-            self::CALL_CENTER => 'call-center',
+            self::FLOOR_MANAGER => 'floor-manager',
+            self::WEB => 'web',
             self::CONSULTANT => 'consultant',
             self::EXTERNAL => 'external',
+            self::BACK_OFFICE => 'back-office',
             self::OBSERVER => 'observer',
         };
     }
