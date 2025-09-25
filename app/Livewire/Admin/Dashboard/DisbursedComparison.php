@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Dashboard;
 use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -171,6 +172,8 @@ class DisbursedComparison extends Component
 
     public function mount()
     {
+        Gate::authorize('view disbursed comparison');
+
         $this->now = now();
         $this->lastMonth = now()->subMonth();
 

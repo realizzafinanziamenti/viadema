@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Dashboard;
 
 use App\Enums\PracticeStatus;
 use App\Models\Practice;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class LatestDisbursedPractices extends Component
@@ -12,6 +13,8 @@ class LatestDisbursedPractices extends Component
 
     public function mount()
     {
+        Gate::authorize('view latest disbursed practices');
+
         $this->practices = Practice::with(['customer' => function ($query) {
             $query->withCount('practices');
         }])

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Dashboard;
 
 use App\Enums\PracticeStatus;
 use App\Models\Practice;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -47,6 +48,8 @@ class PracticeCounter extends Component
 
     public function mount()
     {
+        Gate::authorize('view practice counters');
+
         $result = Practice::selectRaw("
             COUNT(*) as total,
             SUM(CASE WHEN practice_status = ? THEN 1 ELSE 0 END) as approved_count,

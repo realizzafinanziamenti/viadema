@@ -163,7 +163,47 @@ class User extends Authenticatable
      */
     public function isObserver(): bool
     {
-        return $this->hasRole('observer');
+        return $this->hasRole(UserDepartment::OBSERVER->value);
+    }
+
+    /**
+     * Check if the user role is floor manager
+     */
+    public function isFloorManager(): bool
+    {
+        return $this->hasRole(UserDepartment::FLOOR_MANAGER->value);
+    }
+
+    /**
+     * Check if the user role is web
+     */
+    public function isWeb(): bool
+    {
+        return $this->hasRole(UserDepartment::WEB->value);
+    }
+
+    /**
+     * Check if the user role is consultant
+     */
+    public function isConsultant(): bool
+    {
+        return $this->hasRole(UserDepartment::CONSULTANT->value);
+    }
+
+    /**
+     * Check if the user role is external (consultant)
+     */
+    public function isExternal(): bool
+    {
+        return $this->hasRole(UserDepartment::EXTERNAL->value);
+    }
+
+    /**
+     * Check if the user role is back office
+     */
+    public function isBackOffice(): bool
+    {
+        return $this->hasRole(UserDepartment::BACK_OFFICE->value);
     }
 
     /**
@@ -314,6 +354,20 @@ class User extends Authenticatable
         return $query->whereDoesntHave('roles', function ($q) {
             $q->where('name', 'superadmin');
         });
+    }
+
+    /**
+     * Scope a query to only include users with consultant role for floor managers.
+     */
+    public function scopeOnlyForFloorManagers(Builder $query): Builder
+    {
+        if (auth()->user()->isFloorManager()) {
+            return $query->whereHas('roles', function ($q) {
+                $q->where('name', UserDepartment::CONSULTANT->value);
+            });
+        }
+
+        return $query;
     }
 
     /**

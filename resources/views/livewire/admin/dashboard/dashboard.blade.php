@@ -6,10 +6,14 @@
         {{-- FIRST ROW --}}
 
         {{-- Practice Counter --}}
-        <livewire:admin.dashboard.practice-counter />
+        @can('view practice counters')
+            <livewire:admin.dashboard.practice-counter />
+        @endcan
 
         {{-- Latest Disbursed Practices --}}
-        <livewire:admin.dashboard.latest-disbursed-practices />
+        @can('view latest disbursed practices')
+            <livewire:admin.dashboard.latest-disbursed-practices />
+        @endcan
 
         {{-- END FIRST ROW --}}
 
@@ -17,23 +21,31 @@
         {{-- SECOND ROW --}}
 
         {{-- Disbursed Comparison --}}
-        <livewire:admin.dashboard.disbursed-comparison />
+        @can('view disbursed comparison')
+            <livewire:admin.dashboard.disbursed-comparison />
+        @endcan
 
         {{-- User List --}}
-        <livewire:admin.dashboard.user-list />
+        @can('view user list')
+            <livewire:admin.dashboard.user-list />
+        @endcan
 
         {{-- END SECOND ROW --}}
 
 
         {{-- THIRD ROW --}}
 
-        <x-card class="col-span-24 xl:col-span-11" header="Spese mensili team">
+        @can('view monthly expenses')
+            <x-card class="col-span-24 xl:col-span-11" header="Spese mensili team">
 
-        </x-card>
+            </x-card>
+        @endcan
 
-        <x-card class="col-span-24 xl:col-span-13" header="Pratiche per comparto">
+        @can('view practices by sector')
+            <x-card class="col-span-24 xl:col-span-13" header="Pratiche per comparto">
 
-        </x-card>
+            </x-card>
+        @endcan
 
         {{-- END THIRD ROW --}}
 
