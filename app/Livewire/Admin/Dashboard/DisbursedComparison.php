@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Dashboard;
 use App\Enums\PracticeStatus;
 use App\Models\Practice;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -20,12 +21,14 @@ class DisbursedComparison extends Component
      */
     protected function setDisbursedAmounts(): void
     {
-        $this->currentMonthDisbursed = Practice::where('practice_status', PracticeStatus::DISBURSED->value)
+        $this->currentMonthDisbursed = Practice::filteredForDepartment()
+            ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $this->now->month)
             ->whereYear('disbursement_date', $this->now->year)
             ->sum('amount_disbursed');
 
-        $this->lastMonthDisbursed = Practice::where('practice_status', PracticeStatus::DISBURSED->value)
+        $this->lastMonthDisbursed = Practice::filteredForDepartment()
+            ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $this->lastMonth->month)
             ->whereYear('disbursement_date', $this->lastMonth->year)
             ->sum('amount_disbursed');
@@ -86,7 +89,8 @@ class DisbursedComparison extends Component
     {
         // Fetch all disbursed practices for that month with only necessary fields
         // Recupera tutte le pratiche disbursate per quel mese con solo i campi necessari
-        $practices = Practice::where('practice_status', PracticeStatus::DISBURSED->value)
+        $practices = Practice::filteredForDepartment()
+            ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $monthDate->month)
             ->whereYear('disbursement_date', $monthDate->year)
             ->get(['disbursement_date', 'amount_disbursed']);
@@ -171,6 +175,8 @@ class DisbursedComparison extends Component
 
     public function mount()
     {
+        Gate::authorize('view disbursed comparison');
+
         $this->now = now();
         $this->lastMonth = now()->subMonth();
 

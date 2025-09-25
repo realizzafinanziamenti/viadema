@@ -387,6 +387,7 @@ class PracticeIndex extends Component
             modalName: 'update-practice-status',
             notFoundMessage: 'Pratica non trovata'
         );
+
         $this->setPracticeStatus($this->selectedPractice->practice_status?->value);
     }
 
@@ -841,6 +842,7 @@ class PracticeIndex extends Component
     public function render()
     {
         $query = Practice::with('customer', 'user', 'productType')
+            ->filteredForDepartment()
             ->filterByProductType($this->type)
             ->isExpired($this->expired)
             ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction());

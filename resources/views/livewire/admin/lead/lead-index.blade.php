@@ -51,8 +51,12 @@
                     <x-table-data truncate label="{{ $lead->phone ?? 'N/D' }}" />
 
                     <x-table-data>
-                        <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
-                            wire:click="selectLeadForStatus({{ $lead->id }})" title="Cambia stato lead" />
+                        @if (Gate::allows('updateLeadStatus', $lead))
+                            <x-clickable-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()"
+                                wire:click="selectLeadForStatus({{ $lead->id }})" title="Cambia stato lead" />
+                        @else
+                            <x-badge :property="$lead->lead_status?->getLabelText()" :css="$lead->lead_status?->getLabelColor()" />
+                        @endif
                     </x-table-data>
 
                     <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />

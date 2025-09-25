@@ -2,12 +2,14 @@
     <div class="flex items-center justify-between mb-2.5">
         <x-button-back class="mb-2.5" route="user.index" />
 
-        <a href="{{ route('user.edit', ['id' => $user->id]) }}" wire:navigate>
-            <flux:button variant="primary" type="submit" size="sm"
-                class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
-                Modifica
-            </flux:button>
-        </a>
+        @can('update', $user)
+            <a href="{{ route('user.edit', ['id' => $user->id]) }}" wire:navigate>
+                <flux:button variant="primary" type="submit" size="sm"
+                    class="px-10 bg-azure-custom border-azure-custom hover:bg-azure-custom-hover hover:border-azure-custom-hover">
+                    Modifica
+                </flux:button>
+            </a>
+        @endcan
     </div>
 
     <x-page-title label="Dettaglio Collaboratore" />

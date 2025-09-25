@@ -90,6 +90,14 @@ class CustomerPolicy
     }
 
     /**
+     * Determine whether the user can update status of the model.
+     */
+    public function updateLeadStatus(User $user, Customer $customer): bool
+    {
+        return $user->hasPermissionTo('update lead status') && $user->id === $customer->user_id;
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Customer $customer): bool
