@@ -146,11 +146,19 @@
             @endif
 
             {{-- Messaggio di errore (se presente) --}}
-            @if ($selectedLog->properties['error_message'] ?? null)
+            @if ($selectedLog->log_name === 'import_failure' || $selectedLog->log_name === 'import_validation_failure')
                 <div class="mb-6">
                     <flux:label>Messaggio di errore</flux:label>
                     <div class="bg-red-50 text-red-custom text-sm p-3 rounded-lg max-h-56 overflow-y-auto">
-                        {{ $selectedLog->properties['error_message'] }}
+                        @if ($selectedLog->log_name === 'import_failure')
+                            {{ $selectedLog->properties['error_message'] ?? null }}
+                        @endif
+
+                        @if ($selectedLog->properties['validation_errors'] ?? null)
+                            @foreach ($selectedLog->properties['validation_errors'] ?? [] as $error)
+                                <div>- {{ $error }}</div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             @endif
