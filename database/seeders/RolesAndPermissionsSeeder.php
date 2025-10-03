@@ -182,6 +182,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'update practices',
             'update practice status',
             'delete practices',
+            'assign practice to user',
             // simulator permissions
             'access simulator',
             'view simulator',
@@ -194,7 +195,6 @@ class RolesAndPermissionsSeeder extends Seeder
         $webPermissions = [
             // dashboard permissions
             'access dashboard',
-            'view disbursed comparison',
             'view latest disbursed practices',
             'view practice counters',
             'view user list',
@@ -341,6 +341,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'update practices',
             'update practice status',
             'delete practices',
+            'assign practice to user',
             // simulator permissions
             'access simulator',
             'view simulator',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PracticeStatus;
 use App\Enums\ProductionType;
+use App\Enums\UserDepartment;
 use App\Observers\PracticeObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -468,6 +469,16 @@ class Practice extends Model
      */
     public function scopeFilteredForDepartment(Builder $query)
     {
+        // Coordinatore di sala vede solo le pratiche assegnate a collaboratori dello stesso dipartimento
+        if (auth()->user()->isFloorManager()) {
+            $floorManagerIds = User::whereHas('roles', function ($q) {
+                $q->where('name', UserDepartment::FLOOR_MANAGER->value);
+            })->pluck('id');
+
+            return $query->whereIn('user_id', $floorManagerIds);
+        }
+
+        // I consulenti e gli esterni vedono solo le loro pratiche
         if (auth()->user()->isConsultant() || auth()->user()->isExternal()) {
             return $query->where('user_id', auth()->id());
         }
