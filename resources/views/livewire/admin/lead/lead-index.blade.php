@@ -12,7 +12,7 @@
             </div>
 
             <div class="flex items-center gap-4">
-                @can('import practices')
+                @can('import leads')
                     <x-buttons.import-button />
                 @endcan
 
