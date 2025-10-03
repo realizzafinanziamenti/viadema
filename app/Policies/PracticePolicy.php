@@ -47,8 +47,8 @@ class PracticePolicy
     public function update(User $user, Practice $practice): bool
     {
         if ($user->hasPermissionTo('update practices')) {
-            if ($user->isBackOffice()) {
-                // Backoffice può aggiornare tutte le pratiche dei collaboratori del suo dipartimento
+            if ($user->isBackOffice() || $user->isWeb()) {
+                // Backoffice e Web possono aggiornare tutte le pratiche dei collaboratori del suo dipartimento
                 return true;
             } else {
                 // Altri ruoli con il permesso possono aggiornare le pratiche associate a loro
@@ -73,7 +73,17 @@ class PracticePolicy
      */
     public function delete(User $user, Practice $practice): bool
     {
-        return $user->hasPermissionTo('delete practices') && $user->id === $practice->user_id;
+        if ($user->hasPermissionTo('delete practices')) {
+            if ($user->isWeb()) {
+                // Web può eliminare tutte le pratiche dei collaboratori del suo dipartimento
+                return true;
+            } else {
+                // Altri ruoli con il permesso possono eliminare le pratiche associate a loro
+                return $user->id === $practice->user_id;
+            }
+        }
+
+        return false;
     }
 
     /**
