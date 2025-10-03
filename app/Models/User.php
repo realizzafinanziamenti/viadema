@@ -257,7 +257,7 @@ class User extends Authenticatable
      */
     protected function formattedId(): Attribute
     {
-        return Attribute::get(fn() => 'T' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
+        return Attribute::get(fn() => 'C' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
     }
 
 
