@@ -17,10 +17,12 @@ use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading
+class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
 {
     use SkipsFailures;
 
@@ -46,10 +48,10 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $lastName = trim($row['cognome'] ?? '');
 
             // Validazione base: nome e cognome devono essere presenti
-            if (empty($firstName) || empty($lastName)) {
-                Log::warning("Saltata riga senza nome e cognome");
-                return null;
-            }
+            // if (empty($firstName) || empty($lastName)) {
+            //     Log::warning("Saltata riga senza nome e cognome");
+            //     return null;
+            // }
 
             $customerData = [
                 'user_id' => $user->id,
@@ -88,7 +90,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         }
     }
 
-    public function failed(Failure ...$failures)
+    public function onFailure(Failure ...$failures)
     {
         foreach ($failures as $failure) {
             $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione del lead', $failure->values(), null, $failure);
@@ -104,9 +106,9 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     public function rules(): array
     {
         return [
-            'nome' => ['nullable', 'string', 'max:255'],
-            'cognome' => ['nullable', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'min:10', 'max:24'],
+            'nome' => ['required', 'string', 'max:255'],
+            'cognome' => ['required', 'string', 'max:255'],
+            'telefono' => ['required', 'string', 'min:10', 'max:24'],
             'email' => ['nullable', 'email', 'max:255'],
             'codice_fiscale' => ['nullable', 'string', 'max:16'],
             'data_nascita' => ['nullable', 'date'],
