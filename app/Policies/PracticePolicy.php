@@ -22,7 +22,15 @@ class PracticePolicy
      */
     public function view(User $user, Practice $practice): bool
     {
-        return $user->hasPermissionTo('view practices');
+        if ($user->hasPermissionTo('view practices')) {
+            if ($user->isFloorManager()) {
+                return $practice->user?->isFloorManager();
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
