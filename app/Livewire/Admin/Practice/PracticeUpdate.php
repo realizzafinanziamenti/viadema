@@ -281,7 +281,11 @@ class PracticeUpdate extends Component
         Gate::authorize('update', $this->practice);
         $practice = $this->practiceForm->update();
 
-        $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+        if (Gate::allows('view', $practice)) {
+            $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+        } else {
+            $this->redirectRoute('practice.index', navigate: true);
+        }
     }
 
     /**
