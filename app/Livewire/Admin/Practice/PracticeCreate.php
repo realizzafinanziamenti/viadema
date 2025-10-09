@@ -293,7 +293,11 @@ class PracticeCreate extends Component
                 return $practice;
             });
 
-            $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+            if (Gate::allows('view', $practice)) {
+                $this->redirectRoute('practice.show', ['id' => $practice->id], navigate: true);
+            } else {
+                $this->redirectRoute('practice.index', navigate: true);
+            }
         } catch (Exception $e) {
             Log::error('Error creating practice: ' . $e->getMessage());
 
