@@ -73,7 +73,7 @@ class PracticePolicy
     public function updateStatus(User $user, Practice $practice): bool
     {
         return $user->hasPermissionTo('update practice status')
-            && $practice->practice_status !== PracticeStatus::DISBURSED->value;
+            && $practice->practice_status !== PracticeStatus::DISBURSED;
     }
 
     /**
