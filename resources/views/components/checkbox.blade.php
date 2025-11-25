@@ -6,7 +6,7 @@
             <input type="checkbox"
                 {{ $attributes->merge([
                     'class' =>
-                        'peer h-3 w-3 cursor-pointer transition-all appearance-none rounded-xs bg-white border border-zinc-200 checked:bg-azure-custom checked:border-azure-custom',
+                        'peer h-3 w-3 cursor-pointer transition-all appearance-none rounded-xs bg-white border border-gray-300 checked:bg-azure-custom checked:border-azure-custom',
                 ]) }} />
 
             <span

@@ -12,6 +12,10 @@
             </div>
 
             <div class="flex items-center gap-4">
+                @can('export leads')
+                    <x-buttons.export-button wire:click='exportSelectedLeads' />
+                @endcan
+
                 @can('import leads')
                     <x-buttons.import-button />
                 @endcan
@@ -27,6 +31,12 @@
         <x-table class="mb-5" minWidth="min-w-[1600px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
+                {{-- Checkbox --}}
+                <x-table-header class="w-[40px]">
+                    <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                        <x-checkbox wire:model.live="selectAll" />
+                    </div>
+                </x-table-header>
                 <x-table-header label="N. Trattativa" class="w-[100px]" />
                 <x-table-header label="Tipologia" class="w-[160px]" />
                 <x-table-header label="Nominativo" class="w-1/2" />
@@ -45,6 +55,13 @@
             {{-- Table body --}}
             @foreach ($this->leads as $lead)
                 <tr wire:key='{{ $lead->id }}' class="border-y border-collapse">
+                    {{-- Checkbox --}}
+                    <x-table-data class="w-[40px]">
+                        <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                            <x-checkbox value="{{ $lead->id }}" wire:model.live="selectedLeads" />
+                        </div>
+                    </x-table-data>
+
                     <x-table-data truncate label="{{ $lead->formatted_id }}" />
                     <x-table-data truncate label="{{ $lead->customerType?->name ?? 'N/D' }}" />
                     <x-table-data truncate label="{{ $lead->full_name }}" />
