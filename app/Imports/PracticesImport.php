@@ -49,7 +49,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // Recupera l'utente associato
             $user = $this->getUser($row);
             // Recupera o crea customer
-            $customer = $this->setCustomer($row);
+            $customer = $this->setCustomer($row, $user);
             // Imposta il tipo di prodotto
             $product = $this->setProduct($row);
             // cerca il tipo di prodotto corrispondente
@@ -71,27 +71,27 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             $practice = Practice::updateOrCreate(
                 ['practice_code' => $row['pratica']],
                 [
-                    'product_type_id'      => $product->id,
-                    'product_subtype_id'      => $productSubtype->id ?? null,
-                    'user_id'              => $user->id,
-                    'customer_id'          => $customer->id ?? null,
-                    'financial_table_id'   => null,
-                    'insurance_id'         => $insurance->id ?? null,
-                    'installment_id'       => $installment->id ?? null,
-                    'customer_type_id'     => $customerType->id ?? null,
+                    'product_type_id' => $product->id,
+                    'product_subtype_id' => $productSubtype->id ?? null,
+                    'user_id' => $user->id,
+                    'customer_id' => $customer->id ?? null,
+                    'financial_table_id' => null,
+                    'insurance_id' => $insurance->id ?? null,
+                    'installment_id' => $installment->id ?? null,
+                    'customer_type_id' => $customerType->id ?? null,
 
                     'product_subtype_label' => $productSubtype?->name ?? $row['tipo_prodotto'] ?? null,
                     'financial_table_percentage' => null,
-                    'insurance_label'      => $insurance?->name ?? $row['assicurazione'] ?? null,
+                    'insurance_label' => $insurance?->name ?? $row['assicurazione'] ?? null,
                     'installment_value_label' => $installment?->value ?? $row['numero_rate'] ?? null,
-                    'customer_type_label'  => $customerType?->name ?? $row['tipo_cliente'] ?? null,
+                    'customer_type_label' => $customerType?->name ?? $row['tipo_cliente'] ?? null,
 
-                    'amount_disbursed'   => $row['finanziato'] ?? null,
-                    'total_amount'       => $row['montante'] ?? null,
-                    'rate_amount'        => $row['importo_rata'] ?? null,
-                    'tan'                => $row['tan'] ?? null,
-                    'teg'                => $row['teg'] ?? null,
-                    'taeg'               => $row['taeg'] ?? null,
+                    'amount_disbursed' => $row['finanziato'] ?? null,
+                    'total_amount' => $row['montante'] ?? null,
+                    'rate_amount' => $row['importo_rata'] ?? null,
+                    'tan' => $row['tan'] ?? null,
+                    'teg' => $row['teg'] ?? null,
+                    'taeg' => $row['taeg'] ?? null,
 
                     'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
                     'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
@@ -100,7 +100,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     'disbursement_date' => $this->parseDate($row['data_liquidazione']) ?? null,
 
                     'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
-                    'percentage_alert'        => $installmentProductDefault->percentage_alert ?? 35.00,
+                    'percentage_alert' => $installmentProductDefault->percentage_alert ?? 35.00,
 
                     'practice_status' => $practiceStatus,
                     'is_renewal' => $isRenewal,
@@ -108,7 +108,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     'notes' => null,
 
                     'days_transformation' => $row['trasformazione_gg'] ?? null,
-                    'sum_dec_plus_35'     => $row['somma_dec_35'] ?? null,
+                    'sum_dec_plus_35' => $row['somma_dec_35'] ?? null,
                 ]
             );
 
@@ -122,7 +122,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         }
     }
 
-    public function failed(Failure ...$failures)
+    public function onFailure(Failure ...$failures)
     {
         foreach ($failures as $failure) {
             $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione della pratica', $failure->values(), null, $failure);
@@ -138,10 +138,17 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     public function rules(): array
     {
         return [
+            'pratica' => ['required', Rule::unique('practices', 'practice_code')],
+
             'cognome_nome_cliente' => ['required', 'string', 'max:255'],
-            'codice_fiscale' => ['required', 'string', 'max:16'],
-            'tipo_prodotto' => ['required', 'string', 'max:255'],
-            'numero_rate' => ['required', 'integer'],
+            'cf_cl' => ['required', 'string', 'max:16'],
+            'recapito_cell' => ['required', 'string', 'min:10', 'max:20'],
+            'data_nascita_cliente' => ['nullable'],
+
+            'applicazione' => ['required', 'string'],
+            'tipo_prodotto' => ['nullable', 'string', 'max:255'],
+            'assicurazione' => ['nullable', 'string', 'max:255'],
+            'numero_rate' => ['required', 'numeric'],
             'tipo_cliente' => ['nullable', 'string', 'max:255'],
 
             'finanziato' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
@@ -151,15 +158,15 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             'teg' => ['nullable', 'numeric', 'between:0,10000'],
             'taeg' => ['required', 'numeric', 'between:0,10000'],
 
-            'data_inserimento' => ['nullable', 'date'],
-            'data_prima_rata' => ['required', 'date'],
-            'data_ultima_rata' => ['required', 'date'],
+            'data_inserimento' => ['nullable'],
+            'data_prima_rata' => ['required'],
+            'data_ultima_rata' => ['required'],
+            'data_estinzione_anticipata' => ['nullable'],
+            'data_liquidazione' => ['nullable'],
 
             'rinnovo' => ['nullable', 'string', Rule::in(['S', 's', 'N', 'n', 'SI', 'si', 'NO', 'no', 'Y', 'y', '1', '0'])],
             'trasformazione_gg' => ['nullable', 'integer'],
             'somma_dec_35' => ['nullable', 'numeric'],
-
-            'pratica' => ['required', 'string', Rule::unique('practices', 'practice_code')],
         ];
     }
 
@@ -204,7 +211,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
      * @param array $row
      * @return Customer
      */
-    protected function setCustomer($row): Customer
+    protected function setCustomer($row, $user): Customer
     {
         // Creazione o aggiornamento del cliente
         $fullName = $row['cognome_nome_cliente'] ?? '';
@@ -220,7 +227,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // se il cliente non esiste, lo crea
             if (!$customer) {
                 $customer = Customer::create([
-                    'user_id' => 1, // Assumendo che l'utente sia sempre 1 per l'importazione
+                    'user_id' => $user->id,
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'phone' => $row['recapito_cell'] ?? null,
@@ -232,7 +239,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         } else {
             // Se il codice fiscale non è presente, crea un cliente senza di esso
             $customer = Customer::create([
-                'user_id' => 1,
+                'user_id' => $user->id,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'phone' => $row['recapito_cell'] ?? null,
