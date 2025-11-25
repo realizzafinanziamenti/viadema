@@ -94,7 +94,7 @@ class CustomerPolicy
      */
     public function updateLeadStatus(User $user, Customer $customer): bool
     {
-        return $user->hasPermissionTo('update lead status') && $user->id === $customer->user_id;
+        return $user->hasPermissionTo('update lead status');
     }
 
     /**

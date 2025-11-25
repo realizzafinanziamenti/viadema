@@ -14,6 +14,7 @@ use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -170,6 +171,17 @@ class LeadIndex extends Component
         $this->resetPage();
     }
 
+    #[Computed]
+    public function leads()
+    {
+        return Customer::with('user', 'customerType')
+            ->leads()
+            ->filteredForDepartment()
+            ->filterBySearch($this->search)
+            ->orderByDesc('updated_at')
+            ->paginate(15);
+    }
+
     public function mount()
     {
         Gate::authorize('viewAny', [Customer::class, CustomerStatus::LEAD]);
@@ -180,16 +192,6 @@ class LeadIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Customer::with('user', 'customerType')
-            ->leads()
-            ->filteredForDepartment()
-            ->orderByDesc('updated_at');
-
-        $query = $query->filterBySearch($this->search);
-        $leads = $query->paginate(15);
-
-        return view('livewire.admin.lead.lead-index', [
-            'leads' => $leads,
-        ]);
+        return view('livewire.admin.lead.lead-index');
     }
 }

@@ -36,6 +36,10 @@ trait HandlesEntityActions
             $entity->delete();
             $this->{$property} = null;
 
+            if (method_exists($this, 'resetPage')) {
+                $this->resetPage();
+            }
+
             $this->dispatch('close-modal', $modalName);
             Toaster::success($successMessage);
         }

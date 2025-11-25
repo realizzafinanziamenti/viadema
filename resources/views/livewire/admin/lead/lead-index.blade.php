@@ -31,7 +31,7 @@
                 <x-table-header label="Tipologia" class="w-[160px]" />
                 <x-table-header label="Nominativo" class="w-1/2" />
                 <x-table-header label="Telefono" class="w-[160px]" />
-                <x-table-header label="Stato" class="w-[150px]" />
+                <x-table-header label="Stato" class="w-[160px]" />
                 <x-table-header label="Provenienza" class="w-[160px]" />
                 <x-table-header label="Assegnato a" class="w-1/2" />
                 <x-table-header label="Data creazione" class="w-[100px]" />
@@ -43,7 +43,7 @@
             </x-slot>
 
             {{-- Table body --}}
-            @foreach ($leads as $lead)
+            @foreach ($this->leads as $lead)
                 <tr wire:key='{{ $lead->id }}' class="border-y border-collapse">
                     <x-table-data truncate label="{{ $lead->formatted_id }}" />
                     <x-table-data truncate label="{{ $lead->customerType?->name ?? 'N/D' }}" />
@@ -112,7 +112,7 @@
         </x-table>
 
         {{-- Pagination buttons --}}
-        {{ $leads->links() }}
+        {{ $this->leads->links() }}
     </x-card>
 
     {{-- Update Lead Status Modal --}}
