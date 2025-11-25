@@ -25,7 +25,7 @@
 
                 @if (!$expired)
                     @can('import practices')
-                        <x-buttons.import-button x-on:click="$dispatch('open-modal', 'import-practices-modal')" />
+                        <x-buttons.import-button wire:click="openImportModal" />
                     @endcan
 
                     @can('create practices')

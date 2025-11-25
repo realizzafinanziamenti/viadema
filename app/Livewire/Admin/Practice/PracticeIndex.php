@@ -249,6 +249,15 @@ class PracticeIndex extends Component
     }
 
     /**
+     * Open the import modal
+     */
+    public function openImportModal(): void
+    {
+        $this->reset(['temporaryImportFile', 'importFile', 'userId', 'userSearch']);
+        $this->dispatch('open-modal', 'import-practices-modal');
+    }
+
+    /**
      * Handle the file upload and import.
      */
     public function updatedTemporaryImportFile()
@@ -300,25 +309,28 @@ class PracticeIndex extends Component
                 'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
                 'userId.exists' => 'L\'utente selezionato non esiste.',
             ]);
+
+            // Ottieni l'utente di default se è stato selezionato
+            $defaultUser = $this->userId ? User::find($this->userId) : null;
+
+            $import = new PracticesImport($defaultUser);
+            $users = User::role('superadmin')->get();
+
+            Excel::queueImport($import, $this->importFile)
+                ->chain([
+                    function () use ($import, $users) {
+                        // Invio notifica
+                        Notification::send($users, new ImportExcelCompleted('practices'));
+                    }
+                ]);
+
+            Toaster::success('Import avviato! Riceverai una notifica al termine.');
         } catch (Exception $e) {
             Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
-            $this->reset(['temporaryImportFile', 'importFile', 'userId']);
-            return;
         }
 
-        $import = new PracticesImport;
-        $users = User::role('superadmin')->get();
-
-        Excel::queueImport($import, $this->importFile)
-            ->chain([
-                function () use ($import, $users) {
-                    // Invio notifica
-                    Notification::send($users, new ImportExcelCompleted('practices'));
-                }
-            ]);
-
-        Toaster::success('Import avviato! Riceverai una notifica al termine.');
-        $this->reset('importFile');
+        $this->reset(['temporaryImportFile', 'importFile', 'userId']);
+        $this->dispatch('close-modal', 'import-practices-modal');
     }
 
     /**

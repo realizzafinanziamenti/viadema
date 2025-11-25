@@ -31,6 +31,13 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
 {
     use SkipsFailures;
 
+    protected ?User $defaultUser;
+
+    public function __construct(?User $defaultUser = null)
+    {
+        $this->defaultUser = $defaultUser;
+    }
+
     /**
      * @param array $row
      *
@@ -178,6 +185,11 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
      */
     protected function getUser($row)
     {
+        // Se viene passato un utente di default per l'importazione, usalo
+        if ($this->defaultUser) {
+            return $this->defaultUser;
+        }
+
         $userFullName = strtolower(trim($row['nome_agenzia']));
 
         $user = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $userFullName . '%'])
