@@ -18,6 +18,7 @@ use App\Models\ProductType;
 use App\Models\User;
 use App\Notifications\ImportExcelCompleted;
 use App\Rules\ExceptEnumValues;
+use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -37,7 +39,7 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads, AcceptedFileTypes;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
@@ -135,7 +137,11 @@ class PracticeIndex extends Component
     // Order by select
     public array $orderBySelect = [];
     public PracticeOrderBy $selectedOrderBy = PracticeOrderBy::UPDATED_AT_DESC;
-    public $importFile = null;
+    // Import file properties
+    public ?TemporaryUploadedFile $temporaryImportFile = null;
+    public ?TemporaryUploadedFile $importFile = null;
+    public ?int $userId = null;   // user for assigning imported practices
+    public string $userSearch = '';
 
     protected function rules(): array
     {
@@ -245,11 +251,36 @@ class PracticeIndex extends Component
     /**
      * Handle the file upload and import.
      */
-    public function updatedImportFile()
+    public function updatedTemporaryImportFile()
     {
-        if ($this->importFile) {
-            $this->importPractices();
+        if ($this->temporaryImportFile) {
+            $this->validate([
+                'temporaryImportFile' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:20480']
+            ], [
+                'temporaryImportFile.file' => 'File non valido.',
+                'temporaryImportFile.max' => 'Ogni file non può superare i 20MB.',
+                'temporaryImportFile.mimetypes' => 'Formato file non valido.',
+            ]);
+
+            $this->importFile = $this->temporaryImportFile;
         }
+    }
+
+    /**
+     * Remove the uploaded import file.
+     */
+    public function removeImportFile()
+    {
+        $this->importFile = null;
+        $this->temporaryImportFile = null;
+    }
+
+    /**
+     * Set user for import
+     */
+    public function setUserForImport(?int $value = null): void
+    {
+        $this->setSelectValue('userId', $value);
     }
 
     /**
@@ -261,11 +292,17 @@ class PracticeIndex extends Component
 
         try {
             $this->validate([
-                'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+                'importFile' => ['required', 'file', 'mimes:xlsx,xls'],
+                'userId' => ['nullable', 'integer', 'exists:users,id'],
+            ], [
+                'importFile.required' => 'Devi selezionare un file da importare.',
+                'importFile.file' => 'File non valido.',
+                'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
+                'userId.exists' => 'L\'utente selezionato non esiste.',
             ]);
         } catch (Exception $e) {
             Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
-            $this->reset('importFile');
+            $this->reset(['temporaryImportFile', 'importFile', 'userId']);
             return;
         }
 

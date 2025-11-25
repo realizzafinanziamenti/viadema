@@ -25,7 +25,7 @@
 
                 @if (!$expired)
                     @can('import practices')
-                        <x-buttons.import-button />
+                        <x-buttons.import-button x-on:click="$dispatch('open-modal', 'import-practices-modal')" />
                     @endcan
 
                     @can('create practices')
@@ -160,4 +160,9 @@
 
     {{-- Notes Modal --}}
     @include('partials.practice.practice-notes-modal')
+
+    {{-- Import Modal --}}
+    <x-modals.import-modal name="import-practices-modal" header="Importa pratiche da Excel"
+        submitFunction="importPractices" :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :teamMembers="$teamMembers" :userId="$userId"
+        :userSearch="$userSearch" />
 </div>
