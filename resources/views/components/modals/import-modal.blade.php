@@ -6,7 +6,7 @@
     'maxWidth' => 'md',
     'temporaryImportFile' => null,
     'importFile' => null,
-    'teamMembers' => null,
+    'users' => null,
     'userId' => null,
     'userSearch' => '',
 ])
@@ -42,10 +42,10 @@
 
             {{-- User --}}
             @if (auth()->user()->can('assign practice to user'))
-                <div class="flex flex-col gap-1.5 mt-4">
+                <div class="flex flex-col gap-1.5 mt-6">
                     <flux:label>Assegna ad utente</flux:label>
                     <div class="flex flex-col gap-0.5">
-                        <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$userId" searchable
+                        <x-dropdown-select size="sm" :selectable-items="$users" :selected="$userId" searchable
                             search="userSearch" placeholder='Assegna collaboratore tramite file'
                             setFunction="setUserForImport" :has-error="$errors->has('userId')" />
 

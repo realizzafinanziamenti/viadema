@@ -909,6 +909,14 @@ class PracticeIndex extends Component
             ->pluck('full_name', 'id')
             ->toArray();
 
+        $users = User::assignableUsers()
+            ->filterBySearch($this->userSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
+
         $customers = Customer::filterBySearch($this->customerSearch)
             ->orderBy('first_name')
             ->orderBy('last_name')
@@ -921,6 +929,7 @@ class PracticeIndex extends Component
             'productType' => $this->type,
             'expired' => $this->expired,
             'teamMembers' => $teamMembers,
+            'users' => $users,
             'customers' => $customers,
         ]);
     }

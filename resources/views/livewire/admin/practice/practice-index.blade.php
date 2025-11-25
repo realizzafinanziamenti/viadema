@@ -163,6 +163,6 @@
 
     {{-- Import Modal --}}
     <x-modals.import-modal name="import-practices-modal" header="Importa pratiche da Excel"
-        submitFunction="importPractices" :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :teamMembers="$teamMembers" :userId="$userId"
+        submitFunction="importPractices" :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :users="$users" :userId="$userId"
         :userSearch="$userSearch" />
 </div>
