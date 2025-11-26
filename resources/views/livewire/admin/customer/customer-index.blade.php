@@ -18,7 +18,7 @@
 
                 @can('create customers')
                     <a href="{{ route('customer.create') }}" wire:navigate>
-                        <x-buttons.create-button label="Crea nuova anagrafica" />
+                        <x-buttons.create-button />
                     </a>
                 @endcan
             </div>
@@ -26,9 +26,13 @@
 
         {{-- Bulk selections --}}
         @if ($this->hasSelection)
-            Elementi selezionati: {{ $this->selectedCount }}
-            <button class="underline ml-2 cursor-pointer" wire:click="selectAllResults">Seleziona tutti</button>
-            <button class="underline ml-2 cursor-pointer" wire:click="clearSelection">Deseleziona tutti</button>
+            <div class="text-sm ml-3.5 mb-1.5">
+                Elementi selezionati: {{ $this->selectedCount }}
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="selectAllResults">Seleziona tutti</button>
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="clearSelection">Deseleziona tutti</button>
+            </div>
         @endif
 
         <x-table class="mb-5">

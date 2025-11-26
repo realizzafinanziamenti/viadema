@@ -23,6 +23,10 @@
             <div class="flex items-center gap-4">
                 <x-buttons.filter-modal-button />
 
+                @can('export leads')
+                    <x-buttons.export-button />
+                @endcan
+
                 @if (!$expired)
                     @can('import practices')
                         <x-buttons.import-button wire:click="openImportModal" />
@@ -30,7 +34,7 @@
 
                     @can('create practices')
                         <a href="{{ route('practice.create') }}" wire:navigate>
-                            <x-buttons.create-button label="Crea nuova pratica" />
+                            <x-buttons.create-button />
                         </a>
                     @endcan
                 @endif

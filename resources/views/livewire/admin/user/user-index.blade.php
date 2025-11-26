@@ -13,7 +13,7 @@
 
             @can('create users')
                 <a href="{{ route('user.create') }}" wire:navigate>
-                    <x-buttons.create-button label="Crea nuova anagrafica" />
+                    <x-buttons.create-button />
                 </a>
             @endcan
         </div>

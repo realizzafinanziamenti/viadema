@@ -16,7 +16,7 @@
             </div>
 
             @can('create form documents')
-                <x-buttons.create-button label="Carica documento" wire:click='openCreateDocumentModal' />
+                <x-buttons.create-button wire:click='openCreateDocumentModal' />
             @endcan
         </div>
 

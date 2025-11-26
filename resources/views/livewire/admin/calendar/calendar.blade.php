@@ -60,9 +60,7 @@
                 placeholder="Cerca per titolo evento..." />
 
             @can('create', Event::class)
-                <flux:button wire:click="openCreateEventModal" icon="plus"
-                    class="bg-blue-custom! hover:bg-blue-custom-hover! text-white! px-10">
-                    Aggiungi Evento</flux:button>
+                <x-buttons.create-button wire:click="openCreateEventModal" />
             @endcan
         </div>
 
