@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Lead;
 
 use App\Enums\CustomerStatus;
 use App\Enums\LeadStatus;
+use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
 use App\Models\Customer;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -28,6 +30,8 @@ class LeadIndex extends Component
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads;
 
     public ?Customer $selectedLead = null;
+    public array $selectedLeads = [];
+    public bool $selectAll = false;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
     public $search = '';
@@ -73,6 +77,48 @@ class LeadIndex extends Component
 
         Toaster::success('Import avviato! Riceverai una notifica al termine.');
         $this->reset('importFile');
+    }
+
+    /**
+     * Ensure that at least one lead is selected.
+     */
+    private function ensureSelectedLeads(): bool
+    {
+        if (empty($this->selectedLeads)) {
+            Toaster::error("Seleziona almeno un profilo per procedere con l'esportazione.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Export leads based on selected IDs
+     */
+    public function exportSelectedLeads()
+    {
+        Gate::authorize('exportLead', Customer::class);
+
+        if (!$this->ensureSelectedLeads()) {
+            return;
+        }
+
+        try {
+            $query = Customer::whereIn('id', $this->selectedLeads);
+
+            return Excel::download(
+                new LeadsExport($query),
+                'leads_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+            );
+        } catch (Exception $e) {
+            Log::error('Errore durante l\'export lead: ' . $e->getMessage(), [
+                'selected_leads' => $this->selectedLeads,
+                'user_id' => auth()->id(),
+            ]);
+
+            Toaster::error('Errore durante l\'esportazione dei profili. Riprova più tardi.');
+            return;
+        }
     }
 
     /**
