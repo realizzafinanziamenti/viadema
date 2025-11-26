@@ -6,7 +6,8 @@ use Livewire\Attributes\Computed;
 
 trait WithBulkSelection
 {
-    public array $selected = [];           // IDs selezionati
+    public array $selected = [];                    // IDs selezionati
+    public bool $pageSelected = false;      // TRUE se la pagina corrente è selezionata
 
     /* Seleziona / deseleziona una singola riga */
     public function toggleSelection(int $id): void
@@ -16,6 +17,8 @@ trait WithBulkSelection
         } else {
             $this->selected[] = $id;
         }
+
+        $this->syncPageSelected();
     }
 
     /* Verifica se un singolo ID è selezionato */
@@ -36,6 +39,12 @@ trait WithBulkSelection
         }
 
         return $this->rows->getCollection()->pluck('id')->toArray();
+    }
+
+    /* Sincronizza lo stato di pageSelected */
+    public function syncPageSelected(): void
+    {
+        $this->pageSelected = $this->isPageFullySelected;
     }
 
     /* Computed: TRUE se tutta la pagina è selezionata */
@@ -71,6 +80,7 @@ trait WithBulkSelection
     public function selectAllResults(): void
     {
         $this->selected = $this->query()->pluck('id')->toArray();
+        $this->syncPageSelected();
     }
 
     /* Deseleziona completamente tutti gli elementi selezionati */
@@ -81,6 +91,13 @@ trait WithBulkSelection
         }
 
         $this->selected = [];
+        $this->syncPageSelected();
+    }
+
+    /* Aggiorna lo stato quando una proprietà cambia */
+    public function updatedPage()
+    {
+        $this->syncPageSelected();
     }
 
     /* Computed: conta gli elementi selezionati */
