@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LeadsExport extends StringValueBinder implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithCustomValueBinder
+class CustomersExport extends StringValueBinder implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithCustomValueBinder
 {
     public function __construct(protected $query) {}
 
@@ -29,8 +29,6 @@ class LeadsExport extends StringValueBinder implements FromQuery, ShouldAutoSize
         return [
             'Nome',
             'Tipo',
-            'Stato',
-            'Canale di acquisizione',
             'Telefono',
             'Email',
             'Data di nascita',
@@ -50,8 +48,6 @@ class LeadsExport extends StringValueBinder implements FromQuery, ShouldAutoSize
         return [
             $lead->first_name . ' ' . $lead->last_name,
             $lead->customerType?->name ?? '',
-            $lead->lead_status?->getLabelText() ?? '',
-            $lead->lead_source?->getLabelText() ?? '',
             $lead->phone,
             $lead->email ?? '',
             $lead->date_of_birth ? $lead->date_of_birth->format('d-m-Y') : '',

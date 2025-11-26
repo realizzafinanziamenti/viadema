@@ -11,16 +11,36 @@
                 </div>
             </div>
 
-            @can('create customers')
-                <a href="{{ route('customer.create') }}" wire:navigate>
-                    <x-buttons.create-button label="Crea nuova anagrafica" />
-                </a>
-            @endcan
+            <div class="flex items-center gap-4">
+                @can('export customers')
+                    <x-buttons.export-button :disabled="$this->selectedCount === 0" wire:click='exportSelectedCustomers' />
+                @endcan
+
+                @can('create customers')
+                    <a href="{{ route('customer.create') }}" wire:navigate>
+                        <x-buttons.create-button label="Crea nuova anagrafica" />
+                    </a>
+                @endcan
+            </div>
         </div>
+
+        {{-- Bulk selections --}}
+        @if ($this->hasSelection)
+            Elementi selezionati: {{ $this->selectedCount }}
+            <button class="underline ml-2 cursor-pointer" wire:click="selectAllResults">Seleziona tutti</button>
+            <button class="underline ml-2 cursor-pointer" wire:click="clearSelection">Deseleziona tutti</button>
+        @endif
 
         <x-table class="mb-5">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
+                {{-- Checkbox --}}
+                <x-table-header class="w-[40px]">
+                    <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
+                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
+                    </div>
+                </x-table-header>
                 <x-table-header label="Id cliente" class="w-2/20" />
                 <x-table-header label="Nome cliente" class="w-4/20" />
                 <x-table-header label="Cellulare" class="w-3/20" />
@@ -34,8 +54,15 @@
             </x-slot>
 
             {{-- Table body --}}
-            @foreach ($customers as $customer)
+            @foreach ($this->rows as $customer)
                 <tr wire:key='{{ $customer->id }}' class="border-y border-collapse">
+                    {{-- Checkbox --}}
+                    <x-table-data class="w-[40px]">
+                        <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                            <x-checkbox wire:click="toggleSelection({{ $customer->id }})" :checked="$this->isSelected($customer->id)" />
+                        </div>
+                    </x-table-data>
+
                     <x-table-data label="{{ $customer->formatted_id }}" />
                     <x-table-data truncate label="{{ $customer->full_name }}" />
                     <x-table-data truncate label="{{ $customer->phone }}" />
@@ -72,7 +99,7 @@
         </x-table>
 
         {{-- Pagination buttons --}}
-        {{ $customers->links() }}
+        {{ $this->rows->links() }}
     </x-card>
 
     {{-- Delete User Modal --}}
