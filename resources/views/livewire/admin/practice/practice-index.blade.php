@@ -24,7 +24,7 @@
                 <x-buttons.filter-modal-button />
 
                 @can('export leads')
-                    <x-buttons.export-button />
+                    <x-buttons.export-button :disabled="$this->selectedCount === 0" wire:click='exportSelectedPractices' />
                 @endcan
 
                 @if (!$expired)
@@ -41,9 +41,28 @@
             </div>
         </div>
 
+        {{-- Bulk selections --}}
+        @if ($this->hasSelection)
+            <div class="text-sm ml-3.5 mb-1.5">
+                Elementi selezionati: {{ $this->selectedCount }}
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="selectAllResults">Seleziona tutti</button>
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="clearSelection">Deseleziona tutti</button>
+            </div>
+        @endif
+
         <x-table class="mb-5 z-10" minWidth="min-w-[1300px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
+                {{-- Checkbox --}}
+                <x-table-header class="w-[40px]">
+                    <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
+                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
+                    </div>
+                </x-table-header>
+
                 <x-table-header label="Id pratica" class="w-[110px]" />
                 <x-table-header label="Cliente" class="w-3/7" />
 
@@ -62,8 +81,15 @@
             </x-slot>
 
             {{-- Table body --}}
-            @foreach ($practices as $practice)
+            @foreach ($this->rows as $practice)
                 <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
+                    {{-- Checkbox --}}
+                    <x-table-data class="w-[40px]">
+                        <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                            <x-checkbox wire:click="toggleSelection({{ $practice->id }})" :checked="$this->isSelected($practice->id)" />
+                        </div>
+                    </x-table-data>
+
                     <x-table-data truncate class="inline-flex items-center gap-2">
                         @if ($practice->renewability_date <= now())
                             <div title="La pratica è rinnovabile dal {{ $practice->formatted_renewability_date }}">
@@ -149,7 +175,7 @@
         </x-table>
 
         {{-- Pagination buttons --}}
-        {{ $practices->links() }}
+        {{ $this->rows->links() }}
     </x-card>
 
     {{-- Update Practice Status Modal --}}

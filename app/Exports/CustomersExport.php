@@ -43,19 +43,19 @@ class CustomersExport extends StringValueBinder implements FromQuery, ShouldAuto
     /**
      * Mappa i dati per ogni riga
      */
-    public function map($lead): array
+    public function map($customer): array
     {
         return [
-            $lead->first_name . ' ' . $lead->last_name,
-            $lead->customerType?->name ?? '',
-            $lead->phone,
-            $lead->email ?? '',
-            $lead->date_of_birth ? $lead->date_of_birth->format('d-m-Y') : '',
-            $lead->address ?? '',
-            $lead->postal_code ?? '',
-            $lead->city ?? '',
-            $lead->state ?? '',
-            $lead->tax_id ?? '',
+            $customer->first_name . ' ' . $customer->last_name,
+            $customer->customerType?->name ?? '',
+            $customer->phone,
+            $customer->email ?? '',
+            $customer->date_of_birth ? $customer->date_of_birth->format('d-m-Y') : '',
+            $customer->address ?? '',
+            $customer->postal_code ?? '',
+            $customer->city ?? '',
+            $customer->state ?? '',
+            $customer->tax_id ?? '',
         ];
     }
 

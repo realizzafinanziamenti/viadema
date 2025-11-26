@@ -42,12 +42,17 @@
                 </div>
 
                 <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Data di apertura: </span>
+                    <span class="text-gray-custom-4">Assicurazione: </span>
+                    <span>{{ $practice->insurance?->name ?? 'N/D' }}</span>
+                </div>
+
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Data di inizio: </span>
                     <span>{{ $practice->formatted_first_installment_date }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Data ultima rata: </span>
+                    <span class="text-gray-custom-4">Data di fine: </span>
                     <span>{{ $practice->formatted_last_installment_date }}</span>
                 </div>
 
