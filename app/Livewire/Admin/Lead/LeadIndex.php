@@ -12,6 +12,7 @@ use App\Notifications\ImportExcelCompleted;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
+use App\Traits\WithBulkSelection;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -27,11 +28,9 @@ use Masmerise\Toaster\Toaster;
 
 class LeadIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection;
 
     public ?Customer $selectedLead = null;
-    public array $selectedLeads = [];
-    public bool $selectAll = false;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
     public $search = '';
@@ -84,7 +83,7 @@ class LeadIndex extends Component
      */
     private function ensureSelectedLeads(): bool
     {
-        if (empty($this->selectedLeads)) {
+        if (empty($this->selected)) {
             Toaster::error("Seleziona almeno un profilo per procedere con l'esportazione.");
             return false;
         }
@@ -104,7 +103,7 @@ class LeadIndex extends Component
         }
 
         try {
-            $query = Customer::whereIn('id', $this->selectedLeads);
+            $query = Customer::whereIn('id', $this->selected);
 
             return Excel::download(
                 new LeadsExport($query),
@@ -112,7 +111,7 @@ class LeadIndex extends Component
             );
         } catch (Exception $e) {
             Log::error('Errore durante l\'export lead: ' . $e->getMessage(), [
-                'selected_leads' => $this->selectedLeads,
+                'selected_leads' => $this->selected,
                 'user_id' => auth()->id(),
             ]);
 
@@ -218,13 +217,19 @@ class LeadIndex extends Component
     }
 
     #[Computed]
-    public function leads()
+    public function query()
     {
         return Customer::with('user', 'customerType')
             ->leads()
             ->filteredForDepartment()
             ->filterBySearch($this->search)
-            ->orderByDesc('updated_at')
+            ->orderByDesc('updated_at');
+    }
+
+    #[Computed]
+    public function rows()
+    {
+        return $this->query()
             ->paginate(15);
     }
 

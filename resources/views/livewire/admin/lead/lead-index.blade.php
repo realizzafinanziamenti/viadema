@@ -13,7 +13,7 @@
 
             <div class="flex items-center gap-4">
                 @can('export leads')
-                    <x-buttons.export-button wire:click='exportSelectedLeads' />
+                    <x-buttons.export-button :disabled="$this->selectedCount === 0" wire:click='exportSelectedLeads' />
                 @endcan
 
                 @can('import leads')
@@ -28,13 +28,21 @@
             </div>
         </div>
 
+        {{-- Bulk selections --}}
+        @if ($this->hasSelection)
+            Elementi selezionati: {{ $this->selectedCount }}
+            <button class="underline ml-2 cursor-pointer" wire:click="selectAllResults">Seleziona tutti</button>
+            <button class="underline ml-2 cursor-pointer" wire:click="clearSelection">Deseleziona tutti</button>
+        @endif
+
         <x-table class="mb-5" minWidth="min-w-[1600px]">
             {{-- Table Header --}}
             <x-slot name="header" class="border-b">
                 {{-- Checkbox --}}
                 <x-table-header class="w-[40px]">
                     <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                        <x-checkbox wire:model.live="selectAll" />
+                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
+                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
                     </div>
                 </x-table-header>
                 <x-table-header label="N. Trattativa" class="w-[100px]" />
@@ -53,12 +61,12 @@
             </x-slot>
 
             {{-- Table body --}}
-            @foreach ($this->leads as $lead)
+            @foreach ($this->rows as $lead)
                 <tr wire:key='{{ $lead->id }}' class="border-y border-collapse">
                     {{-- Checkbox --}}
                     <x-table-data class="w-[40px]">
                         <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                            <x-checkbox value="{{ $lead->id }}" wire:model.live="selectedLeads" />
+                            <x-checkbox wire:click="toggleSelection({{ $lead->id }})" :checked="$this->isSelected($lead->id)" />
                         </div>
                     </x-table-data>
 
@@ -129,7 +137,7 @@
         </x-table>
 
         {{-- Pagination buttons --}}
-        {{ $this->leads->links() }}
+        {{ $this->rows->links() }}
     </x-card>
 
     {{-- Update Lead Status Modal --}}
