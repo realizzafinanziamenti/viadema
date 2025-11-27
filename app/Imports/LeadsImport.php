@@ -26,6 +26,13 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
 {
     use SkipsFailures;
 
+    protected ?User $defaultUser;
+
+    public function __construct(?User $defaultUser = null)
+    {
+        $this->defaultUser = $defaultUser;
+    }
+
     /**
      * @param array $row
      * @return Customer|null
@@ -43,15 +50,10 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $leadSource = $this->parseLeadSource($row['provenienza_lead'] ?? 'sconosciuto');
             $leadStatus = $this->parseLeadStatus($row['stato_lead'] ?? 'nuovo');
 
-            // Parsing semplificato nome e cognome
+            // Parsing semplificato nome, cognome, codice fiscale
             $firstName = trim($row['nome'] ?? '');
             $lastName = trim($row['cognome'] ?? '');
-
-            // Validazione base: nome e cognome devono essere presenti
-            // if (empty($firstName) || empty($lastName)) {
-            //     Log::warning("Saltata riga senza nome e cognome");
-            //     return null;
-            // }
+            $cf = trim($row['codice_fiscale'] ?? '');
 
             $customerData = [
                 'user_id' => $user->id,
@@ -63,7 +65,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 'phone' => $this->cleanPhone($row['telefono']),
                 'email' => $row['email'] ?? null,
                 'date_of_birth' => $this->parseDate($row['data_nascita']) ?? null,
-                'tax_id' => $row['codice_fiscale'] ?? null,
+                'tax_id' => $cf ?? null,
 
                 // Indirizzo
                 'address' => $row['indirizzo'] ?? null,
@@ -92,9 +94,53 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
 
     public function onFailure(Failure ...$failures)
     {
-        foreach ($failures as $failure) {
-            $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione del lead', $failure->values(), null, $failure);
-            Log::warning("Import lead fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
+        // Raggruppa per riga
+        $rows = collect($failures)->groupBy(fn($f) => $f->row());
+
+        foreach ($rows as $rowNumber => $failureGroup) {
+
+            // Unisci gli errori della riga
+            $errors = $failureGroup
+                ->flatMap(fn($f) => $f->errors())
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Prendi i valori della riga
+            $rowValues = $failureGroup->first()->values();
+
+            // Crea un FakeFailure che contiene TUTTI gli errori della riga
+            $fake = new class($rowNumber, $errors, $rowValues) {
+                public function __construct(
+                    public int $row,
+                    public array $errors,
+                    public array $values
+                ) {}
+                public function row()
+                {
+                    return $this->row;
+                }
+                public function errors()
+                {
+                    return $this->errors;
+                }
+                public function values()
+                {
+                    return $this->values;
+                }
+            };
+
+            // Log unico
+            Log::warning("Import fallito alla riga {$rowNumber}: " . implode(' | ', $errors));
+
+            $this->createActivityLog(
+                lead: null,
+                logName: 'import_validation_failure',
+                message: "Import lead fallito alla riga {$rowNumber}",
+                row: $rowValues,
+                e: null,
+                failures: $fake
+            );
         }
     }
 
@@ -103,6 +149,25 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         return 1000;
     }
 
+    /* Prepara i dati per la validazione */
+    public function prepareForValidation(array $row)
+    {
+        foreach ($row as $key => $value) {
+            // Salta le date di Excel
+            if ($this->looksLikeExcelDate($value)) {
+                continue;
+            }
+
+            // Converte tutto in stringa per la validazione
+            if (!is_null($value) && !is_array($value)) {
+                $row[$key] = (string) $value;
+            }
+        }
+
+        return $row;
+    }
+
+    /* Regole di validazione */
     public function rules(): array
     {
         return [
@@ -111,11 +176,16 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             'telefono' => ['required', 'string', 'min:10', 'max:24'],
             'email' => ['nullable', 'email', 'max:255'],
             'codice_fiscale' => ['nullable', 'string', 'max:16'],
-            'data_nascita' => ['nullable', 'date'],
+            'data_nascita' => ['nullable'],
             'provenienza_lead' => ['nullable', 'string', 'max:100'],
             'stato_lead' => ['nullable', 'string', 'max:100'],
             'tipologia_cliente' => ['nullable', 'string', 'max:255'],
             'collaboratore_associato' => ['nullable', 'string', 'max:255'],
+            'indirizzo' => ['nullable', 'string', 'max:255'],
+            'citta' => ['nullable', 'string', 'max:100'],
+            'provincia' => ['nullable', 'string', 'max:100'],
+            'cap' => ['nullable', 'string', 'max:20'],
+            'note' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -141,6 +211,11 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
      */
     protected function getUser($row): User
     {
+        // Se viene passato un utente di default per l'importazione, usalo
+        if ($this->defaultUser) {
+            return $this->defaultUser;
+        }
+
         $userFullName = strtolower(preg_replace('/\s+/', ' ', trim($row['collaboratore_associato'] ?? '')));
 
         if ($userFullName) {
@@ -288,7 +363,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     /**
      * Crea un log di attività per l'importazione.
      */
-    protected function createActivityLog($lead, $logName, $message, $row = [], $e = null, $failure = null)
+    protected function createActivityLog($lead, $logName, $message, $row = [], $e = null, $failures = null)
     {
         $properties = [
             'import_type' => 'leads',
@@ -311,11 +386,11 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             ]);
         }
 
-        if ($failure) {
+        if ($failures) {
             $properties = array_merge($properties, [
-                'row_number' => $failure->row(),
-                'validation_errors' => $failure->errors(),
-                'failed_data' => $failure->values(),
+                'row_number' => $failures->row(),
+                'validation_errors' => $failures->errors(),
+                'failed_data' => $failures->values(),
             ]);
         }
 

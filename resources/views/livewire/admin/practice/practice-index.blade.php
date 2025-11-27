@@ -23,6 +23,10 @@
             <div class="flex items-center gap-4">
                 <x-buttons.filter-modal-button />
 
+                @can('export leads')
+                    <x-buttons.export-button :disabled="$this->selectedCount === 0" wire:click='exportSelectedPractices' />
+                @endcan
+
                 @if (!$expired)
                     @can('import practices')
                         <x-buttons.import-button wire:click="openImportModal" />
@@ -30,122 +34,156 @@
 
                     @can('create practices')
                         <a href="{{ route('practice.create') }}" wire:navigate>
-                            <x-buttons.create-button label="Crea nuova pratica" />
+                            <x-buttons.create-button />
                         </a>
                     @endcan
                 @endif
             </div>
         </div>
 
-        <x-table class="mb-5 z-10" minWidth="min-w-[1300px]">
-            {{-- Table Header --}}
-            <x-slot name="header" class="border-b">
-                <x-table-header label="Id pratica" class="w-[110px]" />
-                <x-table-header label="Cliente" class="w-3/7" />
+        {{-- Bulk selections --}}
+        @if ($this->hasSelection)
+            <div class="text-sm ml-3.5 mb-1.5">
+                Elementi selezionati: {{ $this->selectedCount }}
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="selectAllResults">Seleziona tutti</button>
+                <button class="underline ml-2 cursor-pointer hover:text-azure-custom"
+                    wire:click="clearSelection">Deseleziona tutti</button>
+            </div>
+        @endif
 
-                @if (!$productType)
-                    <x-table-header label="Prodotto" class="w-[160px]" />
-                @endif
+        @if (count($this->rows) > 0)
+            <x-table class="mb-5 z-10" minWidth="min-w-[1300px]">
+                {{-- Table Header --}}
+                <x-slot name="header" class="border-b">
+                    {{-- Checkbox --}}
+                    <x-table-header class="w-[40px]">
+                        <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                            <x-checkbox wire:model="pageSelected" wire:click="toggleSelectPage" />
+                        </div>
+                    </x-table-header>
 
-                <x-table-header label="Data inserimento" class="w-[130px]" />
-                <x-table-header label="Codice fiscale" class="w-[170px]" />
-                <x-table-header label="Stato pratica" class="w-[140px]" />
-                <x-table-header label="Collaboratore" class="w-4/7" />
-                <x-table-header label="Note" class="w-[50px]" />
-                <x-table-header class="w-[150px]">
-                    {{-- Actions --}}
-                </x-table-header>
-            </x-slot>
-
-            {{-- Table body --}}
-            @foreach ($practices as $practice)
-                <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
-                    <x-table-data truncate class="inline-flex items-center gap-2">
-                        @if ($practice->renewability_date <= now())
-                            <div title="La pratica è rinnovabile dal {{ $practice->formatted_renewability_date }}">
-                                <x-icons.icon-akar-circle-alert class="text-red-custom" />
-                            </div>
-                        @elseif ($practice->renewability_date > now() && $practice->alert_date <= now())
-                            <div title="La pratica sarà rinnovabile dal {{ $practice->formatted_renewability_date }}">
-                                <x-icons.icon-akar-circle-alert class="text-orange-custom" />
-                            </div>
-                        @endif
-
-                        <div>{{ $practice->practice_code }}</div>
-                    </x-table-data>
-
-                    <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
+                    <x-table-header label="Id pratica" class="w-[110px]" />
+                    <x-table-header label="Cliente" class="w-3/7" />
 
                     @if (!$productType)
-                        <x-table-data truncate class="font-bold! w-[160px]"
-                            label="{{ $practice->productType?->name }}" />
+                        <x-table-header label="Prodotto" class="w-[160px]" />
                     @endif
 
-                    <x-table-data truncate
-                        label="{{ $practice->formatted_inserted_at ?? $practice->formatted_created_at }}" />
-                    <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
+                    <x-table-header label="Data inserimento" class="w-[130px]" />
+                    <x-table-header label="Codice fiscale" class="w-[170px]" />
+                    <x-table-header label="Stato pratica" class="w-[140px]" />
+                    <x-table-header label="Collaboratore" class="w-4/7" />
+                    <x-table-header label="Note" class="w-[60px]" />
+                    <x-table-header class="w-[150px]">
+                        {{-- Actions --}}
+                    </x-table-header>
+                </x-slot>
 
-                    <x-table-data>
-                        @if (Gate::allows('updateStatus', $practice))
-                            <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
-                                wire:click="selectPracticeForStatus({{ $practice->id }})"
-                                title="Cambia stato pratica" />
-                        @else
-                            <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                {{-- Table body --}}
+                @foreach ($this->rows as $practice)
+                    <tr wire:key='{{ $practice->id }}' class="border-y border-collapse z-10">
+                        {{-- Checkbox --}}
+                        <x-table-data class="w-[40px]">
+                            <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                                <x-checkbox wire:click="toggleSelection({{ $practice->id }})" :checked="$this->isSelected($practice->id)"
+                                    wire:key="row-checkbox-{{ $practice->id }}-{{ (int) $this->isSelected($practice->id) }}" />
+                            </div>
+                        </x-table-data>
+
+                        <x-table-data truncate class="inline-flex items-center gap-2">
+                            @if ($practice->renewability_date <= now())
+                                <div title="La pratica è rinnovabile dal {{ $practice->formatted_renewability_date }}">
+                                    <x-icons.icon-akar-circle-alert class="text-red-custom" />
+                                </div>
+                            @elseif ($practice->renewability_date > now() && $practice->alert_date <= now())
+                                <div
+                                    title="La pratica sarà rinnovabile dal {{ $practice->formatted_renewability_date }}">
+                                    <x-icons.icon-akar-circle-alert class="text-orange-custom" />
+                                </div>
+                            @endif
+
+                            <div>{{ $practice->practice_code }}</div>
+                        </x-table-data>
+
+                        <x-table-data truncate label="{{ $practice->customer?->full_name }}" />
+
+                        @if (!$productType)
+                            <x-table-data truncate class="font-bold! w-[160px]"
+                                label="{{ $practice->productType?->name }}" />
                         @endif
-                    </x-table-data>
 
-                    <x-table-data truncate class="inline-flex items-center">
-                        @if ($practice->user)
-                            <x-user-table-data :user="$practice->user" />
-                        @endif
-                    </x-table-data>
+                        <x-table-data truncate
+                            label="{{ $practice->formatted_inserted_at ?? $practice->formatted_created_at }}" />
+                        <x-table-data truncate label="{{ $practice->customer?->tax_id }}" />
 
-                    {{-- Notes --}}
-                    <x-table-data>
-                        @if ($practice->notes)
-                            <div class="flex items-center justify-center w-full relative">
-                                <button class="relative cursor-pointer" title="Visualizza note"
-                                    wire:click="selectPracticeForNotes({{ $practice->id }})">
+                        <x-table-data>
+                            @if (Gate::allows('updateStatus', $practice))
+                                <x-clickable-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()"
+                                    wire:click="selectPracticeForStatus({{ $practice->id }})"
+                                    title="Cambia stato pratica" />
+                            @else
+                                <x-badge :property="$practice->practice_status?->getLabelText()" :css="$practice->practice_status?->getLabelColor()" />
+                            @endif
+                        </x-table-data>
+
+                        <x-table-data truncate class="inline-flex items-center">
+                            @if ($practice->user)
+                                <x-user-table-data :user="$practice->user" />
+                            @endif
+                        </x-table-data>
+
+                        {{-- Notes --}}
+                        <x-table-data>
+                            @if ($practice->notes)
+                                <div class="flex items-center justify-center w-full relative">
+                                    <button class="relative cursor-pointer" title="Visualizza note"
+                                        wire:click="selectPracticeForNotes({{ $practice->id }})">
+                                        <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
+                                        <div
+                                            class="absolute right-0 bottom-[2px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
+                                        </div>
+                                    </button>
+                                </div>
+                            @else
+                                <div class="flex items-center justify-center w-full" title="Nessuna nota disponibile">
                                     <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
-                                    <div
-                                        class="absolute right-0 bottom-[2px] flex items-center justify-center w-3 h-3 text-[10px] rounded-full bg-orange-custom">
-                                    </div>
-                                </button>
+                                </div>
+                            @endif
+                        </x-table-data>
+
+                        {{-- Actions --}}
+                        <x-table-data>
+                            <div class="flex items-center justify-end w-full gap-3">
+                                @can('view', $practice)
+                                    <a href="{{ route('practice.show', ['id' => $practice->id]) }}" wire:navigate>
+                                        <x-table-action-button-view />
+                                    </a>
+                                @endcan
+
+                                @can('update', $practice)
+                                    <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
+                                        <x-table-action-button-edit />
+                                    </a>
+                                @endcan
+
+                                @can('delete', $practice)
+                                    <x-table-action-button-delete
+                                        wire:click='selectPracticeForDelete({{ $practice->id }})' />
+                                @endcan
                             </div>
-                        @else
-                            <div class="flex items-center justify-center w-full" title="Nessuna nota disponibile">
-                                <x-icons.icon-akar-chat-bubble class="text-gray-custom-3" />
-                            </div>
-                        @endif
-                    </x-table-data>
+                        </x-table-data>
+                    </tr>
+                @endforeach
+            </x-table>
 
-                    {{-- Actions --}}
-                    <x-table-data>
-                        <div class="flex items-center justify-end w-full gap-3">
-                            @can('view', $practice)
-                                <a href="{{ route('practice.show', ['id' => $practice->id]) }}" wire:navigate>
-                                    <x-table-action-button-view />
-                                </a>
-                            @endcan
-
-                            @can('update', $practice)
-                                <a href="{{ route('practice.edit', ['id' => $practice->id]) }}" wire:navigate>
-                                    <x-table-action-button-edit />
-                                </a>
-                            @endcan
-
-                            @can('delete', $practice)
-                                <x-table-action-button-delete wire:click='selectPracticeForDelete({{ $practice->id }})' />
-                            @endcan
-                        </div>
-                    </x-table-data>
-                </tr>
-            @endforeach
-        </x-table>
-
-        {{-- Pagination buttons --}}
-        {{ $practices->links() }}
+            {{-- Pagination buttons --}}
+            {{ $this->rows->links() }}
+        @else
+            <div class="text-base py-4">
+                Nessuna pratica trovata.
+            </div>
+        @endif
     </x-card>
 
     {{-- Update Practice Status Modal --}}
