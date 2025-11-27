@@ -179,7 +179,7 @@ class LeadIndex extends Component
      */
     public function setLeadStatus(?string $value = null): void
     {
-        $this->setSelectValue('selectedLeadStatus', $value);
+        $this->setSelectValue('selectedLeadStatus', $value, reset: false);
     }
 
     /**
@@ -229,6 +229,7 @@ class LeadIndex extends Component
         }
 
         $this->selectedLead = null;
+        $this->resetPage();
         $this->dispatch('close-modal', 'update-lead-status');
     }
 

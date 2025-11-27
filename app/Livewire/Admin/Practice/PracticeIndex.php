@@ -460,7 +460,7 @@ class PracticeIndex extends Component
      */
     public function setPracticeStatus(?string $value = null): void
     {
-        $this->setSelectValue('selectedPracticeStatus', $value);
+        $this->setSelectValue('selectedPracticeStatus', $value, reset: false);
     }
 
     /**
