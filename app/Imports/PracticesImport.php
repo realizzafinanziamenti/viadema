@@ -124,9 +124,53 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
 
     public function onFailure(Failure ...$failures)
     {
-        foreach ($failures as $failure) {
-            $this->createActivityLog(null, 'import_validation_failure', 'Errore di validazione durante l\'importazione della pratica', $failure->values(), null, $failure);
-            Log::warning("Import fallito alla riga {$failure->row()}: " . implode(', ', $failure->errors()));
+        // Raggruppa per riga
+        $rows = collect($failures)->groupBy(fn($f) => $f->row());
+
+        foreach ($rows as $rowNumber => $failureGroup) {
+
+            // Unisci gli errori della riga
+            $errors = $failureGroup
+                ->flatMap(fn($f) => $f->errors())
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Prendi i valori della riga
+            $rowValues = $failureGroup->first()->values();
+
+            // Crea un FakeFailure che contiene TUTTI gli errori della riga
+            $fake = new class($rowNumber, $errors, $rowValues) {
+                public function __construct(
+                    public int $row,
+                    public array $errors,
+                    public array $values
+                ) {}
+                public function row()
+                {
+                    return $this->row;
+                }
+                public function errors()
+                {
+                    return $this->errors;
+                }
+                public function values()
+                {
+                    return $this->values;
+                }
+            };
+
+            // Log unico
+            Log::warning("Import fallito alla riga {$rowNumber}: " . implode(' | ', $errors));
+
+            $this->createActivityLog(
+                practice: null,
+                logName: 'import_validation_failure',
+                message: "Import lead fallito alla riga {$rowNumber}",
+                row: $rowValues,
+                e: null,
+                failures: $fake
+            );
         }
     }
 
@@ -135,13 +179,28 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         return 1000;
     }
 
+    /* Prepara i dati prima della validazione */
+    public function prepareForValidation(array $row)
+    {
+        $values = ['recapito_cell', 'cf_cl'];
+
+        foreach ($values as $key) {
+            if (isset($row[$key]) && !is_null($row[$key])) {
+                $row[$key] = (string) $row[$key];
+            }
+        }
+
+        return $row;
+    }
+
+    /* Regole di validazione */
     public function rules(): array
     {
         return [
             'pratica' => ['required', Rule::unique('practices', 'practice_code')],
 
             'cognome_nome_cliente' => ['required', 'string', 'max:255'],
-            'cf_cl' => ['required', 'string', 'max:16'],
+            'cf_cl' => ['nullable', 'string', 'max:16'],
             'recapito_cell' => ['required', 'string', 'min:10', 'max:20'],
             'data_nascita_cliente' => ['nullable'],
 
@@ -369,7 +428,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     /**
      * Crea un log di attività per l'importazione.
      */
-    protected function createActivityLog($practice, $logName, $message, $row = [], $e = null, $failure = null)
+    protected function createActivityLog($practice, $logName, $message, $row = [], $e = null, $failures = null)
     {
         $properties = [
             'import_type' => 'practices',
@@ -392,11 +451,11 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             ]);
         }
 
-        if ($failure) {
+        if ($failures) {
             $properties = array_merge($properties, [
-                'row_number' => $failure->row(),
-                'validation_errors' => $failure->errors(),
-                'failed_data' => $failure->values(),
+                'row_number' => $failures->row(),
+                'validation_errors' => $failures->errors(),
+                'failed_data' => $failures->values(),
             ]);
         }
 

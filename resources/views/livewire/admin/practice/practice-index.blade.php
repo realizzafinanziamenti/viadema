@@ -58,8 +58,7 @@
                 {{-- Checkbox --}}
                 <x-table-header class="w-[40px]">
                     <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
-                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
+                        <x-checkbox wire:model="pageSelected" wire:click="toggleSelectPage" />
                     </div>
                 </x-table-header>
 
@@ -86,7 +85,8 @@
                     {{-- Checkbox --}}
                     <x-table-data class="w-[40px]">
                         <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                            <x-checkbox wire:click="toggleSelection({{ $practice->id }})" :checked="$this->isSelected($practice->id)" />
+                            <x-checkbox wire:click="toggleSelection({{ $practice->id }})" :checked="$this->isSelected($practice->id)"
+                                wire:key="row-checkbox-{{ $practice->id }}-{{ (int) $this->isSelected($practice->id) }}" />
                         </div>
                     </x-table-data>
 

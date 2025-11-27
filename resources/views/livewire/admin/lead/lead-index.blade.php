@@ -17,7 +17,7 @@
                 @endcan
 
                 @can('import leads')
-                    <x-buttons.import-button />
+                    <x-buttons.import-button wire:click="openImportModal" />
                 @endcan
 
                 @can('create leads')
@@ -45,8 +45,7 @@
                 {{-- Checkbox --}}
                 <x-table-header class="w-[40px]">
                     <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
-                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
+                        <x-checkbox wire:model="pageSelected" wire:click="toggleSelectPage" />
                     </div>
                 </x-table-header>
                 <x-table-header label="N. Trattativa" class="w-[100px]" />
@@ -70,7 +69,8 @@
                     {{-- Checkbox --}}
                     <x-table-data class="w-[40px]">
                         <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                            <x-checkbox wire:click="toggleSelection({{ $lead->id }})" :checked="$this->isSelected($lead->id)" />
+                            <x-checkbox wire:click="toggleSelection({{ $lead->id }})" :checked="$this->isSelected($lead->id)"
+                                wire:key="row-checkbox-{{ $lead->id }}-{{ (int) $this->isSelected($lead->id) }}" />
                         </div>
                     </x-table-data>
 
@@ -153,4 +153,8 @@
 
     {{-- Notes Modal --}}
     @include('partials.lead.lead-notes-modal')
+
+    {{-- Import Modal --}}
+    <x-modals.import-modal name="import-leads-modal" header="Importa pratiche da Excel" submitFunction="importLeads"
+        :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :users="$users" :userId="$userId" :userSearch="$userSearch" />
 </div>

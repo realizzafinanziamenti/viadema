@@ -317,7 +317,12 @@ class PracticeIndex extends Component
             $defaultUser = $this->userId ? User::find($this->userId) : null;
 
             $import = new PracticesImport($defaultUser);
-            $users = User::role('superadmin')->get();
+
+            // Prepara la lista degli utenti da notificare
+            $users = User::role('superadmin')->get()
+                ->push(auth()->user())
+                ->unique('id')
+                ->values();
 
             Excel::queueImport($import, $this->importFile)
                 ->chain([
