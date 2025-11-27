@@ -38,9 +38,8 @@
 
     <x-slot name="content">
         @if ($searchable)
-            <flux:input size="sm" placeholder="{{ $placeholder }}"
-                wire:model.live.debounce.500ms="{{ $search }}" icon:trailing="magnifying-glass"
-                x-on:click.stop.prevent="true" />
+            <flux:input size="sm" placeholder="Cerca..." wire:model.live.debounce.500ms="{{ $search }}"
+                icon:trailing="magnifying-glass" x-on:click.stop.prevent="true" />
         @endif
 
         <div class="overflow-y-auto max-h-56">

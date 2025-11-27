@@ -41,47 +41,43 @@ class DisbursedComparison extends Component
     {
         $ranges = [];
 
-        // Retrieve the number of days in the month
         // Ottieni il numero di giorni nel mese
         $daysInMonth = $date->daysInMonth;
         $day = 1;
 
-        // Loop to generate day ranges (e.g. 1–5, 6–10, ...)
         // Cicla per generare intervalli di giorni (es. 1–5, 6–10, ...)
-        while ($day <= $daysInMonth) {
-            // Calculate the start day of the current range
+        while ($day <= $daysInMonth) {  // fissiamo a 30gg per coerenza visiva
             // Calcola il giorno di inizio dell'intervallo corrente
-            $start = $date->copy()->startOfMonth()->addDays($day - 1)->startOfDay();
+            $start = $date->copy()
+                ->startOfMonth()
+                ->addDays($day - 1)
+                ->startOfDay();
 
-            // Calculate the end day of the current range
             // Calcola il giorno di fine dell'intervallo corrente
-            $endDay = $day + $step - 1;
-            if ($endDay > $daysInMonth) {
-                // Prevent going past the end of the month
-                // Evita di superare la fine del mese
-                $endDay = $daysInMonth;
-            }
+            $endDay = min($day + $step - 1, $daysInMonth);
 
-            // Calculate the end date for the current range
             // Calcola la data di fine per l'intervallo corrente
-            $end = $date->copy()->startOfMonth()->addDays($endDay - 1)->endOfDay();
+            $end = $date->copy()
+                ->startOfMonth()
+                ->addDays($endDay - 1)
+                ->endOfDay();
 
-            // Add the range to the list with a label like "5gg", "10gg", etc.
+            // Label sempre arrotondata a "30gg" anche se il mese ha 31 giorni
+            $label = $endDay >= 30 ? '30gg' : $endDay . 'gg';
+
             // Aggiungi l'intervallo alla lista con un'etichetta come "5gg", "10gg", ecc.
             $ranges[] = [
-                'label' => $endDay . 'gg',
+                'label' => $label,
                 'start' => $start,
                 'end' => $end,
             ];
 
-            // Move to the next range block
             // Passa al blocco di intervallo successivo
             $day += $step;
         }
 
         return $ranges;
     }
-
     /**
      * Get the total disbursed amounts for each range in the current month.
      */

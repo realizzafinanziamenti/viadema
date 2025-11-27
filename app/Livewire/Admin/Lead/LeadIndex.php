@@ -4,18 +4,24 @@ namespace App\Livewire\Admin\Lead;
 
 use App\Enums\CustomerStatus;
 use App\Enums\LeadStatus;
+use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
 use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\ImportExcelCompleted;
+use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
+use App\Traits\WithBulkSelection;
 use Exception;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -24,22 +30,60 @@ use Masmerise\Toaster\Toaster;
 
 class LeadIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
 
     public ?Customer $selectedLead = null;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
     public $search = '';
-    public $importFile = null;
+    // Import file properties
+    public ?TemporaryUploadedFile $temporaryImportFile = null;
+    public ?TemporaryUploadedFile $importFile = null;
+    public ?int $userId = null;   // user for assigning imported practices
+    public string $userSearch = '';
+
+    /**
+     * Open the import modal
+     */
+    public function openImportModal(): void
+    {
+        $this->reset(['temporaryImportFile', 'importFile', 'userId', 'userSearch']);
+        $this->dispatch('open-modal', 'import-leads-modal');
+    }
 
     /**
      * Handle the file upload and import.
      */
-    public function updatedImportFile()
+    public function updatedTemporaryImportFile()
     {
-        if ($this->importFile) {
-            $this->importLeads();
+        if ($this->temporaryImportFile) {
+            $this->validate([
+                'temporaryImportFile' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:20480']
+            ], [
+                'temporaryImportFile.file' => 'File non valido.',
+                'temporaryImportFile.max' => 'Ogni file non può superare i 20MB.',
+                'temporaryImportFile.mimetypes' => 'Formato file non valido.',
+            ]);
+
+            $this->importFile = $this->temporaryImportFile;
         }
+    }
+
+    /**
+     * Remove the uploaded import file.
+     */
+    public function removeImportFile()
+    {
+        $this->importFile = null;
+        $this->temporaryImportFile = null;
+    }
+
+    /**
+     * Set user for import
+     */
+    public function setUserForImport(?int $value = null): void
+    {
+        $this->setSelectValue('userId', $value);
     }
 
     /**
@@ -51,27 +95,83 @@ class LeadIndex extends Component
 
         try {
             $this->validate([
-                'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+                'importFile' => ['required', 'file', 'mimes:xlsx,xls'],
+                'userId' => ['nullable', 'integer', 'exists:users,id'],
+            ], [
+                'importFile.required' => 'Devi selezionare un file da importare.',
+                'importFile.file' => 'File non valido.',
+                'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
+                'userId.exists' => 'L\'utente selezionato non esiste.',
             ]);
+
+            // Ottieni l'utente di default se è stato selezionato
+            $defaultUser = $this->userId ? User::find($this->userId) : null;
+
+            $import = new LeadsImport($defaultUser);
+
+            // Prepara la lista degli utenti da notificare
+            $users = User::role('superadmin')->get()
+                ->push(auth()->user())
+                ->unique('id')
+                ->values();
+
+            Excel::queueImport($import, $this->importFile)
+                ->chain([
+                    function () use ($import, $users) {
+                        // Invio notifica
+                        Notification::send($users, new ImportExcelCompleted('leads'));
+                    }
+                ]);
+
+            Toaster::success('Import avviato! Riceverai una notifica al termine.');
         } catch (Exception $e) {
             Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
-            $this->reset('importFile');
+        }
+
+        $this->reset(['temporaryImportFile', 'importFile', 'userId']);
+        $this->dispatch('close-modal', 'import-leads-modal');
+    }
+
+    /**
+     * Ensure that at least one lead is selected.
+     */
+    private function ensureSelectedLeads(): bool
+    {
+        if (empty($this->selected)) {
+            Toaster::error("Seleziona almeno un profilo per procedere con l'esportazione.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Export leads based on selected IDs
+     */
+    public function exportSelectedLeads()
+    {
+        Gate::authorize('exportLead', Customer::class);
+
+        if (!$this->ensureSelectedLeads()) {
             return;
         }
 
-        $import = new LeadsImport;
-        $users = User::role('superadmin')->get();
+        try {
+            $query = Customer::whereIn('id', $this->selected);
 
-        Excel::queueImport($import, $this->importFile)
-            ->chain([
-                function () use ($import, $users) {
-                    // Invio notifica
-                    Notification::send($users, new ImportExcelCompleted('leads'));
-                }
+            return Excel::download(
+                new LeadsExport($query),
+                'leads_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+            );
+        } catch (Exception $e) {
+            Log::error('Errore durante l\'export lead: ' . $e->getMessage(), [
+                'selected_leads' => $this->selected,
+                'user_id' => auth()->id(),
             ]);
 
-        Toaster::success('Import avviato! Riceverai una notifica al termine.');
-        $this->reset('importFile');
+            Toaster::error('Errore durante l\'esportazione dei profili. Riprova più tardi.');
+            return;
+        }
     }
 
     /**
@@ -79,7 +179,7 @@ class LeadIndex extends Component
      */
     public function setLeadStatus(?string $value = null): void
     {
-        $this->setSelectValue('selectedLeadStatus', $value);
+        $this->setSelectValue('selectedLeadStatus', $value, reset: false);
     }
 
     /**
@@ -129,6 +229,7 @@ class LeadIndex extends Component
         }
 
         $this->selectedLead = null;
+        $this->resetPage();
         $this->dispatch('close-modal', 'update-lead-status');
     }
 
@@ -170,6 +271,23 @@ class LeadIndex extends Component
         $this->resetPage();
     }
 
+    #[Computed]
+    public function query()
+    {
+        return Customer::with('user', 'customerType')
+            ->leads()
+            ->filteredForDepartment()
+            ->filterBySearch($this->search)
+            ->orderByDesc('updated_at');
+    }
+
+    #[Computed]
+    public function rows()
+    {
+        return $this->query()
+            ->paginate(15);
+    }
+
     public function mount()
     {
         Gate::authorize('viewAny', [Customer::class, CustomerStatus::LEAD]);
@@ -180,16 +298,16 @@ class LeadIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Customer::with('user', 'customerType')
-            ->leads()
-            ->filteredForDepartment()
-            ->orderByDesc('updated_at');
-
-        $query = $query->filterBySearch($this->search);
-        $leads = $query->paginate(15);
+        $users = User::assignableUsers()
+            ->filterBySearch($this->userSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
 
         return view('livewire.admin.lead.lead-index', [
-            'leads' => $leads,
+            'users' => $users,
         ]);
     }
 }

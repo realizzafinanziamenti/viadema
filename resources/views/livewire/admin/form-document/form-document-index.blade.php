@@ -16,71 +16,77 @@
             </div>
 
             @can('create form documents')
-                <x-buttons.create-button label="Carica documento" wire:click='openCreateDocumentModal' />
+                <x-buttons.create-button wire:click='openCreateDocumentModal' />
             @endcan
         </div>
 
-        <div class="grid grid-cols-4 xl:grid-cols-5 gap-8 mb-5">
-            {{-- Loop through form documents --}}
-            @foreach ($formDocuments as $index => $document)
-                <div class="h-[180px] border border-gray-custom-2 flex flex-col">
-                    <div class="bg-blue-custom-light rounded-sm flex items-center justify-center flex-1">
-                        <x-icons.icon-akar-paper
-                            class="size-17 transition-transform duration-200 ease-in-out hover:scale-110" fill="#004CA4"
-                            stroke="#effafe" :title="$document->description" />
-                    </div>
-
-                    <div class="h-12 border-t border-gray-custom-2 p-2 flex items-center justify-between gap-4">
-                        <div class="truncate">
-                            <div class="text-xs font-semibold text-gray-custom-5 truncate"
-                                title="{{ $document->title }}">{{ $document->title }}</div>
-                            <div class="text-xs text-gray-custom-5 truncate">
-                                {{ $document->formatted_created_at }}</div>
+        @if (count($formDocuments) > 0)
+            <div class="grid grid-cols-4 xl:grid-cols-5 gap-8 mb-5">
+                {{-- Loop through form documents --}}
+                @foreach ($formDocuments as $index => $document)
+                    <div class="h-[180px] border border-gray-custom-2 flex flex-col">
+                        <div class="bg-blue-custom-light rounded-sm flex items-center justify-center flex-1">
+                            <x-icons.icon-akar-paper
+                                class="size-17 transition-transform duration-200 ease-in-out hover:scale-110"
+                                fill="#004CA4" stroke="#effafe" :title="$document->description" />
                         </div>
 
-                        @php
-                            // Setta top per gli ultimi 5 elementi per pagina (fila di sotto)
-                            $align = $index >= count($formDocuments) - 5 ? 'top' : 'right';
-                        @endphp
+                        <div class="h-12 border-t border-gray-custom-2 p-2 flex items-center justify-between gap-4">
+                            <div class="truncate">
+                                <div class="text-xs font-semibold text-gray-custom-5 truncate"
+                                    title="{{ $document->title }}">{{ $document->title }}</div>
+                                <div class="text-xs text-gray-custom-5 truncate">
+                                    {{ $document->formatted_created_at }}</div>
+                            </div>
 
-                        <x-dropdown :align="$align" width="w-30">
-                            <x-slot name="trigger">
-                                <div
-                                    class="shrink-0 text-gray-custom-5 rounded-full flex items-center justify-center cursor-pointer size-6.5">
-                                    <x-icons.icon-akar-more class="size-4" />
-                                </div>
-                            </x-slot>
+                            @php
+                                // Setta top per gli ultimi 5 elementi per pagina (fila di sotto)
+                                $align = $index >= count($formDocuments) - 5 ? 'top' : 'right';
+                            @endphp
 
-                            <x-slot name="content">
-                                @can('download form documents')
-                                    <x-dropdown-button class="cursor-pointer rounded-t-md"
-                                        wire:click='download({{ $document->id }})'>
-                                        Scarica
-                                    </x-dropdown-button>
-                                @endcan
+                            <x-dropdown :align="$align" width="w-30">
+                                <x-slot name="trigger">
+                                    <div
+                                        class="shrink-0 text-gray-custom-5 rounded-full flex items-center justify-center cursor-pointer size-6.5">
+                                        <x-icons.icon-akar-more class="size-4" />
+                                    </div>
+                                </x-slot>
 
-                                @can('update form documents')
-                                    <x-dropdown-button class="cursor-pointer"
-                                        wire:click='selectDocumentForUpdate({{ $document->id }})'>
-                                        Rinomina
-                                    </x-dropdown-button>
-                                @endcan
+                                <x-slot name="content">
+                                    @can('download form documents')
+                                        <x-dropdown-button class="cursor-pointer rounded-t-md"
+                                            wire:click='download({{ $document->id }})'>
+                                            Scarica
+                                        </x-dropdown-button>
+                                    @endcan
 
-                                @can('delete form documents')
-                                    <x-dropdown-button class="cursor-pointer rounded-b-md"
-                                        wire:click='selectDocumentForDelete({{ $document->id }})'>
-                                        Elimina
-                                    </x-dropdown-button>
-                                @endcan
-                            </x-slot>
-                        </x-dropdown>
+                                    @can('update form documents')
+                                        <x-dropdown-button class="cursor-pointer"
+                                            wire:click='selectDocumentForUpdate({{ $document->id }})'>
+                                            Rinomina
+                                        </x-dropdown-button>
+                                    @endcan
+
+                                    @can('delete form documents')
+                                        <x-dropdown-button class="cursor-pointer rounded-b-md"
+                                            wire:click='selectDocumentForDelete({{ $document->id }})'>
+                                            Elimina
+                                        </x-dropdown-button>
+                                    @endcan
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
 
-        {{-- Pagination buttons --}}
-        {{ $formDocuments->links() }}
+            {{-- Pagination buttons --}}
+            {{ $formDocuments->links() }}
+        @else
+            <div class="text-base py-4">
+                Nessun modulo trovato.
+            </div>
+        @endif
 
         {{-- Create New Document Modal --}}
         <x-modal name="document-create" maxWidth="xl">

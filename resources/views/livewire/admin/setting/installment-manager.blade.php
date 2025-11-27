@@ -4,8 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create installments')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea rate"
-                    wire:click="openCreateInstallmentModal" />
+                <x-buttons.create-button size="sm" px="px-6" wire:click="openCreateInstallmentModal" />
             @endcan
         </div>
 

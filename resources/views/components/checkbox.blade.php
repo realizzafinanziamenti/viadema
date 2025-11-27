@@ -1,12 +1,12 @@
-@props(['label' => null, 'labelTextColor' => 'text-gray-custom-4'])
+@props(['label' => null, 'labelTextColor' => 'text-gray-custom-4', 'checked' => false])
 
 <div class="inline-flex items-center">
     <label class="flex items-center cursor-pointer">
         <div class="relative flex-shrink-0 flex items-center justify-center">
-            <input type="checkbox"
+            <input type="checkbox" @checked($checked)
                 {{ $attributes->merge([
                     'class' =>
-                        'peer h-3 w-3 cursor-pointer transition-all appearance-none rounded-xs bg-white border border-zinc-200 checked:bg-azure-custom checked:border-azure-custom',
+                        'peer h-3 w-3 cursor-pointer transition-all appearance-none rounded-xs bg-white border border-gray-300 checked:bg-azure-custom checked:border-azure-custom',
                 ]) }} />
 
             <span

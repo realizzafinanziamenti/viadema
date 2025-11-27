@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Practice;
 
 use App\Enums\PracticeOrderBy;
 use App\Enums\PracticeStatus;
+use App\Exports\PracticesExport;
 use App\Imports\PracticesImport;
 use App\Livewire\Layout\NotificationButton;
 use App\Livewire\Layout\NotificationModal;
@@ -18,17 +19,21 @@ use App\Models\ProductType;
 use App\Models\User;
 use App\Notifications\ImportExcelCompleted;
 use App\Rules\ExceptEnumValues;
+use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
+use App\Traits\WithBulkSelection;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
@@ -37,7 +42,7 @@ use Masmerise\Toaster\Toaster;
 
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads;
+    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads, AcceptedFileTypes, WithBulkSelection;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
@@ -135,7 +140,11 @@ class PracticeIndex extends Component
     // Order by select
     public array $orderBySelect = [];
     public PracticeOrderBy $selectedOrderBy = PracticeOrderBy::UPDATED_AT_DESC;
-    public $importFile = null;
+    // Import file properties
+    public ?TemporaryUploadedFile $temporaryImportFile = null;
+    public ?TemporaryUploadedFile $importFile = null;
+    public ?int $userId = null;   // user for assigning imported practices
+    public string $userSearch = '';
 
     protected function rules(): array
     {
@@ -243,13 +252,47 @@ class PracticeIndex extends Component
     }
 
     /**
+     * Open the import modal
+     */
+    public function openImportModal(): void
+    {
+        $this->reset(['temporaryImportFile', 'importFile', 'userId', 'userSearch']);
+        $this->dispatch('open-modal', 'import-practices-modal');
+    }
+
+    /**
      * Handle the file upload and import.
      */
-    public function updatedImportFile()
+    public function updatedTemporaryImportFile()
     {
-        if ($this->importFile) {
-            $this->importPractices();
+        if ($this->temporaryImportFile) {
+            $this->validate([
+                'temporaryImportFile' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:20480']
+            ], [
+                'temporaryImportFile.file' => 'File non valido.',
+                'temporaryImportFile.max' => 'Ogni file non può superare i 20MB.',
+                'temporaryImportFile.mimetypes' => 'Formato file non valido.',
+            ]);
+
+            $this->importFile = $this->temporaryImportFile;
         }
+    }
+
+    /**
+     * Remove the uploaded import file.
+     */
+    public function removeImportFile()
+    {
+        $this->importFile = null;
+        $this->temporaryImportFile = null;
+    }
+
+    /**
+     * Set user for import
+     */
+    public function setUserForImport(?int $value = null): void
+    {
+        $this->setSelectValue('userId', $value);
     }
 
     /**
@@ -261,27 +304,82 @@ class PracticeIndex extends Component
 
         try {
             $this->validate([
-                'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+                'importFile' => ['required', 'file', 'mimes:xlsx,xls'],
+                'userId' => ['nullable', 'integer', 'exists:users,id'],
+            ], [
+                'importFile.required' => 'Devi selezionare un file da importare.',
+                'importFile.file' => 'File non valido.',
+                'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
+                'userId.exists' => 'L\'utente selezionato non esiste.',
             ]);
+
+            // Ottieni l'utente di default se è stato selezionato
+            $defaultUser = $this->userId ? User::find($this->userId) : null;
+
+            $import = new PracticesImport($defaultUser);
+
+            // Prepara la lista degli utenti da notificare
+            $users = User::role('superadmin')->get()
+                ->push(auth()->user())
+                ->unique('id')
+                ->values();
+
+            Excel::queueImport($import, $this->importFile)
+                ->chain([
+                    function () use ($import, $users) {
+                        // Invio notifica
+                        Notification::send($users, new ImportExcelCompleted('practices'));
+                    }
+                ]);
+
+            Toaster::success('Import avviato! Riceverai una notifica al termine.');
         } catch (Exception $e) {
             Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
-            $this->reset('importFile');
+        }
+
+        $this->reset(['temporaryImportFile', 'importFile', 'userId']);
+        $this->dispatch('close-modal', 'import-practices-modal');
+    }
+
+    /**
+     * Ensure that at least one practice is selected.
+     */
+    private function ensureSelectedPractices(): bool
+    {
+        if (empty($this->selected)) {
+            Toaster::error("Seleziona almeno un profilo per procedere con l'esportazione.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Export practices based on selected IDs
+     */
+    public function exportSelectedPractices()
+    {
+        Gate::authorize('exportPractice', Practice::class);
+        if (!$this->ensureSelectedPractices()) {
             return;
         }
 
-        $import = new PracticesImport;
-        $users = User::role('superadmin')->get();
+        try {
+            $query = Practice::whereIn('id', $this->selected);
 
-        Excel::queueImport($import, $this->importFile)
-            ->chain([
-                function () use ($import, $users) {
-                    // Invio notifica
-                    Notification::send($users, new ImportExcelCompleted('practices'));
-                }
+            return Excel::download(
+                new PracticesExport($query),
+                'pratiche_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+            );
+        } catch (Exception $e) {
+            Log::error('Errore durante l\'export practice: ' . $e->getMessage(), [
+                'selected_practices' => $this->selected,
+                'user_id' => auth()->id(),
             ]);
 
-        Toaster::success('Import avviato! Riceverai una notifica al termine.');
-        $this->reset('importFile');
+            Toaster::error('Errore durante l\'esportazione delle pratiche. Riprova più tardi.');
+            return;
+        }
     }
 
     /**
@@ -362,7 +460,7 @@ class PracticeIndex extends Component
      */
     public function setPracticeStatus(?string $value = null): void
     {
-        $this->setSelectValue('selectedPracticeStatus', $value);
+        $this->setSelectValue('selectedPracticeStatus', $value, reset: false);
     }
 
     /**
@@ -806,6 +904,27 @@ class PracticeIndex extends Component
         return $query;
     }
 
+    #[Computed]
+    public function query()
+    {
+        $query = Practice::with('customer', 'user', 'productType')
+            ->filteredForDepartment()
+            ->filterByProductType($this->type)
+            ->isExpired($this->expired)
+            ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction())
+            ->filterBySearch($this->search);
+
+        $query = $this->applyFilters($query);
+        return $query;
+    }
+
+    #[Computed]
+    public function rows()
+    {
+        return $this->query()
+            ->paginate(15);
+    }
+
     public function mount(Request $request): void
     {
         Gate::authorize('viewAny', Practice::class);
@@ -841,19 +960,17 @@ class PracticeIndex extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
-        $query = Practice::with('customer', 'user', 'productType')
-            ->filteredForDepartment()
-            ->filterByProductType($this->type)
-            ->isExpired($this->expired)
-            ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction());
-
-        $query = $query->filterBySearch($this->search);
-        $query = $this->applyFilters($query);
-        $practices = $query->paginate(15);
-
         // Fetch team members and customers for the dropdowns
         $teamMembers = User::assignableUsers()
             ->filterBySearch($this->teamMemberSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
+
+        $users = User::assignableUsers()
+            ->filterBySearch($this->userSearch)
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get()
@@ -868,10 +985,10 @@ class PracticeIndex extends Component
             ->toArray();
 
         return view('livewire.admin.practice.practice-index', [
-            'practices' => $practices,
             'productType' => $this->type,
             'expired' => $this->expired,
             'teamMembers' => $teamMembers,
+            'users' => $users,
             'customers' => $customers,
         ]);
     }

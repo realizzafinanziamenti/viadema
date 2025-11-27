@@ -4,8 +4,7 @@
 
         <div class="flex justify-end items-center mb-5">
             @can('create insurances')
-                <x-buttons.create-button size="sm" px="px-6" label="Crea assicurazione"
-                    wire:click="openCreateInsuranceModal" />
+                <x-buttons.create-button size="sm" px="px-6" wire:click="openCreateInsuranceModal" />
             @endcan
         </div>
 
