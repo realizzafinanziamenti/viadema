@@ -35,75 +35,82 @@
             </div>
         @endif
 
-        <x-table class="mb-5">
-            {{-- Table Header --}}
-            <x-slot name="header" class="border-b">
-                {{-- Checkbox --}}
-                <x-table-header class="w-[40px]">
-                    <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                        <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
-                            wire:key="selectPage-{{ $this->rows->currentPage() }}" />
-                    </div>
-                </x-table-header>
-                <x-table-header label="Id cliente" class="w-2/20" />
-                <x-table-header label="Nome cliente" class="w-4/20" />
-                <x-table-header label="Cellulare" class="w-3/20" />
-                <x-table-header label="Codice fiscale" class="w-3/20" />
-                <x-table-header label="Città" class="w-3/20" />
-                <x-table-header label="Email" class="w-3/20" />
-                <x-table-header label="Collaboratore" class="w-4/20" />
-                <x-table-header class="w-[150px]">
-                    {{-- Actions --}}
-                </x-table-header>
-            </x-slot>
-
-            {{-- Table body --}}
-            @foreach ($this->rows as $customer)
-                <tr wire:key='{{ $customer->id }}' class="border-y border-collapse">
+        @if (count($this->rows) > 0)
+            <x-table class="mb-5">
+                {{-- Table Header --}}
+                <x-slot name="header" class="border-b">
                     {{-- Checkbox --}}
-                    <x-table-data class="w-[40px]">
+                    <x-table-header class="w-[40px]">
                         <div class="inline-flex items-center justify-start ps-1 w-full h-full">
-                            <x-checkbox wire:click="toggleSelection({{ $customer->id }})" :checked="$this->isSelected($customer->id)" />
+                            <x-checkbox :checked="$this->isPageFullySelected" wire:click="toggleSelectPage"
+                                wire:key="selectPage-{{ $this->rows->currentPage() }}" />
                         </div>
-                    </x-table-data>
+                    </x-table-header>
+                    <x-table-header label="Id cliente" class="w-2/20" />
+                    <x-table-header label="Nome cliente" class="w-4/20" />
+                    <x-table-header label="Cellulare" class="w-3/20" />
+                    <x-table-header label="Codice fiscale" class="w-3/20" />
+                    <x-table-header label="Città" class="w-3/20" />
+                    <x-table-header label="Email" class="w-3/20" />
+                    <x-table-header label="Collaboratore" class="w-4/20" />
+                    <x-table-header class="w-[150px]">
+                        {{-- Actions --}}
+                    </x-table-header>
+                </x-slot>
 
-                    <x-table-data label="{{ $customer->formatted_id }}" />
-                    <x-table-data truncate label="{{ $customer->full_name }}" />
-                    <x-table-data truncate label="{{ $customer->phone }}" />
-                    <x-table-data truncate label="{{ $customer->tax_id ?? 'N/D' }}" />
-                    <x-table-data truncate label="{{ $customer->city ?? 'N/D' }}" />
-                    <x-table-data truncate label="{{ $customer->email ?? 'N/D' }}" />
+                {{-- Table body --}}
+                @foreach ($this->rows as $customer)
+                    <tr wire:key='{{ $customer->id }}' class="border-y border-collapse">
+                        {{-- Checkbox --}}
+                        <x-table-data class="w-[40px]">
+                            <div class="inline-flex items-center justify-start ps-1 w-full h-full">
+                                <x-checkbox wire:click="toggleSelection({{ $customer->id }})" :checked="$this->isSelected($customer->id)" />
+                            </div>
+                        </x-table-data>
 
-                    <x-table-data class="inline-flex items-center">
-                        <x-user-table-data :user="$customer->user" />
-                    </x-table-data>
+                        <x-table-data label="{{ $customer->formatted_id }}" />
+                        <x-table-data truncate label="{{ $customer->full_name }}" />
+                        <x-table-data truncate label="{{ $customer->phone }}" />
+                        <x-table-data truncate label="{{ $customer->tax_id ?? 'N/D' }}" />
+                        <x-table-data truncate label="{{ $customer->city ?? 'N/D' }}" />
+                        <x-table-data truncate label="{{ $customer->email ?? 'N/D' }}" />
 
-                    {{-- Actions --}}
-                    <x-table-data>
-                        <div class="flex items-center justify-end w-full gap-3">
-                            @can('view', $customer)
-                                <a href="{{ route('customer.show', ['id' => $customer->id]) }}" wire:navigate>
-                                    <x-table-action-button-view />
-                                </a>
-                            @endcan
+                        <x-table-data class="inline-flex items-center">
+                            <x-user-table-data :user="$customer->user" />
+                        </x-table-data>
 
-                            @can('update', $customer)
-                                <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate>
-                                    <x-table-action-button-edit />
-                                </a>
-                            @endcan
+                        {{-- Actions --}}
+                        <x-table-data>
+                            <div class="flex items-center justify-end w-full gap-3">
+                                @can('view', $customer)
+                                    <a href="{{ route('customer.show', ['id' => $customer->id]) }}" wire:navigate>
+                                        <x-table-action-button-view />
+                                    </a>
+                                @endcan
 
-                            @can('delete', $customer)
-                                <x-table-action-button-delete wire:click='selectCustomerForDelete({{ $customer->id }})' />
-                            @endcan
-                        </div>
-                    </x-table-data>
-                </tr>
-            @endforeach
-        </x-table>
+                                @can('update', $customer)
+                                    <a href="{{ route('customer.edit', ['id' => $customer->id]) }}" wire:navigate>
+                                        <x-table-action-button-edit />
+                                    </a>
+                                @endcan
 
-        {{-- Pagination buttons --}}
-        {{ $this->rows->links() }}
+                                @can('delete', $customer)
+                                    <x-table-action-button-delete
+                                        wire:click='selectCustomerForDelete({{ $customer->id }})' />
+                                @endcan
+                            </div>
+                        </x-table-data>
+                    </tr>
+                @endforeach
+            </x-table>
+
+            {{-- Pagination buttons --}}
+            {{ $this->rows->links() }}
+        @else
+            <div class="text-base py-4">
+                Nessun cliente trovato.
+            </div>
+        @endif
     </x-card>
 
     {{-- Delete User Modal --}}

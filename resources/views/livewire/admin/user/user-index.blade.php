@@ -18,58 +18,64 @@
             @endcan
         </div>
 
-        {{-- Team Table --}}
-        <x-table class="mb-5">
-            <x-slot name="header" class="border-b">
-                <x-table-header label="Id collaboratore" class="w-1/12" />
-                <x-table-header label="Nome collaboratore" class="w-2/12" />
-                <x-table-header label="Personale" class="w-2/12" />
-                <x-table-header label="Cellulare" class="w-[160px]" />
-                <x-table-header label="Codice fiscale" class="w-[170px]" />
-                <x-table-header label="Email" class="w-2/12" />
-                <x-table-header label="Città" class="w-2/12" />
-                <x-table-header class="w-[150px]">
-                    {{-- Actions --}}
-                </x-table-header>
-            </x-slot>
+        @if (count($teamMembers) > 0)
+            {{-- Team Table --}}
+            <x-table class="mb-5">
+                <x-slot name="header" class="border-b">
+                    <x-table-header label="Id collaboratore" class="w-1/12" />
+                    <x-table-header label="Nome collaboratore" class="w-2/12" />
+                    <x-table-header label="Personale" class="w-2/12" />
+                    <x-table-header label="Cellulare" class="w-[160px]" />
+                    <x-table-header label="Codice fiscale" class="w-[170px]" />
+                    <x-table-header label="Email" class="w-2/12" />
+                    <x-table-header label="Città" class="w-2/12" />
+                    <x-table-header class="w-[150px]">
+                        {{-- Actions --}}
+                    </x-table-header>
+                </x-slot>
 
-            {{-- Table body --}}
-            @foreach ($teamMembers as $teamMember)
-                <tr wire:key='{{ $teamMember->id }}' class="border-y border-collapse">
-                    <x-table-data label="{{ $teamMember->formatted_id }}" />
-                    <x-table-data truncate label="{{ $teamMember->full_name }}" />
-                    <x-table-data truncate
-                        class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"
-                        label="{{ $teamMember->department?->getLabelText() }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile?->tax_id ?? 'N/D' }}" />
-                    <x-table-data truncate label="{{ $teamMember->email }}" />
-                    <x-table-data truncate label="{{ $teamMember->profile?->city }}" />
+                {{-- Table body --}}
+                @foreach ($teamMembers as $teamMember)
+                    <tr wire:key='{{ $teamMember->id }}' class="border-y border-collapse">
+                        <x-table-data label="{{ $teamMember->formatted_id }}" />
+                        <x-table-data truncate label="{{ $teamMember->full_name }}" />
+                        <x-table-data truncate
+                            class="uppercase font-semibold {{ $teamMember->department?->getLabelColor() }}"
+                            label="{{ $teamMember->department?->getLabelText() }}" />
+                        <x-table-data truncate label="{{ $teamMember->profile?->phone }}" />
+                        <x-table-data truncate label="{{ $teamMember->profile?->tax_id ?? 'N/D' }}" />
+                        <x-table-data truncate label="{{ $teamMember->email }}" />
+                        <x-table-data truncate label="{{ $teamMember->profile?->city }}" />
 
-                    {{-- Actions --}}
-                    <x-table-data class="inline-flex items-center justify-end w-full gap-3">
-                        @can('view', $teamMember)
-                            <a href="{{ route('user.show', ['id' => $teamMember->id]) }}" wire:navigate>
-                                <x-table-action-button-view />
-                            </a>
-                        @endcan
+                        {{-- Actions --}}
+                        <x-table-data class="inline-flex items-center justify-end w-full gap-3">
+                            @can('view', $teamMember)
+                                <a href="{{ route('user.show', ['id' => $teamMember->id]) }}" wire:navigate>
+                                    <x-table-action-button-view />
+                                </a>
+                            @endcan
 
-                        @can('update', $teamMember)
-                            <a href="{{ route('user.edit', ['id' => $teamMember->id]) }}" wire:navigate>
-                                <x-table-action-button-edit />
-                            </a>
-                        @endcan
+                            @can('update', $teamMember)
+                                <a href="{{ route('user.edit', ['id' => $teamMember->id]) }}" wire:navigate>
+                                    <x-table-action-button-edit />
+                                </a>
+                            @endcan
 
-                        @can('delete', $teamMember)
-                            <x-table-action-button-delete wire:click='selectUserForDelete({{ $teamMember->id }})' />
-                        @endcan
-                    </x-table-data>
-                </tr>
-            @endforeach
-        </x-table>
+                            @can('delete', $teamMember)
+                                <x-table-action-button-delete wire:click='selectUserForDelete({{ $teamMember->id }})' />
+                            @endcan
+                        </x-table-data>
+                    </tr>
+                @endforeach
+            </x-table>
 
-        {{-- Pagination buttons --}}
-        {{ $teamMembers->links() }}
+            {{-- Pagination buttons --}}
+            {{ $teamMembers->links() }}
+        @else
+            <div class="text-base py-4">
+                Nessun collaboratore trovato.
+            </div>
+        @endif
     </x-card>
 
     {{-- Delete User Modal --}}
