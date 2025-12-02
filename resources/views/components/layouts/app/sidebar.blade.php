@@ -1,132 +1,206 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
-            <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
-                <x-app-logo />
-            </a>
+<head>
+    @include('partials.head')
 
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+    @wirechatStyles
+</head>
+
+<body class="min-h-screen bg-gray-custom-1 flex">
+    <flux:sidebar stashable
+        class="border-e border-zinc-200 bg-white w-[264px] shrink-0 gap-3.5! px-0 h-screen overflow-y-auto">
+        {{-- <flux:sidebar.toggle class="lg:hidden" icon="x-mark" /> --}}
+
+        {{-- Sidebar Logo --}}
+        <div class="flex items-end justify-center py-2">
+            <img src="{{ asset('images/viadema-logo.png') }}" alt="Logo" class="h-[105px] w-auto">
+        </div>
+
+        <flux:navlist class="overflow-y-auto ps-6 pe-4 scrollbar-none hover:scrollbar-thin pb-6">
+            {{-- Sidebar Search --}}
+            {{-- HOME --}}
+            @can('access dashboard')
+                <flux:navlist.group heading="Home" class="grid">
+                    <x-sidebar-item route="dashboard" routeIs="dashboard" label="Dashboard">
+                        <x-icons.icon-akar-home />
+                    </x-sidebar-item>
                 </flux:navlist.group>
-            </flux:navlist>
+            @endcan
 
-            <flux:spacer />
+            {{-- CRM --}}
+            <flux:navlist.group heading="Crm" class="grid">
+                {{-- Practices --}}
+                @can('access practices')
+                    <flux:navlist.group heading="Prodotti" class="grid mb-0!" expandable customIcon="icon-akar-folder">
+                        @php
+                            $productTypes = App\Models\ProductType::all();
+                        @endphp
 
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
+                        @foreach ($productTypes as $type)
+                            <x-sidebar-item :route="['practice.index', ['slug' => $type->slug]]" :activeWhenSlug="$type->slug" routeIs="practice"
+                                label="{{ $type->name }}" bullet />
+                        @endforeach
+                    </flux:navlist.group>
+                @endcan
 
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
+                @can('access simulator')
+                    <x-sidebar-item route="simulator.index" routeIs="simulator" label="Simulatore">
+                        <x-icons.icon-akar-star />
+                    </x-sidebar-item>
+                @endcan
 
-            <!-- Desktop User Menu -->
-            <flux:dropdown position="bottom" align="start">
-                <flux:profile
-                    :name="auth()->user()->name"
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevrons-up-down"
-                />
+                @can('access practices')
+                    <x-sidebar-item route="practice.index" routeIs="practice" label="Gestione Pratiche">
+                        <x-icons.icon-akar-paper />
+                    </x-sidebar-item>
+                @endcan
 
-                <flux:menu class="w-[220px]">
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
-                                </span>
+                @can('access practices')
+                    <x-sidebar-item :route="['practice.index', ['expired' => 1]]" :activeWhenExpired="true" routeIs="practice" label="Archivio Pratiche">
+                        <x-icons.icon-akar-inbox />
+                    </x-sidebar-item>
+                @endcan
 
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
-                                </div>
-                            </div>
+                @can('access customers')
+                    <x-sidebar-item route="customer.index" routeIs="customer" label="Anagrafica Clienti">
+                        <x-icons.icon-akar-people-group />
+                    </x-sidebar-item>
+                @endcan
+
+                @can('access leads')
+                    <x-sidebar-item route="lead.index" routeIs="lead" label="Leads">
+                        <x-icons.icon-akar-draft />
+                    </x-sidebar-item>
+                @endcan
+
+                @can('access form documents')
+                    <x-sidebar-item route="form-document.index" routeIs="form-document" label="Modulistica">
+                        <x-icons.icon-akar-clipboard />
+                    </x-sidebar-item>
+                @endcan
+            </flux:navlist.group>
+
+            {{-- CALENDAR --}}
+            <flux:navlist.group heading="Calendario" class="grid">
+                @can('access calendar')
+                    <x-sidebar-item route="calendar" routeIs="calendar" label="Calendario">
+                        <x-icons.icon-akar-calendar />
+                    </x-sidebar-item>
+                @endcan
+
+                @can('access activity log')
+                    <x-sidebar-item route="activity-log.index" routeIs="activity-log" label="Elenco Attività">
+                        <x-icons.icon-akar-grid />
+                    </x-sidebar-item>
+                @endcan
+            </flux:navlist.group>
+
+            {{-- MANAGEMENT --}}
+            <flux:navlist.group heading="Gestione" class="grid">
+                @can('access users')
+                    <x-sidebar-item route="user.index" routeIs="user" label="Gestione Collaboratori">
+                        <x-icons.icon-akar-people-multiple />
+                    </x-sidebar-item>
+                @endcan
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Obiettivi & Report">
+                    <x-icons.icon-akar-statistic-up />
+                </x-sidebar-item>
+
+                @can('access settings')
+                    <x-sidebar-item route="setting.index" routeIs="setting" label="Impostazioni">
+                        <x-icons.icon-akar-settings-horizontal />
+                    </x-sidebar-item>
+                @endcan
+
+                <x-sidebar-item route="dashboard" routeIs="#" label="Chat Assistenza">
+                    <x-icons.icon-akar-settings-horizontal />
+                </x-sidebar-item>
+            </flux:navlist.group>
+        </flux:navlist>
+
+        {{-- <div class="py-3"></div> --}}
+    </flux:sidebar>
+
+    <div class="flex flex-col w-full h-screen overflow-hidden">
+        {{-- Header --}}
+        <flux:header
+            class="flex justify-end px-4 text-white bg-azure-custom h-[78px] shrink-0 sm:px-6 lg:px-10 xl:px-20">
+            <div class="flex">
+                {{-- Circle Plus Button --}}
+                {{-- <button class="p-1 mx-2.5" title="Importa pratiche">
+                    <x-icons.icon-akar-circle-plus />
+                </button> --}}
+
+                {{-- Chat Button --}}
+                <livewire:layout.chat-button />
+
+                {{-- Notification Button and Drawer --}}
+                <livewire:layout.notification-button />
+            </div>
+
+            <!-- Profile button -->
+            <x-dropdown dropdownClasses="ms-3.5" width="w-32">
+                <x-slot name="trigger">
+                    <button
+                        class="bg-azure-custom flex items-center h-full gap-5 p-2 text-sm leading-4 transition duration-150 ease-in-out rounded-full cursor-pointer">
+                        <div class="flex items-center">
+                            <img class="object-cover w-10 h-10 bg-white rounded-full"
+                                src="{{ auth()->user()->getProfilePhotoUrl() }}" alt="Profile Photo">
                         </div>
-                    </flux:menu.radio.group>
 
-                    <flux:menu.separator />
-
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
-        </flux:sidebar>
-
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-            <flux:spacer />
-
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
-                                </span>
-
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
-                                </div>
+                        <div class="flex flex-col items-start gap-1">
+                            <div x-data="{{ json_encode(['name' => auth()->user()->full_name]) }}" x-text="name" class="font-semibold"
+                                x-on:profile-updated.window="name = $event.detail.name">
                             </div>
+
+                            <div x-data="{{ json_encode(['role' => auth()->user()->getRoleDescription()]) }}" x-text="role"
+                                x-on:profile-updated.window="role = $event.detail.role" class="font-extralight"></div>
                         </div>
-                    </flux:menu.radio.group>
+                    </button>
+                </x-slot>
 
-                    <flux:menu.separator />
+                <x-slot name="content">
+                    @can('view profile')
+                        <x-dropdown-button class="cursor-pointer">
+                            <a href="{{ route('profile.show') }}" wire:navigate>
+                                Profilo
+                            </a>
+                        </x-dropdown-button>
+                    @endcan
 
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
+                    <livewire:layout.logout-button />
+                </x-slot>
+            </x-dropdown>
         </flux:header>
 
-        {{ $slot }}
+        {{-- Notification Modal --}}
+        <livewire:layout.notification-modal />
 
-        @fluxScripts
-    </body>
+        {{ $slot }}
+    </div>
+
+    @fluxScripts
+
+    {{-- scripts for filepond library --}}
+    @filepondScripts
+
+    {{-- TOASTER --}}
+    {{-- Needed to livewire toaster library --}}
+    @persist('toaster')
+        <x-toaster-hub />
+    @endpersist
+
+    {{-- Necessary for persisting the toaster --}}
+    <style>
+        div[x-persist="toaster"] {
+            position: fixed;
+        }
+    </style>
+    {{-- END TOASTER --}}
+
+    @wirechatAssets
+</body>
+
 </html>
