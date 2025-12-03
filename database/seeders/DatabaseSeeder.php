@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
             ProductTypeSeeder::class,
             ProductSubtypeSeeder::class,
             InstallmentProductDefaultSeeder::class,
-            FormDocumentSeeder::class,
         ]);
 
         // development seeding
@@ -34,6 +33,7 @@ class DatabaseSeeder extends Seeder
                 CustomerSeeder::class,
                 PracticeSeeder::class,
                 EventSeeder::class,
+                FormDocumentSeeder::class,
             ]);
         }
     }
