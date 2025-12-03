@@ -62,9 +62,9 @@ class PracticeCounter extends Component
                 $this->underReviewStatus,
             ])->first();
         $this->practiceCount = $result->total;
-        $this->approvedPracticeCount = $result->approved_count;
-        $this->disbursedPracticeCount = $result->disbursed_count;
-        $this->underReviewPracticeCount = $result->under_review_count;
+        $this->approvedPracticeCount = $result->approved_count ?? 0;
+        $this->disbursedPracticeCount = $result->disbursed_count ?? 0;
+        $this->underReviewPracticeCount = $result->under_review_count ?? 0;
     }
 
     public function render()
