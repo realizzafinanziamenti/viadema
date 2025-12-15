@@ -25,13 +25,13 @@ class DisbursedComparison extends Component
             ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $this->now->month)
             ->whereYear('disbursement_date', $this->now->year)
-            ->sum('amount_disbursed');
+            ->sum('total_amount');
 
         $this->lastMonthDisbursed = Practice::filteredForDepartment()
             ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $this->lastMonth->month)
             ->whereYear('disbursement_date', $this->lastMonth->year)
-            ->sum('amount_disbursed');
+            ->sum('total_amount');
     }
 
     /**
@@ -46,15 +46,22 @@ class DisbursedComparison extends Component
         $day = 1;
 
         // Cicla per generare intervalli di giorni (es. 1–5, 6–10, ...)
-        while ($day <= $daysInMonth) {  // fissiamo a 30gg per coerenza visiva
+        while ($day <= $daysInMonth) {
             // Calcola il giorno di inizio dell'intervallo corrente
             $start = $date->copy()
                 ->startOfMonth()
                 ->addDays($day - 1)
                 ->startOfDay();
 
-            // Calcola il giorno di fine dell'intervallo corrente
-            $endDay = min($day + $step - 1, $daysInMonth);
+            // Calcola il giorno di fine dell'intervallo corrente normalmente
+            $endDay = $day + $step - 1;
+
+            // Se supereremmo 30 giorni, estendiamo fino alla fine del mese
+            if ($endDay >= 30) {
+                $endDay = $daysInMonth;
+            } else {
+                $endDay = min($endDay, $daysInMonth);
+            }
 
             // Calcola la data di fine per l'intervallo corrente
             $end = $date->copy()
@@ -62,7 +69,7 @@ class DisbursedComparison extends Component
                 ->addDays($endDay - 1)
                 ->endOfDay();
 
-            // Label sempre arrotondata a "30gg" anche se il mese ha 31 giorni
+            // Label limitata a 30gg per uniformità
             $label = $endDay >= 30 ? '30gg' : $endDay . 'gg';
 
             // Aggiungi l'intervallo alla lista con un'etichetta come "5gg", "10gg", ecc.
@@ -71,6 +78,11 @@ class DisbursedComparison extends Component
                 'start' => $start,
                 'end' => $end,
             ];
+
+            // Se abbiamo raggiunto o superato il giorno 30, usciamo dal ciclo
+            if ($endDay >= 30) {
+                break;
+            }
 
             // Passa al blocco di intervallo successivo
             $day += $step;
@@ -89,7 +101,7 @@ class DisbursedComparison extends Component
             ->where('practice_status', PracticeStatus::DISBURSED->value)
             ->whereMonth('disbursement_date', $monthDate->month)
             ->whereYear('disbursement_date', $monthDate->year)
-            ->get(['disbursement_date', 'amount_disbursed']);
+            ->get(['disbursement_date', 'total_amount']);
 
         // Get the list of day ranges for that month
         // Ottieni gli intervalli di date per quel mese
@@ -100,7 +112,7 @@ class DisbursedComparison extends Component
         return collect($ranges)->map(function ($range) use ($practices) {
             $total = $practices
                 ->filter(fn($p) => $p->disbursement_date->between($range['start'], $range['end']))
-                ->sum('amount_disbursed');
+                ->sum('total_amount');
 
             return [
                 'label' => $range['label'],
