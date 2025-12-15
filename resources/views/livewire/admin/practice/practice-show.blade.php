@@ -56,13 +56,6 @@
                     <span>{{ $practice->formatted_last_installment_date }}</span>
                 </div>
 
-                @if ($practice->early_settlement_date)
-                    <div class="text-sm mb-2.5">
-                        <span class="text-gray-custom-4">Data di liquidazione: </span>
-                        <span>{{ $practice->formatted_early_settlement_date }}</span>
-                    </div>
-                @endif
-
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
 
