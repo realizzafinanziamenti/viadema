@@ -7,9 +7,12 @@ use App\Enums\LeadCommunication;
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\UserAddedToCustomer;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
@@ -179,6 +182,12 @@ class CustomerForm extends Form
         try {
             $customer = DB::transaction(fn() => Customer::create($this->customerData()));
 
+            // notify participants
+            Notification::send(
+                User::find($customer->user_id),
+                new UserAddedToCustomer($customer)
+            );
+
             Toaster::success('Profilo creato con successo');
             return $customer;
         } catch (Exception $e) {
@@ -195,7 +204,18 @@ class CustomerForm extends Form
         $this->validate();
 
         try {
+            // get old user id for notification
+            $oldUserId = $this->customer->user_id;
+
             DB::transaction(fn() => $this->customer->update($this->customerData()));
+
+            // if user changed, notify new user
+            if ($oldUserId !== $this->customer->user_id) {
+                Notification::send(
+                    User::find($this->customer->user_id),
+                    new UserAddedToCustomer($this->customer)
+                );
+            }
 
             Toaster::success('Profilo aggiornato con successo');
             return $this->customer;

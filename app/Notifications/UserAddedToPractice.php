@@ -9,18 +9,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PracticeRenewabilityAlert extends Notification implements ShouldQueue
+class UserAddedToPractice extends Notification implements ShouldQueue
 {
     use Queueable;
-
-    public $url;
 
     /**
      * Create a new notification instance.
      */
     public function __construct(public Practice $practice)
     {
-        $this->url = url('/practices/details/' . $this->practice->id);
         $this->afterCommit();
     }
 
@@ -40,11 +37,11 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Avviso Scadenza Pratica')
-            ->greeting('Ciao!')
-            ->line('Scadenza pratica ' . $this->practice->practice_code . ' imminente.')
-            ->line('Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.')
-            ->action('Vai alla pratica', $this->url);
+            ->subject('Pratica assegnata')
+            ->greeting('Ciao ' . $notifiable->full_name . '!')
+            ->line('Ti è stata assegnata una nuova pratica.')
+            ->action('Visualizza Pratica', route('practice.show', ['id' => $this->practice->id]))
+            ->line('Grazie per utilizzare la nostra applicazione!');
     }
 
     /**
@@ -56,10 +53,10 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
     {
         return [
             'practice_id' => $this->practice->id,
-            'title' => 'Avviso Scadenza Pratica',
-            'message' => 'Chiamare ' . $this->practice->customer?->full_name . ' per rinnovo pratica.',
-            'url' => $this->url,
-            'type' => 'practice-renewability-alert',
+            'title' => 'Pratica assegnata',
+            'message' => 'Ti è stata assegnata una nuova pratica.',
+            'url' => route('practice.show', ['id' => $this->practice->id]),
+            'type' => 'user-added-to-practice',
         ];
     }
 
@@ -68,7 +65,7 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        return 'practice-renewability-alert';
+        return 'user-added-to-practice';
     }
 
     /**
@@ -84,6 +81,6 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        return 'broadcast.practice-renewability-alert';
+        return 'broadcast.user-added-to-practice';
     }
 }
