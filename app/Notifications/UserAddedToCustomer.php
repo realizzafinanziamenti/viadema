@@ -35,11 +35,13 @@ class UserAddedToCustomer extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $config = $this->config();
+
         return (new MailMessage)
-            ->subject($this->getTitle())
+            ->subject($config['title'])
             ->greeting('Ciao ' . $notifiable->full_name . '!')
-            ->line($this->getMessage())
-            ->action($this->getUrlMessage(), route($this->getUrl(), ['id' => $this->customer->id]))
+            ->line($config['message'])
+            ->action($config['action'], route($config['route'], ['id' => $this->customer->id]))
             ->line('Grazie per utilizzare la nostra applicazione!');
     }
 
@@ -50,12 +52,14 @@ class UserAddedToCustomer extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $config = $this->config();
+
         return [
             'lead_id' => $this->customer->id,
-            'title' => $this->getTitle(),
-            'message' => $this->getMessage(),
-            'url' => route($this->getUrl(), ['id' => $this->customer->id]),
-            'type' => $this->databaseType($notifiable),
+            'title' => $config['title'],
+            'message' => $config['message'],
+            'url' => route($config['route'], ['id' => $this->customer->id]),
+            'type' => $config['db_type'],
         ];
     }
 
@@ -64,11 +68,7 @@ class UserAddedToCustomer extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        if ($this->customer->isLead()) {
-            return 'user-added-to-lead';
-        } else {
-            return 'user-added-to-customer';
-        }
+        return $this->config()['db_type'];
     }
 
     /**
@@ -84,58 +84,32 @@ class UserAddedToCustomer extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        if ($this->customer->isLead()) {
-            return 'broadcast.user-added-to-lead';
-        } else {
-            return 'broadcast.user-added-to-customer';
-        }
+        return $this->config()['broadcast_type'];
     }
 
     /**
-     * Get title
+     * Get configuration based on customer type.
      */
-    protected function getTitle(): string
+    protected function config(): array
     {
         if ($this->customer->isLead()) {
-            return 'Lead assegnato';
-        } else {
-            return 'Cliente assegnato';
+            return [
+                'title' => 'Lead assegnato',
+                'message' => 'Ti è stato assegnato un nuovo lead.',
+                'route' => 'lead.show',
+                'action' => 'Visualizza Lead',
+                'db_type' => 'user-added-to-lead',
+                'broadcast_type' => 'broadcast.user-added-to-lead',
+            ];
         }
-    }
 
-    /**
-     * Get message
-     */
-    protected function getMessage(): string
-    {
-        if ($this->customer->isLead()) {
-            return 'Ti è stato assegnato un nuovo lead.';
-        } else {
-            return 'Ti è stato assegnato un nuovo cliente.';
-        }
-    }
-
-    /**
-     * Get url
-     */
-    protected function getUrl(): string
-    {
-        if ($this->customer->isLead()) {
-            return 'lead.show';
-        } else {
-            return 'customer.show';
-        }
-    }
-
-    /**
-     * Get url message
-     */
-    protected function getUrlMessage(): string
-    {
-        if ($this->customer->isLead()) {
-            return 'Visualizza Lead';
-        } else {
-            return 'Visualizza Cliente';
-        }
+        return [
+            'title' => 'Cliente assegnato',
+            'message' => 'Ti è stato assegnato un nuovo cliente.',
+            'route' => 'customer.show',
+            'action' => 'Visualizza Cliente',
+            'db_type' => 'user-added-to-customer',
+            'broadcast_type' => 'broadcast.user-added-to-customer',
+        ];
     }
 }
