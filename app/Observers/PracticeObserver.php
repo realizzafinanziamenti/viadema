@@ -46,7 +46,7 @@ class PracticeObserver
                 ->afterCommit();
         }
 
-        if ($practice->alert_date) {
+        if ($practice->isDirty('alert_date') && $practice->alert_date) {
             dispatch(new SendPracticeRenewabilityAlertJob($practice))
                 ->delay($practice->alert_date)
                 ->afterCommit();
