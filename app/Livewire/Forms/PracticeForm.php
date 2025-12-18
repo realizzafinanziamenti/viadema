@@ -5,10 +5,13 @@ namespace App\Livewire\Forms;
 use App\Enums\PracticeStatus;
 use App\Enums\ProductionType;
 use App\Models\Practice;
+use App\Models\User;
+use App\Notifications\UserAddedToPractice;
 use App\Traits\AcceptedFileTypes;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
@@ -201,6 +204,12 @@ class PracticeForm extends Form
                     ]);
                 }
 
+                // notify participants
+                Notification::send(
+                    User::find($practice->user_id),
+                    new UserAddedToPractice($practice)
+                );
+
                 return $practice;
             });
 
@@ -225,6 +234,9 @@ class PracticeForm extends Form
 
         try {
             DB::transaction(function () {
+                // get old user id before update
+                $oldUserId = $this->practice->user_id;
+
                 $this->practice->update($this->practiceData());
 
                 foreach ($this->attachments as $attachment) {
@@ -234,6 +246,14 @@ class PracticeForm extends Form
                         'mime_type' => $attachment->getClientMimeType(),
                         'file_size' => $attachment->getSize()
                     ]);
+                }
+
+                // if user changed, notify new user
+                if ($oldUserId !== $this->practice->user_id) {
+                    Notification::send(
+                        User::find($this->practice->user_id),
+                        new UserAddedToPractice($this->practice)
+                    );
                 }
             });
 

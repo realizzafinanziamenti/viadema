@@ -18,6 +18,7 @@ use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use App\Notifications\ImportExcelCompleted;
+use App\Notifications\PracticeStatusChanged;
 use App\Rules\ExceptEnumValues;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
@@ -27,7 +28,9 @@ use App\Traits\WithBulkSelection;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Computed;
@@ -516,16 +519,51 @@ class PracticeIndex extends Component
                 $updateData['disbursement_date'] = $this->disbursementDate ?? now();
             }
 
-            $this->selectedPractice->update($updateData);
+            // Store old and new status for notification
+            $oldStatus = $this->selectedPractice->practice_status;
+            $newStatus = PracticeStatus::from($this->selectedPracticeStatus);
+
+            DB::transaction(function () use ($updateData, $oldStatus, $newStatus) {
+                $this->selectedPractice->update($updateData);
+
+                // Notify relevant users if the status has changed
+                if ($oldStatus !== $newStatus) {
+                    $this->notifyPracticeStatusChanged($this->selectedPractice, $oldStatus, $newStatus);
+                }
+            });
 
             Toaster::success('Stato della pratica aggiornato con successo');
         } catch (Exception $e) {
+            Log::error('Errore durante l\'aggiornamento dello stato della pratica: ' . $e->getMessage());
             Toaster::error('Errore durante l\'aggiornamento dello stato della pratica');
         }
 
         $this->selectedPractice = null;
         $this->disbursementDate = now()->format('Y-m-d');
         $this->dispatch('close-modal', 'update-practice-status');
+    }
+
+    /**
+     * Notify relevant users about the practice status change.
+     */
+    protected function notifyPracticeStatusChanged(Practice $practice, PracticeStatus $oldStatus, PracticeStatus $newStatus): void
+    {
+        $usersToNotify = collect([
+            $practice->user,
+            User::role('superadmin')->get(),
+        ])
+            ->flatten()
+            ->unique('id')
+            ->reject(fn($user) => $user->id === auth()->id());
+
+        Notification::send(
+            $usersToNotify,
+            new PracticeStatusChanged(
+                $practice,
+                $oldStatus->getLabelText(),
+                $newStatus->getLabelText()
+            )
+        );
     }
 
     /**
