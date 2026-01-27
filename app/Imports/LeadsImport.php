@@ -54,6 +54,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             $firstName = trim($row['nome'] ?? '');
             $lastName = trim($row['cognome'] ?? '');
             $cf = trim($row['codice_fiscale'] ?? '');
+            $cf = !empty($cf) ? $cf : null; // Se vuoto, setta NULL per evitare problemi di univocità
 
             $customerData = [
                 'user_id' => $user->id,
@@ -64,8 +65,8 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 'last_name' => $lastName,
                 'phone' => $this->cleanPhone($row['telefono']),
                 'email' => $row['email'] ?? null,
-                'date_of_birth' => $this->parseDate($row['data_nascita']) ?? null,
-                'tax_id' => $cf ?? null,
+                'date_of_birth' => isset($row['data_nascita']) ? $this->parseDate($row['data_nascita']) : (isset($row['data_di_nascita']) ? $this->parseDate($row['data_di_nascita']) : null),
+                'tax_id' => $cf,
 
                 // Indirizzo
                 'address' => $row['indirizzo'] ?? null,
@@ -152,9 +153,13 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     /* Prepara i dati per la validazione */
     public function prepareForValidation(array $row)
     {
+        // Assicurati che le colonne opzionali esistano sempre nell'array
+        $row['data_nascita'] = $row['data_nascita'] ?? null;
+        $row['data_di_nascita'] = $row['data_di_nascita'] ?? null;
+
         foreach ($row as $key => $value) {
-            // Salta le date di Excel
-            if ($this->looksLikeExcelDate($value)) {
+            // Salta le date di Excel solo per i campi data_nascita o data_di_nascita
+            if (in_array($key, ['data_nascita', 'data_di_nascita']) && $this->looksLikeExcelDate($value)) {
                 continue;
             }
 
@@ -167,6 +172,19 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         return $row;
     }
 
+    /**
+     * Check if value looks like an Excel date
+     */
+    protected function looksLikeExcelDate($value): bool
+    {
+        if (!is_numeric($value)) {
+            return false;
+        }
+
+        // Excel date serials are typically between 1 (1900-01-01) and 2958465 (9999-12-31)
+        return $value >= 1 && $value <= 2958465;
+    }
+
     /* Regole di validazione */
     public function rules(): array
     {
@@ -177,6 +195,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             'email' => ['nullable', 'email', 'max:255'],
             'codice_fiscale' => ['nullable', 'string', 'max:16'],
             'data_nascita' => ['nullable'],
+            'data_di_nascita' => ['nullable'],
             'provenienza_lead' => ['nullable', 'string', 'max:100'],
             'stato_lead' => ['nullable', 'string', 'max:100'],
             'tipologia_cliente' => ['nullable', 'string', 'max:255'],
@@ -197,9 +216,20 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         if (!$value) return null;
 
         try {
+            // Se è un numero seriale di Excel
             if (is_numeric($value)) {
                 return Date::excelToDateTimeObject($value)->format('Y-m-d');
             }
+
+            // Prova formati italiani espliciti (DD-MM-YYYY, DD/MM/YYYY)
+            if (preg_match('/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/', $value, $matches)) {
+                $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                $year = $matches[3];
+                return Carbon::createFromFormat('d-m-Y', "$day-$month-$year")->format('Y-m-d');
+            }
+
+            // Fallback a Carbon::parse per altri formati
             return Carbon::parse($value)->format('Y-m-d');
         } catch (Exception $e) {
             return null;
