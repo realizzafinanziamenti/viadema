@@ -12,7 +12,6 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
 
@@ -113,13 +112,14 @@ class EventForm extends Form
                 // attach participants if any
                 if (!empty($this->participants)) {
                     $event->participants()->attach($this->participants);
-
-                    // notify participants
-                    Notification::send(
-                        User::whereIn('id', $this->participants)->get(),
-                        new UserAddedToEvent($event)
-                    );
                 }
+
+                $notifiedUserIds = array_values(array_unique(array_merge($this->participants, [$event->user_id])));
+
+                Notification::send(
+                    User::whereIn('id', $notifiedUserIds)->get(),
+                    new UserAddedToEvent($event)
+                );
 
                 // generate recurring events
                 if ($this->repeatUntil) {
@@ -192,13 +192,14 @@ class EventForm extends Form
             // attach participants if any
             if (!empty($this->participants)) {
                 $newEvent->participants()->attach($this->participants);
-
-                // notify participants
-                Notification::send(
-                    User::whereIn('id', $this->participants)->get(),
-                    new UserAddedToEvent($newEvent)
-                );
             }
+
+            $notifiedUserIds = array_values(array_unique(array_merge($this->participants, [$newEvent->user_id])));
+
+            Notification::send(
+                User::whereIn('id', $notifiedUserIds)->get(),
+                new UserAddedToEvent($newEvent)
+            );
 
             $nextDate->addDay();
         }
@@ -238,12 +239,10 @@ class EventForm extends Form
         }
 
         // notify owner if not in participants and event modified
-        if (auth()->id() !== $this->event->user_id) {
-            Notification::send(
-                $this->event->user,
-                new EventUpdated($this->event, 'modified')
-            );
-        }
+        Notification::send(
+            $this->event->user,
+            new EventUpdated($this->event, 'modified')
+        );
     }
 
     /**
