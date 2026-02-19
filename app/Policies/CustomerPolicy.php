@@ -39,6 +39,11 @@ class CustomerPolicy
 
         // If the customer is a lead, check if the user has permission to view leads
         if ($customer->isLead()) {
+            // Consulente e coll. esterno possono vedere solo i lead a loro assegnati
+            if ($user->isConsultant() || $user->isExternal()) {
+                return $user->id === $customer->user_id;;
+            }
+
             return $user->hasPermissionTo('view leads');
         }
 

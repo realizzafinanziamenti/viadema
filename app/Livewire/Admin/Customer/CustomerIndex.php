@@ -110,7 +110,6 @@ class CustomerIndex extends Component
     {
         return Customer::with('user')
             ->customers()
-            ->filteredForDepartment()
             ->filterBySearch($this->search)
             ->orderByDesc('updated_at');
     }
