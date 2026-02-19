@@ -330,14 +330,12 @@ class Calendar extends Component
             );
         }
 
-        // notify owner if deleted by admin
-        if (auth()->id() !== $event->user_id) {
-            if ($event->user) {
-                Notification::send(
-                    $event->user,
-                    new EventUpdated($event, 'cancelled')
-                );
-            }
+        // notify owner about event deletion if not in participants
+        if ($event->user && !$participants->contains($event->user)) {
+            Notification::send(
+                $event->user,
+                new EventUpdated($event, 'cancelled')
+            );
         }
     }
 
