@@ -23,8 +23,9 @@ class PracticePolicy
     public function view(User $user, Practice $practice): bool
     {
         if ($user->hasPermissionTo('view practices')) {
+            // Floor Manager può vedere tutte le pratiche dei coordinatori di sala e dei consulenti
             if ($user->isFloorManager()) {
-                return $practice->user?->isFloorManager();
+                return ($practice->user?->isFloorManager() || $practice->user?->isConsultant());
             }
 
             return true;
@@ -50,6 +51,9 @@ class PracticePolicy
             if ($user->isBackOffice() || $user->isWeb()) {
                 // Backoffice e Web possono aggiornare tutte le pratiche dei collaboratori del suo dipartimento
                 return true;
+            } elseif ($user->isFloorManager()) {
+                // Floor Manager può aggiornare tutte le pratiche proprie e dei consulenti
+                return ($user->id === $practice->user_id || $practice->user?->isConsultant());
             } else {
                 // Altri ruoli con il permesso possono aggiornare le pratiche associate a loro
                 return $user->id === $practice->user_id;
@@ -77,6 +81,9 @@ class PracticePolicy
             if ($user->isWeb()) {
                 // Web può eliminare tutte le pratiche dei collaboratori del suo dipartimento
                 return true;
+            } elseif ($user->isFloorManager()) {
+                // Floor Manager può eliminare tutte le pratiche proprie e dei consulenti
+                return ($user->id === $practice->user_id || $practice->user?->isConsultant());
             } else {
                 // Altri ruoli con il permesso possono eliminare le pratiche associate a loro
                 return $user->id === $practice->user_id;
