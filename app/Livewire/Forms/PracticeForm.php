@@ -46,7 +46,6 @@ class PracticeForm extends Form
     public $renewabilityDate = null;
     public $practiceStatus = null;
     public $previousFinance = null;
-    public $practiceCode = null;
     public bool $isRenewal = false;
     public $productionType = null;
     public $disbursingInstitution = null;
@@ -79,7 +78,6 @@ class PracticeForm extends Form
                 'percentageAlert' => ['required', 'numeric', 'between:0,100'],
                 'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
                 'previousFinance' => ['nullable', 'string', 'max:255'],
-                'practiceCode' => ['required', 'string', Rule::unique('practices', 'practice_code')->ignore($this->practice?->id)],
                 'isRenewal' => ['required', 'boolean'],
                 'productionType' => ['required', 'string', new Enum(ProductionType::class)],
                 'disbursingInstitution' => ['nullable', 'string', 'max:255'],
@@ -134,7 +132,6 @@ class PracticeForm extends Form
             'percentageAlert' => "percentuale di ammortamento per alert",
             'practiceStatus' => "stato pratica",
             'previousFinance' => "finanziaria estinta",
-            'practiceCode' => "ID pratica",
             'isRenewal' => "rinnovo",
             'productionType' => "produzione",
             'disbursingInstitution' => "ente erogante",
@@ -175,7 +172,6 @@ class PracticeForm extends Form
             'percentageAlert' => $practice->percentage_alert,
             'practiceStatus' => $practice->practice_status?->value,
             'previousFinance' => $practice->previous_finance,
-            'practiceCode' => $practice->practice_code,
             'isRenewal' => $practice->is_renewal,
             'productionType' => $practice->production_type?->value,
             'disbursingInstitution' => $practice->disbursing_institution,
@@ -294,7 +290,6 @@ class PracticeForm extends Form
             'percentage_alert' => $this->percentageAlert,
             'practice_status' => $this->practiceStatus,
             'previous_finance' => $this->previousFinance ?? null,
-            'practice_code' => $this->practiceCode,
             'is_renewal' => $this->isRenewal,
             'production_type' => $this->productionType ?? null,
             'disbursing_institution' => $this->disbursingInstitution ?? null,
