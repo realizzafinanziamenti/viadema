@@ -472,7 +472,8 @@ class Practice extends Model
         // Coordinatore di sala vede solo le pratiche assegnate a collaboratori dello stesso dipartimento
         if (auth()->user()->isFloorManager()) {
             $floorManagerIds = User::whereHas('roles', function ($q) {
-                $q->where('name', UserDepartment::FLOOR_MANAGER->value);
+                $q->where('name', UserDepartment::FLOOR_MANAGER->value)
+                    ->orWhere('name', UserDepartment::CONSULTANT->value);
             })->pluck('id');
 
             return $query->whereIn('user_id', $floorManagerIds);
