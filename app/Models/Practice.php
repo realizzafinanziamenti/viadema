@@ -71,7 +71,6 @@ class Practice extends Model
         'sum_dec_plus_35',        // somma dec + 35%
 
         // Dettagli
-        'practice_code',          // ID pratica univoco
         'is_renewal',             // è un rinnovo
         'production_type',        // tipologia di produzione (diretta, indiretta)
         'disbursing_institution', // ente erogante
@@ -154,7 +153,6 @@ class Practice extends Model
                 'sum_dec_plus_35',
 
                 // Dettagli
-                'practice_code',
                 'is_renewal',
                 'production_type',
                 'disbursing_institution',
@@ -223,7 +221,6 @@ class Practice extends Model
                 'sum_dec_plus_35' => 'Somma dec + 35%',
 
                 // Dettagli
-                'practice_code' => 'Codice pratica',
                 'is_renewal' => 'È un rinnovo',
                 'production_type' => 'Tipologia produzione',
                 'disbursing_institution' => 'Ente erogante',
@@ -322,6 +319,14 @@ class Practice extends Model
     // END RELATIONSHIPS
 
     // ACCESSORS
+
+    /**
+     * Accessor to obtain the practice code.
+     */
+    public function practiceCode(): Attribute
+    {
+        return Attribute::get(fn() => 'P' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
+    }
 
     /**
      * Accessor to obtain formatted inserted at date.
@@ -460,7 +465,7 @@ class Practice extends Model
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
                     ->orWhere('tax_id', 'like', "%{$search}%");
-            })->orWhere('practice_code', 'like', "%{$search}%");
+            })->orWhere('id', 'like', "%{$search}%");
         });
     }
 

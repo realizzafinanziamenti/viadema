@@ -68,56 +68,53 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             // Determina se la pratica è un rinnovo
             $isRenewal = $this->parseRenewalValue($row['rinnovo'] ?? 'N');
 
-            $practice = Practice::updateOrCreate(
-                ['practice_code' => $row['pratica']],
-                [
-                    'product_type_id' => $product->id,
-                    'product_subtype_id' => $productSubtype->id ?? null,
-                    'user_id' => $user->id,
-                    'customer_id' => $customer->id ?? null,
-                    'financial_table_id' => null,
-                    'insurance_id' => $insurance->id ?? null,
-                    'installment_id' => $installment->id ?? null,
-                    'customer_type_id' => $customerType->id ?? null,
+            $practice = Practice::create([
+                'product_type_id' => $product->id,
+                'product_subtype_id' => $productSubtype->id ?? null,
+                'user_id' => $user->id,
+                'customer_id' => $customer->id ?? null,
+                'financial_table_id' => null,
+                'insurance_id' => $insurance->id ?? null,
+                'installment_id' => $installment->id ?? null,
+                'customer_type_id' => $customerType->id ?? null,
 
-                    'product_subtype_label' => $productSubtype?->name ?? $row['tipo_prodotto'] ?? null,
-                    'financial_table_percentage' => null,
-                    'insurance_label' => $insurance?->name ?? $row['assicurazione'] ?? null,
-                    'installment_value_label' => $installment?->value ?? $row['numero_rate'] ?? null,
-                    'customer_type_label' => $customerType?->name ?? $row['tipo_cliente'] ?? null,
+                'product_subtype_label' => $productSubtype?->name ?? $row['tipo_prodotto'] ?? null,
+                'financial_table_percentage' => null,
+                'insurance_label' => $insurance?->name ?? $row['assicurazione'] ?? null,
+                'installment_value_label' => $installment?->value ?? $row['numero_rate'] ?? null,
+                'customer_type_label' => $customerType?->name ?? $row['tipo_cliente'] ?? null,
 
-                    'amount_disbursed' => $row['finanziato'] ?? null,
-                    'total_amount' => $row['montante'] ?? null,
-                    'rate_amount' => $row['importo_rata'] ?? null,
-                    'tan' => $row['tan'] ?? null,
-                    'teg' => $row['teg'] ?? null,
-                    'taeg' => $row['taeg'] ?? null,
+                'amount_disbursed' => $row['finanziato'] ?? null,
+                'total_amount' => $row['montante'] ?? null,
+                'rate_amount' => $row['importo_rata'] ?? null,
+                'tan' => $row['tan'] ?? null,
+                'teg' => $row['teg'] ?? null,
+                'taeg' => $row['taeg'] ?? null,
 
-                    'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
-                    'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
-                    'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
-                    'early_settlement_date' => $this->parseDate($row['data_estinzione_anticipata']) ?? null,
-                    'disbursement_date' => $this->parseDate($row['data_liquidazione']) ?? null,
+                'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
+                'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
+                'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
+                'early_settlement_date' => $this->parseDate($row['data_estinzione_anticipata']) ?? null,
+                'disbursement_date' => $this->parseDate($row['data_liquidazione']) ?? null,
 
-                    'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
-                    'percentage_alert' => $installmentProductDefault->percentage_alert ?? 35.00,
+                'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
+                'percentage_alert' => $installmentProductDefault->percentage_alert ?? 35.00,
 
-                    'practice_status' => $practiceStatus,
-                    'is_renewal' => $isRenewal,
+                'practice_status' => $practiceStatus,
+                'is_renewal' => $isRenewal,
 
-                    'notes' => null,
+                'notes' => null,
 
-                    'days_transformation' => $row['trasformazione_gg'] ?? null,
-                    'sum_dec_plus_35' => $row['somma_dec_35'] ?? null,
-                ]
-            );
+                'days_transformation' => $row['trasformazione_gg'] ?? null,
+                'sum_dec_plus_35' => $row['somma_dec_35'] ?? null,
+            ]);
 
             $this->createActivityLog($practice, 'import_success', 'Pratica importata con successo', $row);
 
             return $practice;
         } catch (Exception $e) {
             $this->createActivityLog(null, 'import_failure', 'Errore durante l\'importazione della pratica', $row, $e);
-            Log::warning("Errore alla riga con pratica {$row['pratica']}: {$e->getMessage()}");
+            Log::warning("Errore import pratica per cliente {$row['cognome_nome_cliente']}: {$e->getMessage()}");
             return null;
         }
     }
@@ -166,7 +163,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             $this->createActivityLog(
                 practice: null,
                 logName: 'import_validation_failure',
-                message: "Import lead fallito alla riga {$rowNumber}",
+                message: "Import pratica fallito alla riga {$rowNumber} per cliente {$rowValues['cognome_nome_cliente']}",
                 row: $rowValues,
                 e: null,
                 failures: $fake
@@ -197,8 +194,6 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     public function rules(): array
     {
         return [
-            'pratica' => ['required', Rule::unique('practices', 'practice_code')],
-
             'cognome_nome_cliente' => ['required', 'string', 'max:255'],
             'cf_cl' => ['nullable', 'string', 'max:16'],
             'recapito_cell' => ['required', 'string', 'min:10', 'max:20'],
@@ -387,7 +382,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     /**
      * Recupera i valori di rinnovabilità e percentuale di avviso predefiniti per il prodotto e l'installment specificati.
      *
-     * @param Product $product
+     * @param ProductType $product
      * @param Installment|null $installment
      * @return InstallmentProductDefault|null
      */

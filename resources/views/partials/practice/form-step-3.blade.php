@@ -22,11 +22,6 @@
 
 {{-- Practice Details --}}
 <div class="grid grid-cols-2 gap-6 mt-6">
-    {{-- Practice Code --}}
-    <div class="flex flex-col gap-1.5">
-        <flux:label>Id pratica</flux:label>
-        <x-display-input value="{{ $practiceForm->practiceCode }}" />
-    </div>
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Prodotto</flux:label>

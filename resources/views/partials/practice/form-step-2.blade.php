@@ -1,13 +1,4 @@
 <div class="grid grid-cols-2 gap-6">
-    {{-- Practice Code --}}
-    <div class="flex flex-col gap-1.5">
-        <flux:label>Id pratica *</flux:label>
-        <div class="flex flex-col gap-0.5">
-            <flux:input size="sm" wire:model='practiceForm.practiceCode' placeholder="PR00000" />
-            <flux:error name="practiceForm.practiceCode" />
-        </div>
-    </div>
-
     {{-- Disbursing Institution --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Ente erogante</flux:label>
@@ -146,8 +137,8 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Totale dovuto</flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01"
-                size="sm" wire:model="practiceForm.totalAmount" symbol="€" />
+            <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
+                wire:model="practiceForm.totalAmount" symbol="€" />
             <flux:error name="practiceForm.totalAmount" />
         </div>
     </div>
