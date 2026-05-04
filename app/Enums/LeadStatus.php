@@ -9,6 +9,9 @@ enum LeadStatus: string
     case IN_NEGOTIATION = 'in_negotiation';
     case NOT_FEASIBLE = 'not_feasible';
     case FEASIBLE = 'feasible';
+    case AWAITING_DOCUMENTATION = 'Attesa documentazione';
+    case NOT_INTERESTED = 'Non interessato';
+    case ANTETERMINE = 'Antetermine';
 
     /**
      * Get the display label for the current lead status
@@ -21,6 +24,9 @@ enum LeadStatus: string
             self::IN_NEGOTIATION => 'In Trattativa',
             self::NOT_FEASIBLE => 'Non Fattibile',
             self::FEASIBLE => 'Fattibile',
+            self::AWAITING_DOCUMENTATION => 'Attesa Doc',
+            self::NOT_INTERESTED=> 'Non interessato',
+            self::ANTETERMINE=> 'Antetermine'
         };
     }
 
@@ -35,6 +41,10 @@ enum LeadStatus: string
             self::TO_RECONTACT => 'lead-status-to-recontact',
             self::FEASIBLE => 'lead-status-feasible',
             self::IN_NEGOTIATION => 'lead-status-in-negotiation',
+            self::IN_NEGOTIATION => 'lead-status-in-negotiation',
+            self::AWAITING_DOCUMENTATION=>'lead-status-in-negotiation',
+            self::NOT_INTERESTED=> 'lead-status-not-feasible',
+            self::ANTETERMINE=>'awaiting-renew'
         };
     }
 }

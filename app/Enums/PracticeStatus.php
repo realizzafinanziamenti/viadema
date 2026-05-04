@@ -8,8 +8,12 @@ enum PracticeStatus: string
     case REJECTED = 'rejected';
     case APPROVED = 'approved';
     case SUSPENDED = 'suspended';
-    case PENDING = 'pending';
     case DISBURSED = 'disbursed';
+    case NOTICED = 'Notificata';
+    case AWAITING_POLICY = 'Attesa polizza';
+    case AWAITING_RENEWAL = 'Attesa rinnovabilità';
+    case UNDER_EVALUATION = 'In valutazione';
+    case AWAITING_SETTLEMENT = 'Attesa conteggio';
 
     /**
      * Check if the current status is the same as the given status
@@ -29,8 +33,12 @@ enum PracticeStatus: string
             self::REJECTED => 'Respinta',
             self::APPROVED => 'Deliberata',
             self::SUSPENDED => 'Sospesa',
-            self::PENDING => 'In Attesa',
             self::DISBURSED => 'Liquidata',
+            self::NOTICED => 'Notificata',
+            self::AWAITING_POLICY=>'Attesa polizza',
+            self::AWAITING_RENEWAL=>'Attesa rinnovo',
+            self::UNDER_EVALUATION=>'In valutazione',
+            self::AWAITING_SETTLEMENT=>'Attesa conteggio'
         };
     }
 
@@ -44,8 +52,13 @@ enum PracticeStatus: string
             self::REJECTED => 'rejected',
             self::APPROVED => 'approved',
             self::SUSPENDED => 'suspended',
-            self::PENDING => 'pending',
             self::DISBURSED => 'disbursed',
+            self::NOTICED => 'approved',
+            self::AWAITING_POLICY =>'suspended',
+            self::AWAITING_RENEWAL =>'awaiting-renew',
+            self::UNDER_EVALUATION => 'suspended',
+            self::AWAITING_SETTLEMENT=> 'suspended'
+
         };
     }
 
