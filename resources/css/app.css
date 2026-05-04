@@ -1,6 +1,6 @@
-@import 'tailwindcss';
-@plugin 'tailwind-scrollbar';  /* tailwind scrollbar */
-@import '../../vendor/livewire/flux/dist/flux.css';
+@import "tailwindcss";
+@plugin 'tailwind-scrollbar'; /* tailwind scrollbar */
+@import "../../vendor/livewire/flux/dist/flux.css";
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -15,35 +15,39 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Manrope', 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: "Manrope", "Public Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 
     --color-black-custom: #272727;
-    --color-gray-custom-1: #F1F1F1;
-    --color-gray-custom-2: #EAEAEA;
-    --color-gray-custom-3: #A7A6A6;
-    --color-gray-custom-3-hover: #CCCCCC;
+    --color-gray-custom-1: #f1f1f1;
+    --color-gray-custom-2: #eaeaea;
+    --color-gray-custom-3: #a7a6a6;
+    --color-gray-custom-3-hover: #cccccc;
     --color-gray-custom-4: #666565;
     --color-gray-custom-5: #707070;
-    --color-blue-custom: #004CA4;
+    --color-blue-custom: #004ca4;
     --color-blue-custom-light: #effafe;
-    --color-blue-custom-hover: #012F65;
-    --color-azure-custom: #019EB1;
-    --color-azure-custom-20: #019EB120;
-    --color-azure-custom-25: #019EB125;
+    --color-blue-custom-hover: #012f65;
+    --color-azure-custom: #019eb1;
+    --color-azure-custom-20: #019eb120;
+    --color-azure-custom-25: #019eb125;
     --color-azure-custom-hover: #037886;
-    --color-azure-custom-light: #8DD4DC;
+    --color-azure-custom-light: #8dd4dc;
     --color-azure-chat-bg: #f2fafb;
-    --color-pink-custom: #E56399;
-    --color-purple-custom: #806BFF;
+    --color-pink-custom: #e56399;
+    --color-purple-custom: #806bff;
     --color-red-custom: #d30000;
     --color-red-custom-light: #fae6e6;
     --color-green-custom: #5f9123;
     --color-green-custom-light: #f4faed;
     --color-orange-custom: #ff8c42;
-    --color-orange-custom-hover: #E07028;
+    --color-orange-custom-hover: #e07028;
     --color-orange-custom-light: #fffcee;
-    --color-oil-custom: #00BE8B;
+    --color-oil-custom: #00be8b;
     --color-oil-custom-light: #f0fbf8;
+    --color-yellow-custom: #e6a700;
+    --color-yellow-custom-light: #fff8db;
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -71,7 +75,6 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -86,7 +89,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
@@ -100,27 +103,35 @@ select:focus[data-flux-control] {
 } */
 
 /* Classi stile per enum class */
+.awaiting-renew {
+    @apply bg-yellow-custom-light text-yellow-custom border-yellow-200;
+}
 .under-review {
     @apply bg-gray-custom-1 text-black-custom border-gray-200;
 }
 
-.rejected, .lead-status-not-feasible {
+.rejected,
+.lead-status-not-feasible {
     @apply bg-red-custom-light text-red-custom border-red-200;
 }
 
-.approved, .lead-status-feasible {
+.approved,
+.lead-status-feasible {
     @apply bg-green-custom-light text-green-custom border-green-200;
 }
 
-.suspended, .lead-status-in-negotiation {
+.suspended,
+.lead-status-in-negotiation {
     @apply bg-orange-custom-light text-orange-custom border-orange-200;
 }
 
-.lead-status-new, .pending {
+.lead-status-new,
+.pending {
     @apply bg-oil-custom-light text-oil-custom border-teal-200;
 }
 
-.lead-status-to-recontact, .disbursed {
+.lead-status-to-recontact,
+.disbursed {
     @apply bg-blue-custom-light text-blue-custom border-sky-300;
 }
 
