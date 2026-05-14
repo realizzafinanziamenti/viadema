@@ -17,7 +17,7 @@ use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
-
+use Illuminate\Support\Facades\Auth;
 class PracticeForm extends Form
 {
     use AcceptedFileTypes;
@@ -57,29 +57,29 @@ class PracticeForm extends Form
     {
         return array_merge(
             [
-                'productTypeId' => ['required', 'exists:product_types,id'],
+                'productTypeId' => ['nullable', 'exists:product_types,id'],
                 'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
                 'customerId' => ['required', 'exists:customers,id'],
                 'financialTableId' => ['nullable', 'exists:financial_tables,id'],
                 'insuranceId' => ['nullable', 'exists:insurances,id'],
-                'installmentId' => ['required', 'exists:installments,id'],
+                'installmentId' => ['nullable', 'exists:installments,id'],
                 'customerTypeId' => ['nullable', 'exists:customer_types,id'],
-                'amountDisbursed' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-                'totalAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-                'rateAmount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-                'tan' => ['required', 'numeric', 'between:0,10000'],
+                'amountDisbursed' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+                'totalAmount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+                'rateAmount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+                'tan' => ['nullable', 'numeric', 'between:0,10000'],
                 'teg' => ['nullable', 'numeric', 'between:0,10000'],
-                'taeg' => ['required', 'numeric', 'between:0,10000'],
+                'taeg' => ['nullable', 'numeric', 'between:0,10000'],
                 'insertedAt' => ['nullable', 'date'],
                 'firstInstallmentDate' => ['required', 'date'],
-                'lastInstallmentDate' => ['required', 'date'],
-                'renewabilityDate' => ['required', 'date'],
-                'renewabilityPercentage' => ['required', 'numeric', 'between:0,100'],
-                'percentageAlert' => ['required', 'numeric', 'between:0,100'],
+                'lastInstallmentDate' => ['nullable', 'date'],
+                'renewabilityDate' => ['nullable', 'date'],
+                'renewabilityPercentage' => ['nullable', 'numeric', 'between:0,100'],
+                'percentageAlert' => ['nullable', 'numeric', 'between:0,100'],
                 'practiceStatus' => ['required', 'string', new Enum(PracticeStatus::class)],
                 'previousFinance' => ['nullable', 'string', 'max:255'],
-                'isRenewal' => ['required', 'boolean'],
-                'productionType' => ['required', 'string', new Enum(ProductionType::class)],
+                'isRenewal' => ['nullable', 'boolean'],
+                'productionType' => ['nullable', 'string', new Enum(ProductionType::class)],
                 'disbursingInstitution' => ['nullable', 'string', 'max:255'],
                 'financialInstitution' => ['nullable', 'string', 'max:255'],
                 'notes' => ['nullable', 'string', 'max:65535'],
@@ -95,17 +95,11 @@ class PracticeForm extends Form
      * if user is not allowed to assign practice to user, assign practice to current user
      */
     protected function userIdRules(): array
-    {
-        if (auth()->user()->can('assign practice to user')) {
-            return [
-                'userId' => ['required', 'exists:users,id'],
-            ];
-        }
-
-        return [
-            'userId' => ['nullable'],
-        ];
-    }
+{
+    return [
+        'userId' => ['nullable', 'exists:users,id'],
+    ];
+}
 
     protected function validationAttributes(): array
     {
@@ -200,13 +194,19 @@ class PracticeForm extends Form
                     ]);
                 }
 
-                // notify participants
-                Notification::send(
-                    User::find($practice->user_id),
-                    new UserAddedToPractice($practice)
-                );
+               // notify assigned user only if the practice has an assigned user
+if ($practice->user_id) {
+    $assignedUser = User::find($practice->user_id);
 
-                return $practice;
+    if ($assignedUser) {
+        Notification::send(
+            $assignedUser,
+            new UserAddedToPractice($practice)
+        );
+    }
+}
+
+return $practice;
             });
 
 
@@ -244,13 +244,17 @@ class PracticeForm extends Form
                     ]);
                 }
 
-                // if user changed, notify new user
-                if ($oldUserId !== $this->practice->user_id) {
-                    Notification::send(
-                        User::find($this->practice->user_id),
-                        new UserAddedToPractice($this->practice)
-                    );
-                }
+                // if user changed, notify new user only if the practice has an assigned user
+if ($oldUserId !== $this->practice->user_id && $this->practice->user_id) {
+    $assignedUser = User::find($this->practice->user_id);
+
+    if ($assignedUser) {
+        Notification::send(
+            $assignedUser,
+            new UserAddedToPractice($this->practice)
+        );
+    }
+}
             });
 
             Toaster::success('Pratica aggiornata con successo');
@@ -265,29 +269,37 @@ class PracticeForm extends Form
     /**
      * practice data
      */
+    private function nullableNumber($value): ?float
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    return (float) str_replace(',', '.', (string) $value);
+}
     private function practiceData(): array
     {
         return [
             // if user is not allowed to assign practice to user, assign practice to current user
-            'user_id' => auth()->user()->can('assign practice to user') ? $this->userId : auth()->id(),
-            'product_type_id' => $this->productTypeId,
+            'user_id' => $this->userId ?: Auth::id(),            'product_type_id' => $this->productTypeId,
             'product_subtype_id' => $this->productSubtypeId ?? null,
             'customer_id' => $this->customerId,
             'financial_table_id' => $this->financialTableId ?? null,
             'insurance_id' => $this->insuranceId ?? null,
             'installment_id' => $this->installmentId,
             'customer_type_id' => $this->customerTypeId ?? null,
-            'amount_disbursed' => $this->amountDisbursed,
-            'total_amount' => $this->totalAmount,
-            'rate_amount' => $this->rateAmount,
-            'tan' => $this->tan,
-            'taeg' => $this->taeg,
+            'amount_disbursed' => $this->nullableNumber($this->amountDisbursed),
+            'total_amount' => $this->nullableNumber($this->totalAmount),
+            'rate_amount' => $this->nullableNumber($this->rateAmount),
+            'tan' => $this->nullableNumber($this->tan),
+            'teg' => $this->nullableNumber($this->teg),
+            'taeg' => $this->nullableNumber($this->taeg),
             'inserted_at' => $this->insertedAt ?? now(),  // in upload it use old date, instead in create it uses now()
             'first_installment_date' => $this->firstInstallmentDate,
             'last_installment_date' => $this->lastInstallmentDate,
             'renewability_date' => $this->renewabilityDate,
-            'renewability_percentage' => $this->renewabilityPercentage,
-            'percentage_alert' => $this->percentageAlert,
+            'renewability_percentage' => $this->nullableNumber($this->renewabilityPercentage) ?? 40.00,
+            'percentage_alert' => $this->nullableNumber($this->percentageAlert) ?? 35.00,
             'practice_status' => $this->practiceStatus,
             'previous_finance' => $this->previousFinance ?? null,
             'is_renewal' => $this->isRenewal,

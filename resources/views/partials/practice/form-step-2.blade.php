@@ -10,7 +10,7 @@
 
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Prodotto *</flux:label>
+        <flux:label>Prodotto </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$productTypes" :selected="$practiceForm->productTypeId" placeholder='Seleziona prodotto'
                 setFunction="setProductType" :has-error="$errors->has('practiceForm.productTypeId')" />
@@ -32,7 +32,7 @@
 
     {{-- Is Renewal --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Rinnovo *</flux:label>
+        <flux:label>Rinnovo </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-bool-select size="sm" :selected="$practiceForm->isRenewal" yesAction="setIsRenewal('1')"
                 noAction="setIsRenewal('0')" :has-error="$errors->has('practiceForm.isRenewal')" border />
@@ -42,7 +42,7 @@
 
     {{-- Production type --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Produzione *</flux:label>
+        <flux:label>Produzione </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$productionTypes" :selected="$practiceForm->productionType" placeholder='Seleziona produzione'
                 setFunction="setProductionType" :has-error="$errors->has('practiceForm.productionType')" />
@@ -54,7 +54,7 @@
     {{-- Team Member --}}
     @if (auth()->user()->can('assign practice to user'))
         <div class="flex flex-col gap-1.5">
-            <flux:label>Assegna a *</flux:label>
+            <flux:label>Assegna a </flux:label>
             <div class="flex flex-col gap-0.5">
                 <x-dropdown-select size="sm" :selectable-items="$teamMembers" :selected="$practiceForm->userId" searchable
                     search="teamMemberSearch" placeholder='Seleziona collaboratore' setFunction="setPracticeTeamMember"
@@ -85,7 +85,7 @@
 
     {{-- Amount Disbursed --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Importo *</flux:label>
+        <flux:label>Importo </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
                 wire:model="practiceForm.amountDisbursed" symbol="€" />
@@ -95,7 +95,7 @@
 
     {{-- Installment --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Rate *</flux:label>
+        <flux:label>Rate </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$installments" :selected="$practiceForm->installmentId" placeholder='Seleziona rate'
                 setFunction="setInstallment" :has-error="$errors->has('practiceForm.installmentId')" />
@@ -105,7 +105,7 @@
 
     {{-- Rate Amount --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Rata mensile *</flux:label>
+        <flux:label>Rata mensile </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="99999999.99" step=".01" size="sm"
                 wire:model="practiceForm.rateAmount" symbol="€" />
@@ -115,7 +115,7 @@
 
     {{-- Taeg --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Taeg fisso *</flux:label>
+        <flux:label>Taeg fisso </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
                 wire:model="practiceForm.taeg" symbol="%" />
@@ -125,7 +125,7 @@
 
     {{-- Tan --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Tan fisso *</flux:label>
+        <flux:label>Tan fisso </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
                 wire:model="practiceForm.tan" symbol="%" />
@@ -145,7 +145,7 @@
 
     {{-- Renewability Percentage --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Percentuale rinnovabilità *</flux:label>
+        <flux:label>Percentuale rinnovabilità </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="100.00" step=".01" size="sm"
                 wire:model.live.debounce.250ms="practiceForm.renewabilityPercentage" symbol="%" />
@@ -155,7 +155,7 @@
 
     {{-- Percentage Alert --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Percentuale alert *</flux:label>
+        <flux:label>Percentuale alert </flux:label>
         <div class="flex flex-col gap-0.5">
             <x-forms.input-with-symbol type="number" min="0.00" max="100.00" step=".01" size="sm"
                 wire:model="practiceForm.percentageAlert" symbol="%" />
