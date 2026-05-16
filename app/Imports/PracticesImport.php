@@ -38,75 +38,64 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         $this->defaultUser = $defaultUser;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
     public function model(array $row)
     {
         try {
-            // Recupera l'utente associato
             $user = $this->getUser($row);
-            // Recupera o crea customer
             $customer = $this->setCustomer($row, $user);
-            // Imposta il tipo di prodotto
             $product = $this->setProduct($row);
-            // cerca il tipo di prodotto corrispondente
             $productSubtype = $this->getProductSubtype($row);
-            // Se la data di estinzione è presente, la pratica è considerata liquidata
-            // Altrimenti, è in fase di revisione
-            $practiceStatus = $row['data_liquidazione'] ? PracticeStatus::DISBURSED->value : PracticeStatus::UNDER_REVIEW->value;
-            // cerca l'installment corrispondente
-            $installment = Installment::where('value', $row['numero_rate'])->first();
-            // Recupera l'assicurazione corrispondente, se esiste
+
+            $installment = $this->value($row, 'numero_rate')
+                ? Installment::where('value', $this->value($row, 'numero_rate'))->first()
+                : null;
+
             $insurance = $this->getInsurance($row);
-            // cerca il tipo di cliente corrispondente
             $customerType = $this->getCustomerType($row);
-            // Recupera i valori di rinnovabilità e percentuale di avviso predefiniti
             $installmentProductDefault = $this->getRenewabilityAndAlertDefaultPercentage($product, $installment);
-            // Determina se la pratica è un rinnovo
-            $isRenewal = $this->parseRenewalValue($row['rinnovo'] ?? 'N');
+            $practiceStatus = $this->getPracticeStatus($row);
+            $isRenewal = $this->parseRenewalValue($this->value($row, 'rinnovo'));
 
             $practice = Practice::create([
-                'product_type_id' => $product->id,
-                'product_subtype_id' => $productSubtype->id ?? null,
-                'user_id' => $user->id,
-                'customer_id' => $customer->id ?? null,
+                'product_type_id' => $product?->id,
+                'product_subtype_id' => $productSubtype?->id,
+                'user_id' => $user?->id,
+                'customer_id' => $customer->id,
+
                 'financial_table_id' => null,
-                'insurance_id' => $insurance->id ?? null,
-                'installment_id' => $installment->id ?? null,
-                'customer_type_id' => $customerType->id ?? null,
+                'insurance_id' => $insurance?->id,
+                'installment_id' => $installment?->id,
+                'customer_type_id' => $customerType?->id,
 
-                'product_subtype_label' => $productSubtype?->name ?? $row['tipo_prodotto'] ?? null,
+                'product_subtype_label' => $productSubtype?->name ?? $this->value($row, 'tipo_prodotto'),
                 'financial_table_percentage' => null,
-                'insurance_label' => $insurance?->name ?? $row['assicurazione'] ?? null,
-                'installment_value_label' => $installment?->value ?? $row['numero_rate'] ?? null,
-                'customer_type_label' => $customerType?->name ?? $row['tipo_cliente'] ?? null,
+                'insurance_label' => $insurance?->name ?? $this->value($row, 'assicurazione'),
+                'installment_value_label' => $installment?->value ?? $this->value($row, 'numero_rate'),
+                'customer_type_label' => $customerType?->name ?? $this->value($row, 'tipo_cliente'),
 
-                'amount_disbursed' => $row['finanziato'] ?? null,
-                'total_amount' => $row['montante'] ?? null,
-                'rate_amount' => $row['importo_rata'] ?? null,
-                'tan' => $row['tan'] ?? null,
-                'teg' => $row['teg'] ?? null,
-                'taeg' => $row['taeg'] ?? null,
+                'amount_disbursed' => $this->nullableNumber($this->value($row, 'finanziato')),
+                'total_amount' => $this->nullableNumber($this->value($row, 'montante')),
+                'rate_amount' => $this->nullableNumber($this->value($row, 'importo_rata')),
+                'tan' => $this->nullableNumber($this->value($row, 'tan')),
+                'teg' => $this->nullableNumber($this->value($row, 'teg')),
+                'taeg' => $this->nullableNumber($this->value($row, 'taeg')),
 
-                'inserted_at' => $this->parseDate($row['data_inserimento']) ?? now(),
-                'first_installment_date' => $this->parseDate($row['data_prima_rata']) ?? null,
-                'last_installment_date' => $this->parseDate($row['data_ultima_rata']) ?? null,
-                'early_settlement_date' => $this->parseDate($row['data_estinzione_anticipata']) ?? null,
-                'disbursement_date' => $this->parseDate($row['data_liquidazione']) ?? null,
+                'inserted_at' => $this->parseDate($this->value($row, 'data_inserimento')) ?? now(),
+                'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
+                'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
+                'early_settlement_date' => $this->parseDate($this->value($row, 'data_estinzione_anticipata')),
+                'disbursement_date' => $this->parseDate($this->value($row, 'data_liquidazione')),
 
-                'renewability_percentage' => $installmentProductDefault->renewability_percentage ?? 40.00,
-                'percentage_alert' => $installmentProductDefault->percentage_alert ?? 35.00,
+                'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
+                'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
 
                 'practice_status' => $practiceStatus,
                 'is_renewal' => $isRenewal,
 
                 'notes' => null,
 
-                'days_transformation' => $row['trasformazione_gg'] ?? null,
-                'sum_dec_plus_35' => $row['somma_dec_35'] ?? null,
+                'days_transformation' => $this->value($row, 'trasformazione_gg'),
+                'sum_dec_plus_35' => $this->nullableNumber($this->value($row, 'somma_dec_35')),
             ]);
 
             $this->createActivityLog($practice, 'import_success', 'Pratica importata con successo', $row);
@@ -114,56 +103,55 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             return $practice;
         } catch (Exception $e) {
             $this->createActivityLog(null, 'import_failure', 'Errore durante l\'importazione della pratica', $row, $e);
-            Log::warning("Errore import pratica per cliente {$row['cognome_nome_cliente']}: {$e->getMessage()}");
+
+            Log::warning('Errore import pratica per cliente ' . $this->getCustomerLogName($row) . ': ' . $e->getMessage());
+
             return null;
         }
     }
 
-    public function onFailure(Failure ...$failures)
+    public function onFailure(Failure ...$failures): void
     {
-        // Raggruppa per riga
-        $rows = collect($failures)->groupBy(fn($f) => $f->row());
+        $rows = collect($failures)->groupBy(fn ($failure) => $failure->row());
 
         foreach ($rows as $rowNumber => $failureGroup) {
-
-            // Unisci gli errori della riga
             $errors = $failureGroup
-                ->flatMap(fn($f) => $f->errors())
+                ->flatMap(fn ($failure) => $failure->errors())
                 ->unique()
                 ->values()
                 ->toArray();
 
-            // Prendi i valori della riga
             $rowValues = $failureGroup->first()->values();
 
-            // Crea un FakeFailure che contiene TUTTI gli errori della riga
             $fake = new class($rowNumber, $errors, $rowValues) {
                 public function __construct(
                     public int $row,
                     public array $errors,
                     public array $values
                 ) {}
+
                 public function row()
                 {
                     return $this->row;
                 }
+
                 public function errors()
                 {
                     return $this->errors;
                 }
+
                 public function values()
                 {
                     return $this->values;
                 }
             };
 
-            // Log unico
             Log::warning("Import fallito alla riga {$rowNumber}: " . implode(' | ', $errors));
 
             $this->createActivityLog(
                 practice: null,
                 logName: 'import_validation_failure',
-                message: "Import pratica fallito alla riga {$rowNumber} per cliente {$rowValues['cognome_nome_cliente']}",
+                message: "Import pratica fallito alla riga {$rowNumber} per cliente " . $this->getCustomerLogName($rowValues),
                 row: $rowValues,
                 e: null,
                 failures: $fake
@@ -176,254 +164,291 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         return 1000;
     }
 
-    /* Prepara i dati prima della validazione */
-    public function prepareForValidation(array $row)
+    public function prepareForValidation(array $row): array
     {
-        $values = ['recapito_cell', 'cf_cl'];
+        foreach (['recapito_cell', 'numero_di_tel', 'cf_cl'] as $key) {
+            if (isset($row[$key]) && $row[$key] !== null) {
+                $row[$key] = trim((string) $row[$key]);
+            }
+        }
 
-        foreach ($values as $key) {
-            if (isset($row[$key]) && !is_null($row[$key])) {
-                $row[$key] = (string) $row[$key];
+        foreach (['nome', 'cognome', 'cognome_nome_cliente'] as $key) {
+            if (isset($row[$key]) && $row[$key] !== null) {
+                $row[$key] = trim((string) $row[$key]);
             }
         }
 
         return $row;
     }
 
-    /* Regole di validazione */
     public function rules(): array
     {
         return [
-            'cognome_nome_cliente' => ['required', 'string', 'max:255'],
+            'cognome_nome_cliente' => ['nullable', 'string', 'max:255'],
+            'nome' => ['required_without:cognome_nome_cliente', 'string', 'max:255'],
+            'cognome' => ['required_without:cognome_nome_cliente', 'string', 'max:255'],
+
             'cf_cl' => ['nullable', 'string', 'max:16'],
-            'recapito_cell' => ['required', 'string', 'min:10', 'max:20'],
+
+            'recapito_cell' => ['nullable', 'string', 'min:10', 'max:20'],
+            'numero_di_tel' => ['required_without:recapito_cell', 'string', 'min:10', 'max:20'],
+
             'data_nascita_cliente' => ['nullable'],
 
-            'applicazione' => ['required', 'string'],
+            'applicazione' => ['nullable', 'string'],
             'tipo_prodotto' => ['nullable', 'string', 'max:255'],
             'assicurazione' => ['nullable', 'string', 'max:255'],
-            'numero_rate' => ['required', 'numeric'],
+            'numero_rate' => ['nullable', 'numeric'],
             'tipo_cliente' => ['nullable', 'string', 'max:255'],
 
-            'finanziato' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'montante' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'importo_rata' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'tan' => ['required', 'numeric', 'between:0,10000'],
+            'finanziato' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'montante' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'importo_rata' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'tan' => ['nullable', 'numeric', 'between:0,10000'],
             'teg' => ['nullable', 'numeric', 'between:0,10000'],
-            'taeg' => ['required', 'numeric', 'between:0,10000'],
+            'taeg' => ['nullable', 'numeric', 'between:0,10000'],
 
             'data_inserimento' => ['nullable'],
-            'data_prima_rata' => ['required'],
-            'data_ultima_rata' => ['required'],
+
+            'data_prima_rata' => ['nullable', 'required_without:data_inizio_finanziamento'],
+            'data_inizio_finanziamento' => ['nullable', 'required_without:data_prima_rata'],
+
+            'data_ultima_rata' => ['nullable'],
+            'data_fine' => ['nullable'],
+
             'data_estinzione_anticipata' => ['nullable'],
             'data_liquidazione' => ['nullable'],
 
-            'rinnovo' => ['nullable', 'string', Rule::in(['S', 's', 'N', 'n', 'SI', 'si', 'NO', 'no', 'Y', 'y', '1', '0'])],
+            'stato_pratica' => ['nullable', 'string'],
+
+            'rinnovo' => [
+                'nullable',
+                'string',
+                Rule::in(['S', 's', 'N', 'n', 'SI', 'si', 'NO', 'no', 'Y', 'y', '1', '0']),
+            ],
+
             'trasformazione_gg' => ['nullable', 'integer'],
             'somma_dec_35' => ['nullable', 'numeric'],
         ];
     }
 
-    protected function parseDate($value)
+    protected function value(array $row, string $key, mixed $default = null): mixed
     {
-        if (!$value) return null;
+        return array_key_exists($key, $row) && $row[$key] !== '' ? $row[$key] : $default;
+    }
+
+    protected function nullableNumber(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (float) str_replace(',', '.', (string) $value);
+    }
+
+    protected function getCustomerLogName(array $row): string
+    {
+        $name = trim((string) ($this->value($row, 'cognome_nome_cliente') ?? ''));
+
+        if ($name !== '') {
+            return $name;
+        }
+
+        $composed = trim(
+            ((string) $this->value($row, 'cognome', '')) . ' ' .
+            ((string) $this->value($row, 'nome', ''))
+        );
+
+        return $composed !== '' ? $composed : 'N/D';
+    }
+
+    protected function getCustomerNameParts(array $row): array
+    {
+        $fullName = trim((string) $this->value($row, 'cognome_nome_cliente', ''));
+
+        if ($fullName !== '') {
+            $parts = preg_split('/\s+/', $fullName) ?: [];
+
+            return [
+                'last_name' => array_shift($parts) ?: '',
+                'first_name' => implode(' ', $parts),
+            ];
+        }
+
+        return [
+            'first_name' => trim((string) $this->value($row, 'nome', '')),
+            'last_name' => trim((string) $this->value($row, 'cognome', '')),
+        ];
+    }
+
+    protected function getPhone(array $row): ?string
+    {
+        return $this->value($row, 'recapito_cell')
+            ?? $this->value($row, 'numero_di_tel');
+    }
+
+    protected function getFirstInstallmentDate(array $row): mixed
+    {
+        return $this->value($row, 'data_prima_rata')
+            ?? $this->value($row, 'data_inizio_finanziamento');
+    }
+
+    protected function getLastInstallmentDate(array $row): mixed
+    {
+        return $this->value($row, 'data_ultima_rata')
+            ?? $this->value($row, 'data_fine');
+    }
+
+    protected function getPracticeStatus(array $row): string
+    {
+        $status = $this->value($row, 'stato_pratica');
+
+        if ($status) {
+            return (string) $status;
+        }
+
+        return $this->value($row, 'data_liquidazione')
+            ? PracticeStatus::DISBURSED->value
+            : PracticeStatus::UNDER_REVIEW->value;
+    }
+
+    protected function parseDate($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
 
         try {
             if (is_numeric($value)) {
                 return Date::excelToDateTimeObject($value)->format('Y-m-d');
             }
+
             return Carbon::parse($value)->format('Y-m-d');
-        } catch (Exception $e) {
+        } catch (Exception) {
             return null;
         }
     }
 
-    /**
-     * Recupera l'utente associato alla riga.
-     *
-     * @param array $row
-     * @return User|null
-     */
-    protected function getUser($row)
+    protected function getUser(array $row): ?User
     {
-        // Se viene passato un utente di default per l'importazione, usalo
         if ($this->defaultUser) {
             return $this->defaultUser;
         }
 
-        $userFullName = strtolower(trim($row['nome_agenzia']));
+        $userFullName = strtolower(trim((string) $this->value($row, 'nome_agenzia', '')));
 
-        $user = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $userFullName . '%'])
-            ->first();
+        if ($userFullName !== '') {
+            $user = User::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $userFullName . '%'])
+                ->first();
 
-        return $user ?? User::role('superadmin')->first(); // Fallback to superadmin if no user found
+            if ($user) {
+                return $user;
+            }
+        }
+
+        return auth()->user() ?? User::role('superadmin')->first();
     }
 
-    /**
-     * Crea o aggiorna il cliente in base ai dati della riga.
-     *
-     * @param array $row
-     * @return Customer
-     */
-    protected function setCustomer($row, $user): Customer
+    protected function setCustomer(array $row, ?User $user): Customer
     {
-        // Creazione o aggiornamento del cliente
-        $fullName = $row['cognome_nome_cliente'] ?? '';
-        $parts = explode(' ', $fullName);
-        $lastName = array_shift($parts);
-        $firstName = implode(' ', $parts);
-        $taxId = $row['cf_cl'] ?? null; // 'cf_cl' dovrebbe corrispondere al codice fiscale del cliente
+        $nameParts = $this->getCustomerNameParts($row);
+        $taxId = $this->value($row, 'cf_cl');
 
-        // cerca il cliente per codice fiscale
         if ($taxId) {
             $customer = Customer::where('tax_id', $taxId)->first();
 
-            // se il cliente non esiste, lo crea
-            if (!$customer) {
-                $customer = Customer::create([
-                    'user_id' => $user->id,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'phone' => $row['recapito_cell'] ?? null,
-                    'date_of_birth' => $this->parseDate($row['data_nascita_cliente']) ?? null,
-                    'tax_id' => $taxId,
-                    'customer_status' => CustomerStatus::CUSTOMER->value, // Imposta lo stato del cliente come "Cliente"
-                ]);
+            if ($customer) {
+                return $customer;
             }
-        } else {
-            // Se il codice fiscale non è presente, crea un cliente senza di esso
-            $customer = Customer::create([
-                'user_id' => $user->id,
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'phone' => $row['recapito_cell'] ?? null,
-                'date_of_birth' => $this->parseDate($row['data_nascita_cliente']) ?? null,
-                'tax_id' => null,
-                'customer_status' => CustomerStatus::CUSTOMER->value,
-            ]);
         }
 
-        return $customer;
+        return Customer::create([
+            'user_id' => $user?->id,
+            'first_name' => $nameParts['first_name'],
+            'last_name' => $nameParts['last_name'],
+            'phone' => $this->getPhone($row),
+            'date_of_birth' => $this->parseDate($this->value($row, 'data_nascita_cliente')),
+            'tax_id' => $taxId,
+            'customer_status' => CustomerStatus::CUSTOMER->value,
+        ]);
     }
 
-    /**
-     * Imposta il tipo di prodotto in base ai dati della riga.
-     *
-     * @param array $row
-     * @return ProductType|null
-     */
-    protected function setProduct($row): ?ProductType
+    protected function setProduct(array $row): ?ProductType
     {
-        $value = strtolower(trim($row['applicazione'] ?? ''));
+        $value = strtolower(trim((string) $this->value($row, 'applicazione', '')));
 
-        $product = match ($value) {
-            'cqs' => ProductType::where('slug', 'cessione-del-quinto')->first(),
-            'cqp' => ProductType::where('slug', 'cessione-del-quinto')->first(),
+        return match ($value) {
+            'cqs', 'cqp' => ProductType::where('slug', 'cessione-del-quinto')->first(),
             'del' => ProductType::where('slug', 'delegazione-di-pagamento')->first(),
             'mutuo' => ProductType::where('slug', 'mutui')->first(),
             'prestito personale' => ProductType::where('slug', 'prestiti')->first(),
-            default => ProductType::where('slug', 'prestiti')->first(),
+            default => null,
         };
-
-        return $product;
     }
 
-    /**
-     * Recupera l'assicurazione in base al nome.
-     *
-     * @param array $row
-     * @return Insurance|null
-     */
-    protected function getInsurance($row): ?Insurance
+    protected function getInsurance(array $row): ?Insurance
     {
-        $insuranceName = strtolower(trim($row['assicurazione'] ?? ''));
+        $insuranceName = strtolower(trim((string) $this->value($row, 'assicurazione', '')));
 
-        $insurance = Insurance::whereRaw('LOWER(name) = ?', [$insuranceName])
-            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $insuranceName . '%'])
-            ->first();  // garantisce precedenza al match esatto
-
-        return $insurance;
-    }
-
-    /**
-     * Recupera il tipo di cliente in base al nome.
-     *
-     * @param array $row
-     * @return CustomerType|null
-     */
-    protected function getCustomerType($row): ?CustomerType
-    {
-        $customerTypeName = strtolower(trim($row['tipo_cliente'] ?? ''));
-
-        $customerType = CustomerType::whereRaw('LOWER(name) = ?', [$customerTypeName])
-            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $customerTypeName . '%'])
-            ->first();  // garantisce precedenza al match esatto
-
-        return $customerType;
-    }
-
-    /**
-     * Recupera il sottotipo di prodotto in base al nome.
-     *
-     * @param array $row
-     * @return ProductSubtype|null
-     */
-    protected function getProductSubtype($row): ?ProductSubtype
-    {
-        $productSubtypeName = strtolower(trim($row['tipo_prodotto'] ?? ''));
-
-        $productSubtype = ProductSubtype::whereRaw('LOWER(name) = ?', [$productSubtypeName])
-            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $productSubtypeName . '%'])
-            ->first();  // garantisce precedenza al match esatto
-
-        return $productSubtype;
-    }
-
-    /**
-     * Recupera i valori di rinnovabilità e percentuale di avviso predefiniti per il prodotto e l'installment specificati.
-     *
-     * @param ProductType $product
-     * @param Installment|null $installment
-     * @return InstallmentProductDefault|null
-     */
-    protected function getRenewabilityAndAlertDefaultPercentage(?ProductType $product, ?Installment $installment): ?InstallmentProductDefault
-    {
-        if (!$installment) {
+        if ($insuranceName === '') {
             return null;
         }
 
-        $installmentProductDefault = InstallmentProductDefault::where('product_type_id', $product->id)
-            ->where('installment_id', $installment->id ?? null)
+        return Insurance::whereRaw('LOWER(name) = ?', [$insuranceName])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $insuranceName . '%'])
             ->first();
-
-        return $installmentProductDefault;
     }
 
-    /**
-     * Parse renewal value from Excel (S/N to true/false)
-     *
-     * @param string|null $value
-     * @return bool
-     */
+    protected function getCustomerType(array $row): ?CustomerType
+    {
+        $customerTypeName = strtolower(trim((string) $this->value($row, 'tipo_cliente', '')));
+
+        if ($customerTypeName === '') {
+            return null;
+        }
+
+        return CustomerType::whereRaw('LOWER(name) = ?', [$customerTypeName])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $customerTypeName . '%'])
+            ->first();
+    }
+
+    protected function getProductSubtype(array $row): ?ProductSubtype
+    {
+        $productSubtypeName = strtolower(trim((string) $this->value($row, 'tipo_prodotto', '')));
+
+        if ($productSubtypeName === '') {
+            return null;
+        }
+
+        return ProductSubtype::whereRaw('LOWER(name) = ?', [$productSubtypeName])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $productSubtypeName . '%'])
+            ->first();
+    }
+
+    protected function getRenewabilityAndAlertDefaultPercentage(?ProductType $product, ?Installment $installment): ?InstallmentProductDefault
+    {
+        if (!$product || !$installment) {
+            return null;
+        }
+
+        return InstallmentProductDefault::where('product_type_id', $product->id)
+            ->where('installment_id', $installment->id)
+            ->first();
+    }
+
     protected function parseRenewalValue(?string $value): bool
     {
         if (!$value) {
             return false;
         }
 
-        $normalizedValue = strtoupper(trim($value));
-
-        return match ($normalizedValue) {
+        return match (strtoupper(trim($value))) {
             'S', 'SI', 'SÌ', 'YES', 'Y', '1' => true,
-            'N', 'NO', '0' => false,
-            default => false, // Default a false per valori non riconosciuti
+            default => false,
         };
     }
 
-    /**
-     * Crea un log di attività per l'importazione.
-     */
-    protected function createActivityLog($practice, $logName, $message, $row = [], $e = null, $failures = null)
+    protected function createActivityLog($practice, $logName, $message, $row = [], $e = null, $failures = null): void
     {
         $properties = [
             'import_type' => 'practices',
@@ -441,9 +466,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         }
 
         if ($e) {
-            $properties = array_merge($properties, [
-                'error_message' => $e->getMessage(),
-            ]);
+            $properties['error_message'] = $e->getMessage();
         }
 
         if ($failures) {
@@ -455,7 +478,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
         }
 
         activity($logName)
-            ->when($practice, fn($activity) => $activity->performedOn($practice))
+            ->when($practice, fn ($activity) => $activity->performedOn($practice))
             ->causedBy(auth()->user())
             ->withProperties($properties)
             ->log($message);

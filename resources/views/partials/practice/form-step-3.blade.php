@@ -81,12 +81,12 @@
     </div>
     {{-- Renewability Percentage --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Percentuale rinnovabilità *</flux:label>
+        <flux:label>Percentuale rinnovabilità </flux:label>
         <x-display-input value="{{ $practiceForm->renewabilityPercentage }}" />
     </div>
     {{-- Percentage Alert --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Percentuale alert *</flux:label>
+        <flux:label>Percentuale alert </flux:label>
         <x-display-input value="{{ $practiceForm->percentageAlert }}" />
     </div>
     {{-- Renewed --}}
