@@ -54,6 +54,15 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             $customerType = $this->getCustomerType($row);
             $installmentProductDefault = $this->getRenewabilityAndAlertDefaultPercentage($product, $installment);
             $practiceStatus = $this->getPracticeStatus($row);
+            $disbursementDate = $this->parseDate($this->value($row, 'data_liquidazione'));
+            if (
+                $practiceStatus === PracticeStatus::DISBURSED->value &&
+                !$disbursementDate
+            ) {
+                $disbursementDate =
+                    $this->parseDate($this->value($row, 'data_inserimento'))
+                    ?? now()->format('Y-m-d');
+            }
             $isRenewal = $this->parseRenewalValue($this->value($row, 'rinnovo'));
 
             $practice = Practice::create([
@@ -84,7 +93,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                 'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
                 'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
                 'early_settlement_date' => $this->parseDate($this->value($row, 'data_estinzione_anticipata')),
-                'disbursement_date' => $this->parseDate($this->value($row, 'data_liquidazione')),
+                'disbursement_date' => $disbursementDate,
 
                 'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
                 'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
@@ -307,9 +316,9 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
             return (string) $status;
         }
 
-        return $this->value($row, 'data_liquidazione')
-            ? PracticeStatus::DISBURSED->value
-            : PracticeStatus::UNDER_REVIEW->value;
+        return $this->getLastInstallmentDate($row)
+    ? PracticeStatus::DISBURSED->value
+    : PracticeStatus::UNDER_REVIEW->value;
     }
 
     protected function parseDate($value): ?string
