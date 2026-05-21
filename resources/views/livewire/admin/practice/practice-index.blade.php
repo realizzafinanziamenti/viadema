@@ -200,7 +200,15 @@
     @include('partials.practice.practice-notes-modal')
 
     {{-- Import Modal --}}
-    <x-modals.import-modal name="import-practices-modal" header="Importa pratiche da Excel"
-        submitFunction="importPractices" :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :users="$users" :userId="$userId"
-        :userSearch="$userSearch" />
+    <x-modals.import-modal
+    name="import-practices-modal"
+    header="Importa pratiche da Excel"
+    submitFunction="importPractices"
+    :importFile="$importFile"
+    :temporaryImportFile="$temporaryImportFile"
+    :users="$users"
+    :userId="$userId"
+    :userSearch="$userSearch"
+    :canAssignUser="auth()->user()->can('assign practice to user')"
+/>
 </div>

@@ -161,6 +161,15 @@
     @include('partials.lead.lead-notes-modal')
 
     {{-- Import Modal --}}
-    <x-modals.import-modal name="import-leads-modal" header="Importa pratiche da Excel" submitFunction="importLeads"
-        :importFile="$importFile" :temporaryImportFile="$temporaryImportFile" :users="$users" :userId="$userId" :userSearch="$userSearch" />
+<x-modals.import-modal
+name="import-leads-modal"
+header="Importa leads da Excel"
+submitFunction="importLeads"
+:importFile="$importFile"
+:temporaryImportFile="$temporaryImportFile"
+:users="$users"
+:userId="$userId"
+:userSearch="$userSearch"
+:canAssignUser="auth()->user()->can('assign lead to user')"
+/>
 </div>

@@ -27,7 +27,7 @@ use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
-
+use Illuminate\Support\Facades\Auth;
 class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
@@ -105,7 +105,9 @@ class LeadIndex extends Component
             ]);
 
             // Ottieni l'utente di default se è stato selezionato
-            $defaultUser = $this->userId ? User::find($this->userId) : null;
+            $defaultUser = $this->userId
+            ? User::find($this->userId)
+            : Auth::user();
 
             $import = new LeadsImport($defaultUser);
 

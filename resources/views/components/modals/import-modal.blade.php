@@ -9,6 +9,7 @@
     'users' => null,
     'userId' => null,
     'userSearch' => '',
+    'canAssignUser' => false,
 ])
 
 <x-modal :name="$name" :show="$show" maxWidth="{{ $maxWidth }}">
@@ -41,7 +42,7 @@
             @endif
 
             {{-- User --}}
-            @if (auth()->user()->can('assign practice to user'))
+            @if ($canAssignUser)
                 <div class="flex flex-col gap-1.5 mt-6">
                     <flux:label>Assegna ad utente</flux:label>
                     <div class="flex flex-col gap-0.5">
