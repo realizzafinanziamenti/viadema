@@ -306,6 +306,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view leads',
             'update leads',
             'delete leads',
+            'import leads',
             // assign practices permissions
             'access practices',
             'view practices',
