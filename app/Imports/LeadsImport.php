@@ -21,7 +21,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-
+use Illuminate\Support\Facades\Auth;
 class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
 {
     use SkipsFailures;
@@ -258,7 +258,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         }
 
         // Fallback to superadmin
-        return User::role('superadmin')->first();
+        return Auth::user() ?? User::role('superadmin')->first();
     }
 
     /**
