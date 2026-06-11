@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Livewire\Forms;
-
+use App\Models\PracticeOpportunity;
 use App\Enums\PracticeStatus;
 use App\Enums\ProductionType;
 use App\Models\Practice;
@@ -183,7 +183,12 @@ class PracticeForm extends Form
 
         try {
             $practice = DB::transaction(function () {
-                $practice = Practice::create($this->practiceData());
+                $opportunity = PracticeOpportunity::create($this->opportunityData());
+
+                $practice = Practice::create(array_merge(
+                    $this->practiceData(),
+                    ['practice_opportunity_id' => $opportunity->id]
+                ));
 
                 foreach ($this->attachments as $attachment) {
                     $practice->attachments()->create([
@@ -233,7 +238,9 @@ return $practice;
                 // get old user id before update
                 $oldUserId = $this->practice->user_id;
 
+                $this->practice->loadMissing('opportunity');
                 $this->practice->update($this->practiceData());
+                $this->practice->opportunity->update($this->opportunityData());
 
                 foreach ($this->attachments as $attachment) {
                     $this->practice->attachments()->create([
@@ -276,6 +283,41 @@ if ($oldUserId !== $this->practice->user_id && $this->practice->user_id) {
     }
 
     return (float) str_replace(',', '.', (string) $value);
+}
+private function opportunityData(): array
+{
+    return [
+        'customer_id' => $this->customerId,
+        'product_type_id' => $this->productTypeId,
+        'product_subtype_id' => $this->productSubtypeId ?: null,
+        'financial_table_id' => $this->financialTableId ?: null,
+        'insurance_id' => $this->insuranceId ?: null,
+        'installment_id' => $this->installmentId ?: null,
+        'customer_type_id' => $this->customerTypeId ?: null,
+
+        'amount_disbursed' => $this->nullableNumber($this->amountDisbursed),
+        'total_amount' => $this->nullableNumber($this->totalAmount),
+        'rate_amount' => $this->nullableNumber($this->rateAmount),
+
+        'tan' => $this->nullableNumber($this->tan),
+        'teg' => $this->nullableNumber($this->teg),
+        'taeg' => $this->nullableNumber($this->taeg),
+
+        'first_installment_date' => $this->firstInstallmentDate ?: null,
+        'last_installment_date' => $this->lastInstallmentDate ?: null,
+
+        'renewability_percentage' => $this->nullableNumber($this->renewabilityPercentage) ?? 40.00,
+        'percentage_alert' => $this->nullableNumber($this->percentageAlert) ?? 35.00,
+
+        'is_renewal' => $this->isRenewal,
+        'production_type' => $this->productionType ?: null,
+
+        'disbursing_institution' => $this->disbursingInstitution ?: null,
+        'financial_institution' => $this->financialInstitution ?: null,
+        'previous_finance' => $this->previousFinance ?: null,
+
+        'notes' => $this->notes ?: null,
+    ];
 }
     private function practiceData(): array
     {

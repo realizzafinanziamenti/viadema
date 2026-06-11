@@ -36,6 +36,7 @@ class Practice extends Model
         'insurance_id',           // assicurazione
         'installment_id',         // numero rate
         'customer_type_id',       // tipologia cliente
+        'practice_opportunity_id',
 
         // Snapshot
         'product_subtype_label',          // snapshot del tipo di prodotto (es. Mutuo Under 36)
@@ -468,7 +469,10 @@ class Practice extends Model
             })->orWhere('id', 'like', "%{$search}%");
         });
     }
-
+    public function opportunity(): BelongsTo
+    {
+        return $this->belongsTo(PracticeOpportunity::class, 'practice_opportunity_id');
+    }
     /**
      * Scope a query to filter practices for a given department/role.
      */

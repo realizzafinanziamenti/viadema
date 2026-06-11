@@ -268,6 +268,10 @@ class Customer extends Model
                 ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
         });
     }
+    public function practiceOpportunities(): HasMany
+{
+    return $this->hasMany(PracticeOpportunity::class);
+}
 
     /**
      * Scope a query to filter practices for a given department/role.
