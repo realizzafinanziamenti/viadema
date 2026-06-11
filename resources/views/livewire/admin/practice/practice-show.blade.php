@@ -28,32 +28,32 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Prodotto: </span>
-                    <span class="font-bold">{{ $practice->productType?->name }}</span>
+                    <span class="font-bold">{{ $practice->opportunity?->productType?->name ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Ente erogante: </span>
-                    <span>{{ $practice->disbursing_institution ?? 'N/D' }}</span>
+                    <span>{{ $practice->opportunity?->disbursing_institution ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Istituto finanziario: </span>
-                    <span>{{ $practice->financial_institution ?? 'N/D' }}</span>
+                    <span>{{ $practice->opportunity?->financial_institution ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Assicurazione: </span>
-                    <span>{{ $practice->insurance?->name ?? 'N/D' }}</span>
+                    <span>{{ $practice->opportunity?->insurance?->name ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Data di inizio: </span>
-                    <span>{{ $practice->formatted_first_installment_date }}</span>
+                    <span>{{ $practice->opportunity?->first_installment_date?->format('d/m/y') ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Data di fine: </span>
-                    <span>{{ $practice->formatted_last_installment_date }}</span>
+                    <span>{{ $practice->opportunity?->last_installment_date?->format('d/m/y') ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5 flex items-center gap-2">
@@ -81,15 +81,15 @@
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Produzione: </span>
-                    <span>{{ $practice->production_type?->getLabelText() ?? 'N/D' }}</span>
+                    <span>{{ $practice->opportunity?->production_type?->getLabelText() ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Rinnovo: </span>
-                    <span>{{ $practice->is_renewal ? 'Sì' : 'No' }}</span>
+                    <span>{{ $practice->opportunity?->is_renewal ? 'Sì' : 'No' }}</span>
                 </div>
 
-                @if ($practice->notes)
+                @if ($practice->opportunity?->notes)
                     <div class="text-sm mb-2.5">
                         <span class="text-gray-custom-4">Note: </span>
                         <span>{{ $practice->notes }}</span>
@@ -98,39 +98,60 @@
             </x-card>
 
             {{-- Product Information --}}
-            <x-card>
-                <x-card-header class="mb-6" label="Totale dovuto" />
+{{-- Product Information --}}
+<x-card>
+    <x-card-header class="mb-6" label="Totale dovuto" />
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Finanziato: </span>
-                    <span>{{ $practice->formatted_amount_disbursed }}</span>
-                </div>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Finanziato: </span>
+        <span>
+            {{ $practice->opportunity?->amount_disbursed !== null
+                ? number_format($practice->opportunity->amount_disbursed, 2, ',', '.') . '€'
+                : 'N/D' }}
+        </span>
+    </div>
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Rate: </span>
-                    <span>{{ $practice->installment?->value ?? ($practice->installment_value_label ?? 'N/D') }}</span>
-                </div>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Rate: </span>
+        <span>{{ $practice->opportunity?->installment?->value ?? 'N/D' }}</span>
+    </div>
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Rata mensile: </span>
-                    <span>{{ $practice->formatted_rate_amount }}</span>
-                </div>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Rata mensile: </span>
+        <span>
+            {{ $practice->opportunity?->rate_amount !== null
+                ? number_format($practice->opportunity->rate_amount, 2, ',', '.') . '€'
+                : 'N/D' }}
+        </span>
+    </div>
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Taeg fisso: </span>
-                    <span>{{ $practice->formatted_taeg }}</span>
-                </div>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Taeg fisso: </span>
+        <span>
+            {{ $practice->opportunity?->taeg !== null
+                ? number_format($practice->opportunity->taeg, 2, ',', '.') . '%'
+                : 'N/D' }}
+        </span>
+    </div>
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Tan fisso: </span>
-                    <span>{{ $practice->formatted_tan }}</span>
-                </div>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Tan fisso: </span>
+        <span>
+            {{ $practice->opportunity?->tan !== null
+                ? number_format($practice->opportunity->tan, 2, ',', '.') . '%'
+                : 'N/D' }}
+        </span>
+    </div>
 
-                <div class="text-sm mb-2.5">
-                    <span class="text-gray-custom-4">Totale dovuto: </span>
-                    <span>{{ $practice->formatted_total_amount }}</span>
-                </div>
-            </x-card>
+    <div class="text-sm mb-2.5">
+        <span class="text-gray-custom-4">Totale dovuto: </span>
+        <span>
+            {{ $practice->opportunity?->total_amount !== null
+                ? number_format($practice->opportunity->total_amount, 2, ',', '.') . '€'
+                : 'N/D' }}
+        </span>
+    </div>
+</x-card>
 
         </div>
 

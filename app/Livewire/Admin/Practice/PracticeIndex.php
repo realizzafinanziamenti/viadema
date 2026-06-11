@@ -579,6 +579,7 @@ class PracticeIndex extends Component
             modalName: 'practice-notes',
             notFoundMessage: 'Note non trovate'
         );
+        $this->selectedPractice?->loadMissing('opportunity');
     }
 
     /**
@@ -812,140 +813,174 @@ class PracticeIndex extends Component
         if ($this->selectedPracticeStatusForFilter && $this->expired === false) {
             $query->where('practice_status', $this->selectedPracticeStatusForFilter);
         }
+
         if ($this->selectedTeamMemberForFilter) {
             $query->where('user_id', $this->selectedTeamMemberForFilter);
         }
+
         if ($this->selectedCustomerForFilter) {
             $query->where('customer_id', $this->selectedCustomerForFilter);
         }
+
         if ($this->selectedProductTypeForFilter && $this->type === null) {
-            $query->where('product_type_id', $this->selectedProductTypeForFilter);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('product_type_id', $this->selectedProductTypeForFilter)
+            );
         }
+
         if ($this->selectedProductSubtypeForFilter) {
-            // Recupera la label del sottotipo di prodotto
-            $label = $this->productSubtypes[$this->selectedProductSubtypeForFilter] ?? null;
-
-            // Applica il filtro sia per l'ID che per la label (valori select modificabili)
-            $query->where(function ($q) use ($label) {
-                $q->where('product_subtype_id', $this->selectedProductSubtypeForFilter);
-
-                if ($label) {
-                    $q->orWhere('product_subtype_label', $label);
-                }
-            });
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('product_subtype_id', $this->selectedProductSubtypeForFilter)
+            );
         }
+
         if ($this->selectedFinancialTableForFilter) {
-            $label = $this->financialTables[$this->selectedFinancialTableForFilter] ?? null;
-
-            $query->where(function ($q) use ($label) {
-                $q->where('financial_table_id', $this->selectedFinancialTableForFilter);
-
-                if ($label) {
-                    $q->orWhere('financial_table_percentage', $label);
-                }
-            });
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('financial_table_id', $this->selectedFinancialTableForFilter)
+            );
         }
+
         if ($this->selectedInsuranceForFilter) {
-            $label = $this->insurances[$this->selectedInsuranceForFilter] ?? null;
-
-            $query->where(function ($q) use ($label) {
-                $q->where('insurance_id', $this->selectedInsuranceForFilter);
-
-                if ($label) {
-                    $q->orWhere('insurance_label', $label);
-                }
-            });
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('insurance_id', $this->selectedInsuranceForFilter)
+            );
         }
+
         if ($this->selectedInstallmentForFilter) {
-            $label = $this->installments[$this->selectedInstallmentForFilter] ?? null;
-
-            $query->where(function ($q) use ($label) {
-                $q->where('installment_id', $this->selectedInstallmentForFilter);
-
-                if ($label) {
-                    $q->orWhere('installment_value_label', $label);
-                }
-            });
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('installment_id', $this->selectedInstallmentForFilter)
+            );
         }
+
         if ($this->selectedCustomerTypeForFilter) {
-            $label = $this->customerTypes[$this->selectedCustomerTypeForFilter] ?? null;
-
-            $query->where(function ($q) use ($label) {
-                $q->where('customer_type_id', $this->selectedCustomerTypeForFilter);
-
-                if ($label) {
-                    $q->orWhere('customer_type_label', $label);
-                }
-            });
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('customer_type_id', $this->selectedCustomerTypeForFilter)
+            );
         }
+
         if ($this->insertedAtDateMin) {
             $query->whereDate('inserted_at', '>=', $this->insertedAtDateMin);
         }
+
         if ($this->insertedAtDateMax) {
             $query->whereDate('inserted_at', '<=', $this->insertedAtDateMax);
         }
+
         if ($this->firstInstallmentDateMin) {
-            $query->whereDate('first_installment_date', '>=', $this->firstInstallmentDateMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->whereDate('first_installment_date', '>=', $this->firstInstallmentDateMin)
+            );
         }
+
         if ($this->firstInstallmentDateMax) {
-            $query->whereDate('first_installment_date', '<=', $this->firstInstallmentDateMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->whereDate('first_installment_date', '<=', $this->firstInstallmentDateMax)
+            );
         }
+
         if ($this->lastInstallmentDateMin) {
-            $query->whereDate('last_installment_date', '>=', $this->lastInstallmentDateMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->whereDate('last_installment_date', '>=', $this->lastInstallmentDateMin)
+            );
         }
+
         if ($this->lastInstallmentDateMax) {
-            $query->whereDate('last_installment_date', '<=', $this->lastInstallmentDateMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->whereDate('last_installment_date', '<=', $this->lastInstallmentDateMax)
+            );
         }
+
         if ($this->renewabilityDateMin) {
             $query->whereDate('renewability_date', '>=', $this->renewabilityDateMin);
         }
+
         if ($this->renewabilityDateMax) {
             $query->whereDate('renewability_date', '<=', $this->renewabilityDateMax);
         }
+
         if ($this->disbursementDateMin && $this->expired === true) {
             $query->whereDate('disbursement_date', '>=', $this->disbursementDateMin);
         }
+
         if ($this->disbursementDateMax && $this->expired === true) {
             $query->whereDate('disbursement_date', '<=', $this->disbursementDateMax);
         }
+
         if ($this->amountDisbursedMin) {
-            $query->where('amount_disbursed', '>=', $this->amountDisbursedMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('amount_disbursed', '>=', $this->amountDisbursedMin)
+            );
         }
+
         if ($this->amountDisbursedMax) {
-            $query->where('amount_disbursed', '<=', $this->amountDisbursedMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('amount_disbursed', '<=', $this->amountDisbursedMax)
+            );
         }
+
         if ($this->totalAmountMin) {
-            $query->where('total_amount', '>=', $this->totalAmountMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('total_amount', '>=', $this->totalAmountMin)
+            );
         }
+
         if ($this->totalAmountMax) {
-            $query->where('total_amount', '<=', $this->totalAmountMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('total_amount', '<=', $this->totalAmountMax)
+            );
         }
+
         if ($this->rateAmountMin) {
-            $query->where('rate_amount', '>=', $this->rateAmountMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('rate_amount', '>=', $this->rateAmountMin)
+            );
         }
+
         if ($this->rateAmountMax) {
-            $query->where('rate_amount', '<=', $this->rateAmountMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('rate_amount', '<=', $this->rateAmountMax)
+            );
         }
+
         if ($this->tanMin) {
-            $query->where('tan', '>=', $this->tanMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('tan', '>=', $this->tanMin)
+            );
         }
+
         if ($this->tanMax) {
-            $query->where('tan', '<=', $this->tanMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('tan', '<=', $this->tanMax)
+            );
         }
+
         if ($this->taegMin) {
-            $query->where('taeg', '>=', $this->taegMin);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('taeg', '>=', $this->taegMin)
+            );
         }
+
         if ($this->taegMax) {
-            $query->where('taeg', '<=', $this->taegMax);
+            $query->whereHas('opportunity', fn ($q) =>
+                $q->where('taeg', '<=', $this->taegMax)
+            );
         }
 
         return $query;
     }
-
     #[Computed]
     public function query()
     {
-        $query = Practice::with('customer', 'user', 'productType')
+        $query = Practice::with([
+            'customer',
+            'user',
+            'opportunity.productType',
+            'opportunity.productSubtype',
+            'opportunity.financialTable',
+            'opportunity.insurance',
+            'opportunity.installment',
+            'opportunity.customerType',
+        ])
             ->filteredForDepartment()
             ->filterByProductType($this->type)
             ->isExpired($this->expired)

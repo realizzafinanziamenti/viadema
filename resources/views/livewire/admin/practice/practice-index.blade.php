@@ -110,7 +110,7 @@
 
                         @if (!$productType)
                             <x-table-data truncate class="font-bold! w-[160px]"
-                                label="{{ $practice->productType?->name }}" />
+                            label="{{ $practice->opportunity?->productType?->name ?? 'N/D' }}" />
                         @endif
 
                         <x-table-data truncate
@@ -135,7 +135,7 @@
 
                         {{-- Notes --}}
                         <x-table-data>
-                            @if ($practice->notes)
+                            @if ($practice->opportunity?->notes)
                                 <div class="flex items-center justify-center w-full relative">
                                     <button class="relative cursor-pointer" title="Visualizza note"
                                         wire:click="selectPracticeForNotes({{ $practice->id }})">

@@ -14,7 +14,7 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
+        User::updateorcreate([
             'first_name' => 'Viadema',
             'last_name' => 'Group',
             'email' => 'super@admin.com',

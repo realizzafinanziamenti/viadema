@@ -33,15 +33,6 @@ class ResetCrmData extends Command
             'notifications',
             'jobs',
             'failed_jobs',
-
-            'product_types',
-            'product_subtypes',
-            'financial_tables',
-            'insurances',
-            'installments',
-            'installment_product_defaults',
-            'customer_types',
-            'form_documents',
         ];
 
         Schema::disableForeignKeyConstraints();
