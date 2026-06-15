@@ -23,7 +23,7 @@ class PracticeForm extends Form
     use AcceptedFileTypes;
 
     public ?Practice $practice = null;
-
+    public ?PracticeOpportunity $opportunity = null;
     public $productTypeId = null;
     public $productSubtypeId = null;
     public $userId = null;
@@ -53,6 +53,43 @@ class PracticeForm extends Form
     public $notes = null;
     public array $attachments = [];
 
+    public function setOpportunity(PracticeOpportunity $opportunity): void
+    {
+        $this->opportunity = $opportunity;
+
+        $this->fill([
+            'customerId' => $opportunity->customer_id,
+            'productTypeId' => $opportunity->product_type_id,
+            'productSubtypeId' => $opportunity->product_subtype_id,
+            'financialTableId' => $opportunity->financial_table_id,
+            'insuranceId' => $opportunity->insurance_id,
+            'installmentId' => $opportunity->installment_id,
+            'customerTypeId' => $opportunity->customer_type_id,
+
+            'amountDisbursed' => $opportunity->amount_disbursed,
+            'totalAmount' => $opportunity->total_amount,
+            'rateAmount' => $opportunity->rate_amount,
+
+            'tan' => $opportunity->tan,
+            'teg' => $opportunity->teg,
+            'taeg' => $opportunity->taeg,
+
+            'firstInstallmentDate' => $opportunity->first_installment_date?->format('Y-m-d'),
+            'lastInstallmentDate' => $opportunity->last_installment_date?->format('Y-m-d'),
+
+            'renewabilityPercentage' => $opportunity->renewability_percentage,
+            'percentageAlert' => $opportunity->percentage_alert,
+
+            'isRenewal' => (bool) $opportunity->is_renewal,
+            'productionType' => $opportunity->production_type?->value,
+
+            'disbursingInstitution' => $opportunity->disbursing_institution,
+            'financialInstitution' => $opportunity->financial_institution,
+            'previousFinance' => $opportunity->previous_finance,
+
+            'notes' => $opportunity->notes,
+        ]);
+    }
     protected function rules(): array
     {
         return array_merge(
@@ -190,7 +227,13 @@ class PracticeForm extends Form
 
         try {
             $practice = DB::transaction(function () {
+                $opportunity = $this->opportunity;
+
+            if ($opportunity) {
+                $opportunity->update($this->opportunityData());
+            } else {
                 $opportunity = PracticeOpportunity::create($this->opportunityData());
+            }
 
                 $practice = Practice::create(array_merge(
                     $this->practiceData(),

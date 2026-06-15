@@ -66,15 +66,23 @@ class LeadShow extends Component
     {
         Gate::authorize('create', Practice::class);
 
+        $opportunity = $this->lead->practiceOpportunities()
+        ->latest()
+        ->first();
+        if (! $opportunity) {
+            Toaster::error('Non è presente nessuna opportunità pratica associata a questo lead.');
+            return;
+        }
         // create a unique token
         $token = Str::random(32);
 
         // save in cache for 10 minutes
         Cache::put("practice_creation_{$token}", [
             'customer_id' => $this->lead->id,
+            'practice_opportunity_id' => $opportunity->id,
             'convert_lead' => true,
             'user_id' => auth()->id(),
-            'expires_at' => now()->addMinutes(10)
+            'expires_at' => now()->addMinutes(10),
         ], 600);
 
         $this->redirectRoute('practice.create', ['token' => $token], navigate: true);
