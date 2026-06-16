@@ -432,9 +432,13 @@ class Practice extends Model
     /**
      * Scope a query to only include practices of a given product type.
      */
-    public function scopeFilterByProductType($query, $type): Builder
+        public function scopeFilterByProductType($query, $type): Builder
     {
-        return $query->when($type, fn($q) => $q->where('product_type_id', $type->id));
+        return $query->when($type, function ($q) use ($type) {
+            $q->whereHas('opportunity', function ($opportunityQuery) use ($type) {
+                $opportunityQuery->where('product_type_id', $type->id);
+            });
+        });
     }
 
     /**
