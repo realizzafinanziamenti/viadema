@@ -30,7 +30,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Masmerise\Toaster\Toaster;
-
+use App\Models\PracticeOpportunity;
 class PracticeCreate extends Component
 {
     use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, EnumHelper;
@@ -409,6 +409,18 @@ class PracticeCreate extends Component
         $this->creationToken = $token;
 
         $this->customerForm->setCustomer($this->selectedCustomer);
+        $opportunityId = $data['practice_opportunity_id'] ?? null;
+
+if ($opportunityId) {
+    $opportunity = PracticeOpportunity::where('customer_id', $customer->id)
+        ->findOrFail($opportunityId);
+
+    $this->practiceForm->setOpportunity($opportunity);
+
+    $this->setRenewabilityAndAlertPercentage($this->practiceForm);
+    $this->recalculateLastInstallmentDate($this->practiceForm, $this->installments);
+    $this->recalculateRenewabilityDate($this->practiceForm);
+}
     }
 
 

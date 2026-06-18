@@ -22,11 +22,169 @@ use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\ProductionType;
+use App\Models\FinancialTable;
+use App\Models\Installment;
+use App\Models\Insurance;
+use App\Models\PracticeOpportunity;
+use App\Models\ProductSubtype;
+use App\Models\ProductType;
 class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
 {
     use SkipsFailures;
 
     protected ?User $defaultUser;
+    protected function updateOrCreatePracticeOpportunity(Customer $lead, array $row, ?CustomerType $customerType = null): PracticeOpportunity
+{
+    return PracticeOpportunity::updateOrCreate(
+        ['customer_id' => $lead->id],
+        $this->practiceOpportunityData($row, $customerType)
+    );
+}
+
+protected function practiceOpportunityData(array $row, ?CustomerType $customerType = null): array
+{
+    $product = $this->getProduct($row);
+    $productSubtype = $this->getProductSubtype($row);
+    $installment = $this->getInstallment($row);
+    $insurance = $this->getInsurance($row);
+    $financialTable = $this->getFinancialTable($row);
+
+    return [
+        'product_type_id' => $product?->id,
+        'product_subtype_id' => $productSubtype?->id,
+        'financial_table_id' => $financialTable?->id,
+        'insurance_id' => $insurance?->id,
+        'installment_id' => $installment?->id,
+        'customer_type_id' => $customerType?->id,
+
+        'amount_disbursed' => $this->nullableNumber($row['finanziato'] ?? $row['importo'] ?? null),
+        'total_amount' => $this->nullableNumber($row['montante'] ?? $row['totale_dovuto'] ?? null),
+        'rate_amount' => $this->nullableNumber($row['importo_rata'] ?? $row['rata_mensile'] ?? null),
+
+        'tan' => $this->nullableNumber($row['tan'] ?? null),
+        'teg' => $this->nullableNumber($row['teg'] ?? null),
+        'taeg' => $this->nullableNumber($row['taeg'] ?? null),
+
+        'first_installment_date' => $this->parseDate($row['data_prima_rata'] ?? $row['data_inizio_finanziamento'] ?? $row['data_inizio'] ?? null),
+        'last_installment_date' => $this->parseDate($row['data_ultima_rata'] ?? $row['data_fine'] ?? null),
+
+        'renewability_percentage' => $this->nullableNumber($row['percentuale_rinnovabilita'] ?? $row['percentuale_rinnovabilità'] ?? null) ?? 40.00,
+        'percentage_alert' => $this->nullableNumber($row['percentuale_alert'] ?? null) ?? 35.00,
+
+        'is_renewal' => $this->parseRenewalValue($row['rinnovo'] ?? null),
+        'production_type' => $this->parseProductionType($row['produzione'] ?? null),
+
+        'disbursing_institution' => $row['ente_erogante'] ?? null,
+        'financial_institution' => $row['istituto_finanziario'] ?? null,
+        'previous_finance' => $row['finanziaria_estinta'] ?? null,
+
+        'notes' => $row['note_pratica'] ?? null,
+    ];
+}
+
+protected function nullableNumber($value): ?float
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    return (float) str_replace(',', '.', (string) $value);
+}
+
+protected function getProduct(array $row): ?ProductType
+{
+    $value = strtolower(trim((string) ($row['prodotto'] ?? $row['applicazione'] ?? '')));
+
+    if ($value === '') {
+        return null;
+    }
+
+    return ProductType::whereRaw('LOWER(name) = ?', [$value])
+        ->orWhereRaw('LOWER(slug) = ?', [$value])
+        ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $value . '%'])
+        ->first();
+}
+
+protected function getProductSubtype(array $row): ?ProductSubtype
+{
+    $value = strtolower(trim((string) ($row['tipo_prodotto'] ?? '')));
+
+    if ($value === '') {
+        return null;
+    }
+
+    return ProductSubtype::whereRaw('LOWER(name) = ?', [$value])
+        ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $value . '%'])
+        ->first();
+}
+
+protected function getInstallment(array $row): ?Installment
+{
+    $value = $row['numero_rate'] ?? $row['rate'] ?? null;
+
+    if (!$value) {
+        return null;
+    }
+
+    return Installment::where('value', (int) $value)->first();
+}
+
+protected function getInsurance(array $row): ?Insurance
+{
+    $value = strtolower(trim((string) ($row['assicurazione'] ?? '')));
+
+    if ($value === '') {
+        return null;
+    }
+
+    return Insurance::whereRaw('LOWER(name) = ?', [$value])
+        ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $value . '%'])
+        ->first();
+}
+
+protected function getFinancialTable(array $row): ?FinancialTable
+{
+    $value = $row['tabella_provvigionale'] ?? $row['tabella_finanziaria'] ?? null;
+
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    return FinancialTable::where('percentage', $this->nullableNumber($value))->first();
+}
+
+protected function parseRenewalValue($value): bool
+{
+    if (!$value) {
+        return false;
+    }
+
+    return match (strtoupper(trim((string) $value))) {
+        'S', 'SI', 'SÌ', 'YES', 'Y', '1' => true,
+        default => false,
+    };
+}
+
+protected function parseProductionType($value): ?string
+{
+    if (!$value) {
+        return null;
+    }
+
+    $normalized = strtolower(trim((string) $value));
+
+    foreach (ProductionType::cases() as $case) {
+        if (
+            strtolower($case->value) === $normalized ||
+            strtolower($case->getLabelText()) === $normalized
+        ) {
+            return $case->value;
+        }
+    }
+
+    return null;
+}
 
     public function __construct(?User $defaultUser = null)
     {
@@ -84,6 +242,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             ];
 
             $lead = $this->findOrCreateCustomer($row, $customerData);
+            $this->updateOrCreatePracticeOpportunity($lead, $row, $customerType);
             $this->createActivityLog($lead, 'import_success', 'Lead importato con successo', $row);
             return $lead;
         } catch (Exception $e) {
@@ -205,6 +364,38 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             'provincia' => ['nullable', 'string', 'max:100'],
             'cap' => ['nullable', 'string', 'max:20'],
             'note' => ['nullable', 'string', 'max:1000'],
+
+            'prodotto' => ['nullable', 'string', 'max:255'],
+            'applicazione' => ['nullable', 'string', 'max:255'],
+            'tipo_prodotto' => ['nullable', 'string', 'max:255'],
+            'numero_rate' => ['nullable', 'numeric'],
+            'rate' => ['nullable', 'numeric'],
+            'assicurazione' => ['nullable', 'string', 'max:255'],
+            'tabella_provvigionale' => ['nullable'],
+            'tabella_finanziaria' => ['nullable'],
+            'finanziato' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'importo' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'montante' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'totale_dovuto' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'importo_rata' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'rata_mensile' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'tan' => ['nullable', 'numeric', 'between:0,10000'],
+            'teg' => ['nullable', 'numeric', 'between:0,10000'],
+            'taeg' => ['nullable', 'numeric', 'between:0,10000'],
+            'data_prima_rata' => ['nullable'],
+            'data_inizio_finanziamento' => ['nullable'],
+            'data_inizio' => ['nullable'],
+            'data_ultima_rata' => ['nullable'],
+            'data_fine' => ['nullable'],
+            'percentuale_rinnovabilita' => ['nullable', 'numeric', 'between:0,100'],
+            'percentuale_rinnovabilità' => ['nullable', 'numeric', 'between:0,100'],
+            'percentuale_alert' => ['nullable', 'numeric', 'between:0,100'],
+            'rinnovo' => ['nullable', 'string', 'max:20'],
+            'produzione' => ['nullable', 'string', 'max:100'],
+            'ente_erogante' => ['nullable', 'string', 'max:255'],
+            'istituto_finanziario' => ['nullable', 'string', 'max:255'],
+            'finanziaria_estinta' => ['nullable', 'string', 'max:255'],
+            'note_pratica' => ['nullable', 'string', 'max:1000'],
         ];
     }
 

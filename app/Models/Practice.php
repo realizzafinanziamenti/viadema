@@ -36,6 +36,7 @@ class Practice extends Model
         'insurance_id',           // assicurazione
         'installment_id',         // numero rate
         'customer_type_id',       // tipologia cliente
+        'practice_opportunity_id',
 
         // Snapshot
         'product_subtype_label',          // snapshot del tipo di prodotto (es. Mutuo Under 36)
@@ -431,9 +432,13 @@ class Practice extends Model
     /**
      * Scope a query to only include practices of a given product type.
      */
-    public function scopeFilterByProductType($query, $type): Builder
+        public function scopeFilterByProductType($query, $type): Builder
     {
-        return $query->when($type, fn($q) => $q->where('product_type_id', $type->id));
+        return $query->when($type, function ($q) use ($type) {
+            $q->whereHas('opportunity', function ($opportunityQuery) use ($type) {
+                $opportunityQuery->where('product_type_id', $type->id);
+            });
+        });
     }
 
     /**
@@ -468,7 +473,10 @@ class Practice extends Model
             })->orWhere('id', 'like', "%{$search}%");
         });
     }
-
+    public function opportunity(): BelongsTo
+    {
+        return $this->belongsTo(PracticeOpportunity::class, 'practice_opportunity_id');
+    }
     /**
      * Scope a query to filter practices for a given department/role.
      */

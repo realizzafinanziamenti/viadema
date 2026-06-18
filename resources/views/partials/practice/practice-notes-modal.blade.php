@@ -1,10 +1,10 @@
 <x-modal name="practice-notes" maxWidth="lg">
     <div class="flex flex-col">
-        <x-modal-header label="Note pratica {{ $selectedPractice?->id }}" class="mb-6" />
+        <x-modal-header label="Note pratica {{ $selectedPractice?->practice_code }}" class="mb-6" />
 
         <div class="flex flex-col gap-1.5 col-span-2">
             <flux:label>Note</flux:label>
-            <x-display-textarea value="{{ $selectedPractice?->notes }}" />
+            <x-display-textarea value="{{ $selectedPractice?->opportunity?->notes }}" />
         </div>
 
         {{-- Button --}}

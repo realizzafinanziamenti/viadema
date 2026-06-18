@@ -27,7 +27,7 @@ class InstallmentSeeder extends Seeder
         ];
 
         foreach ($installments as $installment) {
-            Installment::create($installment);
+            Installment::updateorcreate($installment);
         }
     }
 }

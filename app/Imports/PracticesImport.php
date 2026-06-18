@@ -26,6 +26,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use App\Models\PracticeOpportunity;
 
 class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
 {
@@ -64,12 +65,39 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     ?? now()->format('Y-m-d');
             }
             $isRenewal = $this->parseRenewalValue($this->value($row, 'rinnovo'));
+            $opportunity = PracticeOpportunity::create([
+                'customer_id' => $customer->id,
 
+                'product_type_id' => $product?->id,
+                'product_subtype_id' => $productSubtype?->id,
+                'financial_table_id' => null,
+                'insurance_id' => $insurance?->id,
+                'installment_id' => $installment?->id,
+                'customer_type_id' => $customerType?->id,
+
+                'amount_disbursed' => $this->nullableNumber($this->value($row, 'finanziato')),
+                'total_amount' => $this->nullableNumber($this->value($row, 'montante')),
+                'rate_amount' => $this->nullableNumber($this->value($row, 'importo_rata')),
+                'tan' => $this->nullableNumber($this->value($row, 'tan')),
+                'teg' => $this->nullableNumber($this->value($row, 'teg')),
+                'taeg' => $this->nullableNumber($this->value($row, 'taeg')),
+
+                'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
+                'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
+
+                'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
+                'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
+
+                'is_renewal' => $isRenewal,
+
+                'notes' => null,
+            ]);
             $practice = Practice::create([
                 'product_type_id' => $product?->id,
                 'product_subtype_id' => $productSubtype?->id,
                 'user_id' => $user?->id,
                 'customer_id' => $customer->id,
+                'practice_opportunity_id' => $opportunity->id,
 
                 'financial_table_id' => null,
                 'insurance_id' => $insurance?->id,

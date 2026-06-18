@@ -12,6 +12,22 @@
                 'selectedLeadSource' => $form->leadSource,
                 'selectedLeadStatus' => $form->leadStatus,
             ])
+            @include('partials.practice.practice-opportunity-fields', [
+                'productTypes' => $productTypes,
+                'productSubtypes' => $productSubtypes,
+                'installments' => $installments,
+                'insurances' => $insurances,
+                'selectedProductTypeId' => $opportunityForm->productTypeId,
+                'selectedProductSubtypeId' => $opportunityForm->productSubtypeId,
+                'selectedInstallmentId' => $opportunityForm->installmentId,
+                'selectedInsuranceId' => $opportunityForm->insuranceId,
+                'financialTables' => $financialTables,
+                'customerTypes' => $customerTypes,
+                'productionTypes' => $productionTypes,
+                'selectedFinancialTableId' => $opportunityForm->financialTableId,
+                'selectedOpportunityCustomerTypeId' => $opportunityForm->customerTypeId,
+                'selectedProductionType' => $opportunityForm->productionType,
+            ])
 
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
