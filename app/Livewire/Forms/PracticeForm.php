@@ -181,6 +181,7 @@ class PracticeForm extends Form
         $this->practice = $practice;
         $practice->loadMissing('opportunity');
         $opportunity = $practice->opportunity;
+        $this->opportunity = $opportunity;
 
             $this->fill([
         'productTypeId' => $opportunity?->product_type_id,
@@ -214,6 +215,7 @@ class PracticeForm extends Form
         'userId' => $practice->user_id,
         'customerId' => $practice->customer_id,
         'insertedAt' => $practice->inserted_at?->format('Y-m-d'),
+        'renewabilityDate' => $practice->renewability_date?->format('Y-m-d'),
         'practiceStatus' => $practice->practice_status?->value,
     ]);
     }
@@ -289,8 +291,19 @@ return $practice;
                 $oldUserId = $this->practice->user_id;
 
                 $this->practice->loadMissing('opportunity');
-                $this->practice->update($this->practiceData());
-                $this->practice->opportunity->update($this->opportunityData());
+
+                $opportunity = $this->practice->opportunity;
+
+                if ($opportunity) {
+                    $opportunity->update($this->opportunityData());
+                } else {
+                    $opportunity = PracticeOpportunity::create($this->opportunityData());
+                }
+
+                $this->practice->update(array_merge(
+                    $this->practiceData(),
+                    ['practice_opportunity_id' => $opportunity->id]
+                ));
 
                 foreach ($this->attachments as $attachment) {
                     $this->practice->attachments()->create([
@@ -373,32 +386,11 @@ private function opportunityData(): array
     {
         return [
             // if user is not allowed to assign practice to user, assign practice to current user
-            'user_id' => $this->userId ?: Auth::id(),            'product_type_id' => $this->productTypeId,
-            'product_subtype_id' => $this->productSubtypeId ?? null,
+            'user_id' => $this->userId ?: Auth::id(),
             'customer_id' => $this->customerId,
-            'financial_table_id' => $this->financialTableId ?? null,
-            'insurance_id' => $this->insuranceId ?? null,
-            'installment_id' => $this->installmentId,
-            'customer_type_id' => $this->customerTypeId ?? null,
-            'amount_disbursed' => $this->nullableNumber($this->amountDisbursed),
-            'total_amount' => $this->nullableNumber($this->totalAmount),
-            'rate_amount' => $this->nullableNumber($this->rateAmount),
-            'tan' => $this->nullableNumber($this->tan),
-            'teg' => $this->nullableNumber($this->teg),
-            'taeg' => $this->nullableNumber($this->taeg),
-            'inserted_at' => $this->insertedAt ?? now(),  // in upload it use old date, instead in create it uses now()
-            'first_installment_date' => $this->firstInstallmentDate,
-            'last_installment_date' => $this->lastInstallmentDate,
+            'inserted_at' => $this->insertedAt ?? now(),
             'renewability_date' => $this->renewabilityDate,
-            'renewability_percentage' => $this->nullableNumber($this->renewabilityPercentage) ?? 40.00,
-            'percentage_alert' => $this->nullableNumber($this->percentageAlert) ?? 35.00,
             'practice_status' => $this->practiceStatus,
-            'previous_finance' => $this->previousFinance ?? null,
-            'is_renewal' => $this->isRenewal,
-            'production_type' => $this->productionType ?? null,
-            'disbursing_institution' => $this->disbursingInstitution ?? null,
-            'financial_institution' => $this->financialInstitution ?? null,
-            'notes' => $this->notes
         ];
     }
 }
