@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Practice;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
@@ -18,12 +18,16 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
 
     public function query()
     {
-        return $this->query;
+        return $this->query->with([
+            'customer',
+            'user',
+            'opportunity.productType',
+            'opportunity.installment',
+            'opportunity.customerType',
+            'opportunity.insurance',
+        ]);
     }
 
-    /**
-     * Intestazioni delle colonne
-     */
     public function headings(): array
     {
         return [
@@ -58,33 +62,32 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
         ];
     }
 
-    /**
-     * Mappa i dati per ogni riga
-     */
     public function map($practice): array
     {
+        $opportunity = $practice->opportunity;
+
         return [
             $practice->practice_code ?? '',
-            $practice->productType?->name ?? '',
-            $practice->disbursing_institution ?? '',
-            $practice->financial_institution ?? '',
+            $opportunity?->productType?->name ?? '',
+            $opportunity?->disbursing_institution ?? '',
+            $opportunity?->financial_institution ?? '',
             $practice->practice_status?->getLabelText() ?? '',
-            $practice->production_type?->getLabelText() ?? '',
-            $practice->user?->first_name . ' ' . $practice->user?->last_name ?? '',
-            $practice->formatted_first_installment_date ?? '',
-            $practice->formatted_last_installment_date ?? '',
-            $practice->formatted_early_settlement_date ?? '',
-            $practice->formatted_amount_disbursed ?? '',
-            $practice->installment?->value ?? ($practice->installment_value_label ?? ''),
-            $practice->formatted_rate_amount ?? '',
-            $practice->formatted_taeg ?? '',
-            $practice->formatted_tan ?? '',
-            $practice->formatted_total_amount ?? '',
-            $practice->is_renewal ? 'Sì' : 'No',
-            $practice->formatted_renewability_date ?? '',
-            $practice->customerType?->name ?? '',
-            $practice->insurance?->name ?? '',
-            $practice->customer?->first_name . ' ' . $practice->customer?->last_name,
+            $opportunity?->production_type?->getLabelText() ?? '',
+            $this->fullName($practice->user?->first_name, $practice->user?->last_name),
+            $this->formatDate($opportunity?->first_installment_date),
+            $this->formatDate($opportunity?->last_installment_date),
+            $this->formatDate($practice->disbursement_date),
+            $this->formatMoney($opportunity?->amount_disbursed),
+            $opportunity?->installment?->value ?? '',
+            $this->formatMoney($opportunity?->rate_amount),
+            $this->formatPercent($opportunity?->taeg),
+            $this->formatPercent($opportunity?->tan),
+            $this->formatMoney($opportunity?->total_amount),
+            $opportunity ? ($opportunity->is_renewal ? 'Sì' : 'No') : '',
+            $this->formatDate($practice->renewability_date),
+            $opportunity?->customerType?->name ?? '',
+            $opportunity?->insurance?->name ?? '',
+            $this->fullName($practice->customer?->first_name, $practice->customer?->last_name),
             $practice->customer?->email ?? '',
             $practice->customer?->phone ?? '',
             $practice->customer?->address ?? '',
@@ -95,13 +98,46 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
         ];
     }
 
-    /**
-     * Stili Excel
-     */
     public function styles(Worksheet $sheet)
     {
         return [
             1 => ['font' => ['bold' => true, 'size' => 12]],
         ];
+    }
+
+    private function fullName(?string $firstName, ?string $lastName): string
+    {
+        return trim(($firstName ?? '') . ' ' . ($lastName ?? ''));
+    }
+
+    private function formatDate(mixed $value): string
+    {
+        if (!$value) {
+            return '';
+        }
+
+        try {
+            return Carbon::parse($value)->format('d/m/Y');
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
+    private function formatMoney(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return number_format((float) $value, 2, ',', '.') . '€';
+    }
+
+    private function formatPercent(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return number_format((float) $value, 2, ',', '.') . '%';
     }
 }
