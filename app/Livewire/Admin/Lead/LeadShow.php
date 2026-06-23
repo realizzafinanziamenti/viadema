@@ -99,7 +99,15 @@ class LeadShow extends Component
 
     public function mount($id)
     {
-        $this->lead = Customer::with('customerType')->findOrFail($id);
+        $this->lead = Customer::with([
+            'customerType',
+            'practiceOpportunities.productType',
+            'practiceOpportunities.productSubtype',
+            'practiceOpportunities.financialTable',
+            'practiceOpportunities.insurance',
+            'practiceOpportunities.installment',
+            'practiceOpportunities.customerType',
+        ])->findOrFail($id);
         Gate::authorize('view', $this->lead);
 
         $this->initializeLeadStatuses();
