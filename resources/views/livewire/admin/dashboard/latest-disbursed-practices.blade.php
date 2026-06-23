@@ -25,8 +25,12 @@
                     <x-table-data height="h-10" truncate label="{{ $practice->customer?->phone ?? 'N/D' }}" />
                     <x-table-data height="h-10" truncate label="{{ $practice->customer?->practices_count }}"
                         class="text-center" />
-                    <x-table-data height="h-10" truncate
-                        label="{{ $practice->formatted_amount_disbursed ?? 'N/D' }}" />
+                        <x-table-data height="h-10" truncate
+                        label="{{
+                            $practice->opportunity?->amount_disbursed !== null
+                                ? number_format((float) $practice->opportunity->amount_disbursed, 2, ',', '.') . '€'
+                                : 'N/D'
+                        }}" />
 
                     {{-- Actions --}}
                     <x-table-data height="h-10" class="inline-flex items-center justify-end w-full gap-3">
