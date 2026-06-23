@@ -123,18 +123,12 @@ class Practice extends Model
     /**
      * Get the product type associated with the practice.
      */
-    public function productType(): BelongsTo
-    {
-        return $this->belongsTo(ProductType::class);
-    }
+
 
     /**
      * Get the product subtype associated with the practice.
      */
-    public function productSubtype(): BelongsTo
-    {
-        return $this->belongsTo(ProductSubtype::class);
-    }
+
 
     /**
      * Get the user associated with the practice.
@@ -157,26 +151,15 @@ class Practice extends Model
     /**
      * Get the financial table associated with the practice.
      */
-    public function financialTable(): BelongsTo
-    {
-        return $this->belongsTo(FinancialTable::class);
-    }
 
     /**
      * Get the insurance associated with the practice.
      */
-    public function insurance(): BelongsTo
-    {
-        return $this->belongsTo(Insurance::class);
-    }
+
 
     /**
      * Get the installment associated with the practice.
      */
-    public function installment(): BelongsTo
-    {
-        return $this->belongsTo(Installment::class);
-    }
 
     /**
      * Get the events associated with the practice.
@@ -189,10 +172,7 @@ class Practice extends Model
     /**
      * Get the customer type associated with the practice.
      */
-    public function customerType(): BelongsTo
-    {
-        return $this->belongsTo(CustomerType::class);
-    }
+
 
     /**
      * Get the attachments associated with the practice.
@@ -233,18 +213,12 @@ class Practice extends Model
     /**
      * Accessor to obtain formatted first installment date.
      */
-    protected function formattedFirstInstallmentDate(): Attribute
-    {
-        return Attribute::get(fn() => $this->first_installment_date?->format('d/m/y'));
-    }
+
 
     /**
      * Accessor to obtain formatted last installment date.
      */
-    protected function formattedLastInstallmentDate(): Attribute
-    {
-        return Attribute::get(fn() => $this->last_installment_date?->format('d/m/y'));
-    }
+
 
     /**
      * Accessor to obtain formatted early settlement date.
@@ -273,42 +247,25 @@ class Practice extends Model
     /**
      * Accessor to obtain formatted taeg.
      */
-    protected function formattedTaeg(): Attribute
-    {
-        return Attribute::get(fn() => $this->taeg !== null ? number_format($this->taeg, 2, ',', '.') . '%' : 'N/D');
-    }
 
     /**
      * Accessor to obtain formatted tan.
      */
-    protected function formattedTan(): Attribute
-    {
-        return Attribute::get(fn() => $this->tan !== null ? number_format($this->tan, 2, ',', '.') . '%' : 'N/D');
-    }
 
     /**
      * Accessor to obtain formatted rate amount.
      */
-    protected function formattedRateAmount(): Attribute
-    {
-        return Attribute::get(fn() => $this->rate_amount !== null ? number_format($this->rate_amount, 2, ',', '.') . '€' : 'N/D');
-    }
+
 
     /**
      * Accessor to obtain formatted amount disbursed.
      */
-    protected function formattedAmountDisbursed(): Attribute
-    {
-        return Attribute::get(fn() => $this->amount_disbursed !== null ? number_format($this->amount_disbursed, 2, ',', '.') . '€' : 'N/D');
-    }
+
 
     /**
      * Accessor to obtain formatted total amount.
      */
-    protected function formattedTotalAmount(): Attribute
-    {
-        return Attribute::get(fn() => $this->total_amount !== null ? number_format($this->total_amount, 2, ',', '.') . '€' : 'N/D');
-    }
+
 
     // END ACCESSORS
 
