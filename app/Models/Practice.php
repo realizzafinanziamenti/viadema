@@ -1,19 +1,15 @@
 <?php
 
 namespace App\Models;
-
 use App\Enums\PracticeStatus;
-use App\Enums\ProductionType;
 use App\Enums\UserDepartment;
 use App\Observers\PracticeObserver;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -121,16 +117,6 @@ class Practice extends Model
     // RELATIONSHIPS
 
     /**
-     * Get the product type associated with the practice.
-     */
-
-
-    /**
-     * Get the product subtype associated with the practice.
-     */
-
-
-    /**
      * Get the user associated with the practice.
      */
     public function user(): BelongsTo
@@ -149,30 +135,12 @@ class Practice extends Model
     }
 
     /**
-     * Get the financial table associated with the practice.
-     */
-
-    /**
-     * Get the insurance associated with the practice.
-     */
-
-
-    /**
-     * Get the installment associated with the practice.
-     */
-
-    /**
      * Get the events associated with the practice.
      */
     public function event(): HasOne
     {
         return $this->hasOne(Event::class);
     }
-
-    /**
-     * Get the customer type associated with the practice.
-     */
-
 
     /**
      * Get the attachments associated with the practice.
@@ -209,16 +177,6 @@ class Practice extends Model
     {
         return Attribute::get(fn() => $this->created_at?->format('d/m/y'));
     }
-
-    /**
-     * Accessor to obtain formatted first installment date.
-     */
-
-
-    /**
-     * Accessor to obtain formatted last installment date.
-     */
-
 
     /**
      * Accessor to obtain formatted early settlement date.
