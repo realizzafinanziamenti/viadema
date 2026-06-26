@@ -3,16 +3,12 @@
 namespace App\Observers;
 
 use App\Enums\EventAction;
-use App\Enums\EventType;
 use App\Jobs\ManageRenewabilityEventJob;
 use App\Jobs\SendPracticeRenewabilityAlertJob;
-use App\Livewire\Layout\NotificationModal;
-use App\Models\Installment;
 use App\Models\Practice;
+use App\Models\PracticeOpportunity;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class PracticeObserver
 {
@@ -21,13 +17,11 @@ class PracticeObserver
      */
     public function created(Practice $practice): void
     {
-        // Create an event for renewability date
         if ($practice->renewability_date) {
             dispatch(new ManageRenewabilityEventJob($practice, EventAction::CREATE))
                 ->afterCommit();
         }
 
-        // Schedule a job to send an alert notification
         if ($practice->alert_date) {
             dispatch(new SendPracticeRenewabilityAlertJob($practice))
                 ->delay($practice->alert_date)
@@ -40,7 +34,6 @@ class PracticeObserver
      */
     public function updated(Practice $practice): void
     {
-        // Update the event if the renewability date has changed
         if ($practice->isDirty('renewability_date')) {
             dispatch(new ManageRenewabilityEventJob($practice, EventAction::UPDATE))
                 ->afterCommit();
@@ -58,25 +51,7 @@ class PracticeObserver
      */
     public function saving(Practice $practice): void
     {
-        if ($practice->isDirty([
-            'installment_id',
-            'first_installment_date',
-            'renewability_percentage',
-            'percentage_alert'
-        ])) {
-            $this->calculateDates($practice);
-        }
-
-        // Set snapshot values for the Practice model
-        if ($practice->isDirty([
-            'product_subtype_id',
-            'financial_table_id',
-            'insurance_id',
-            'installment_id',
-            'customer_type_id'
-        ])) {
-            $this->setSnapshotValues($practice);
-        }
+        $this->calculateDates($practice);
     }
 
     /**
@@ -84,10 +59,8 @@ class PracticeObserver
      */
     public function deleted(Practice $practice): void
     {
-        // Delete the associated event if it exists
         dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
 
-        // Delete the renewability alert notification from the database
         DB::table('notifications')
             ->where('type', 'practice-renewability-alert')
             ->whereJsonContains('data->practice_id', $practice->id)
@@ -111,75 +84,82 @@ class PracticeObserver
      */
     public function forceDeleted(Practice $practice): void
     {
-        // If the practice is force deleted, we can also delete the attachments
         foreach ($practice->attachments as $attachment) {
             $attachment->forceDelete();
         }
 
-        // Optionally, you can also delete any related events or notifications
         dispatch(new ManageRenewabilityEventJob($practice, EventAction::DELETE))->afterCommit();
     }
 
     /**
-     * Calculate the last installment date, renewability date and alert_date based on the first installment date and the number of installments.
+     * Calculate renewability_date and alert_date from the related PracticeOpportunity.
      */
-    public function calculateDates(Practice $practice): void
+    private function calculateDates(Practice $practice): void
     {
-        if ($practice->installment_id && $practice->first_installment_date) {
-            $installment = Installment::find($practice->installment_id);
+        $opportunity = $this->resolveOpportunity($practice);
 
-            if ($installment) {
-                $totalInstallments = $installment->value;
-                $firstDate = Carbon::parse($practice->first_installment_date);
+        if (! $opportunity || ! $opportunity->first_installment_date) {
+            $practice->renewability_date = null;
+            $practice->alert_date = null;
 
-                // Calcolo della data ultima rata
-                $practice->last_installment_date = $firstDate->copy()->addMonthsNoOverflow($totalInstallments - 1);
-
-                // Calcolo delle rate di rinnovo e alert
-                if ($totalInstallments > 0) {
-                    $renewabilityInstallments = ceil($totalInstallments * ($practice->renewability_percentage / 100));
-                    $alertInstallments = ceil($totalInstallments * ($practice->percentage_alert / 100));
-
-                    // Calcolo data di rinnovo
-                    $practice->renewability_date = $practice->renewability_percentage !== null
-                        ? $firstDate->copy()->addMonthsNoOverflow($renewabilityInstallments)
-                        : null;
-
-                    // Calcolo data alert
-                    $practice->alert_date = $practice->percentage_alert !== null
-                        ? $firstDate->copy()->addMonthsNoOverflow($alertInstallments)
-                        : null;
-                }
-            }
+            return;
         }
+
+        $totalInstallments = $this->resolveTotalInstallments($opportunity);
+
+        if (! $totalInstallments || $totalInstallments <= 0) {
+            $practice->renewability_date = null;
+            $practice->alert_date = null;
+
+            return;
+        }
+
+        $firstDate = Carbon::parse($opportunity->first_installment_date);
+
+        $practice->renewability_date = $opportunity->renewability_percentage !== null
+            ? $firstDate->copy()->addMonthsNoOverflow(
+                (int) ceil($totalInstallments * ((float) $opportunity->renewability_percentage / 100))
+            )
+            : null;
+
+        $practice->alert_date = $opportunity->percentage_alert !== null
+            ? $firstDate->copy()->addMonthsNoOverflow(
+                (int) ceil($totalInstallments * ((float) $opportunity->percentage_alert / 100))
+            )
+            : null;
     }
 
-    /**
-     * Set snapshot values for the Practice model based on related models.
-     *
-     * @param Practice $practice
-     */
-    public function setSnapshotValues(Practice $practice): void
+    private function resolveOpportunity(Practice $practice): ?PracticeOpportunity
     {
-        // Set snapshot values based on the related models
-        if ($practice->productSubtype) {
-            $practice->product_subtype_label = Str::of($practice->productSubtype->name)->trim();
+        if ($practice->relationLoaded('opportunity')) {
+            return $practice->opportunity;
         }
 
-        if ($practice->financialTable) {
-            $practice->financial_table_percentage = $practice->financialTable->percentage;
+        if (! $practice->practice_opportunity_id) {
+            return null;
         }
 
-        if ($practice->insurance) {
-            $practice->insurance_label = Str::of($practice->insurance->name)->trim();
+        return PracticeOpportunity::with('installment')
+            ->find($practice->practice_opportunity_id);
+    }
+
+    private function resolveTotalInstallments(PracticeOpportunity $opportunity): ?int
+    {
+        $opportunity->loadMissing('installment');
+
+        if ($opportunity->installment?->value) {
+            return (int) $opportunity->installment->value;
         }
 
-        if ($practice->installment) {
-            $practice->installment_value_label = $practice->installment->value;
+        if ($opportunity->first_installment_date && $opportunity->last_installment_date) {
+            $firstDate = Carbon::parse($opportunity->first_installment_date)->startOfDay();
+            $lastDate = Carbon::parse($opportunity->last_installment_date)->startOfDay();
+
+            if ($lastDate->greaterThanOrEqualTo($firstDate)) {
+                return max(1, $firstDate->diffInMonths($lastDate));
+            }
         }
 
-        if ($practice->customerType) {
-            $practice->customer_type_label = Str::of($practice->customerType->name)->trim();
-        }
+        return null;
     }
 }

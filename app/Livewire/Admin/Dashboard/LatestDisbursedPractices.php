@@ -12,18 +12,25 @@ class LatestDisbursedPractices extends Component
     public $practices = null;
 
     public function mount()
-    {
-        Gate::authorize('view latest disbursed practices');
+{
+    Gate::authorize('view latest disbursed practices');
 
-        $this->practices = Practice::with(['customer' => function ($query) {
+    $this->practices = Practice::with([
+        'customer' => function ($query) {
             $query->withCount('practices');
-        }])
-            ->filteredForDepartment()
-            ->where('practice_status', PracticeStatus::DISBURSED)
-            ->latest('disbursement_date')
-            ->take(5)
-            ->get();
-    }
+        },
+        'opportunity.productType',
+        'opportunity.productSubtype',
+        'opportunity.installment',
+        'opportunity.insurance',
+        'opportunity.customerType',
+    ])
+        ->filteredForDepartment()
+        ->where('practice_status', PracticeStatus::DISBURSED)
+        ->latest('disbursement_date')
+        ->take(5)
+        ->get();
+}
 
     public function render()
     {

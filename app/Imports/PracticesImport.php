@@ -27,7 +27,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use App\Models\PracticeOpportunity;
-
+use Illuminate\Support\Facades\DB;
 class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
 {
     use SkipsFailures;
@@ -65,77 +65,67 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     ?? now()->format('Y-m-d');
             }
             $isRenewal = $this->parseRenewalValue($this->value($row, 'rinnovo'));
-            $opportunity = PracticeOpportunity::create([
-                'customer_id' => $customer->id,
+            $practice = DB::transaction(function () use (
+                $customer,
+                $user,
+                $product,
+                $productSubtype,
+                $installment,
+                $insurance,
+                $customerType,
+                $installmentProductDefault,
+                $practiceStatus,
+                $disbursementDate,
+                $isRenewal,
+                $row
+            ) {
+                $opportunity = PracticeOpportunity::create([
+                    'customer_id' => $customer->id,
 
-                'product_type_id' => $product?->id,
-                'product_subtype_id' => $productSubtype?->id,
-                'financial_table_id' => null,
-                'insurance_id' => $insurance?->id,
-                'installment_id' => $installment?->id,
-                'customer_type_id' => $customerType?->id,
+                    'product_type_id' => $product?->id,
+                    'product_subtype_id' => $productSubtype?->id,
+                    'financial_table_id' => null,
+                    'insurance_id' => $insurance?->id,
+                    'installment_id' => $installment?->id,
+                    'customer_type_id' => $customerType?->id,
 
-                'amount_disbursed' => $this->nullableNumber($this->value($row, 'finanziato')),
-                'total_amount' => $this->nullableNumber($this->value($row, 'montante')),
-                'rate_amount' => $this->nullableNumber($this->value($row, 'importo_rata')),
-                'tan' => $this->nullableNumber($this->value($row, 'tan')),
-                'teg' => $this->nullableNumber($this->value($row, 'teg')),
-                'taeg' => $this->nullableNumber($this->value($row, 'taeg')),
+                    'amount_disbursed' => $this->nullableNumber($this->value($row, 'finanziato')),
+                    'total_amount' => $this->nullableNumber($this->value($row, 'montante')),
+                    'rate_amount' => $this->nullableNumber($this->value($row, 'importo_rata')),
+                    'tan' => $this->nullableNumber($this->value($row, 'tan')),
+                    'teg' => $this->nullableNumber($this->value($row, 'teg')),
+                    'taeg' => $this->nullableNumber($this->value($row, 'taeg')),
 
-                'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
-                'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
+                    'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
+                    'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
 
-                'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
-                'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
+                    'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
+                    'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
 
-                'is_renewal' => $isRenewal,
+                    'is_renewal' => $isRenewal,
 
-                'notes' => null,
-            ]);
-            $practice = Practice::create([
-                'product_type_id' => $product?->id,
-                'product_subtype_id' => $productSubtype?->id,
-                'user_id' => $user?->id,
-                'customer_id' => $customer->id,
-                'practice_opportunity_id' => $opportunity->id,
+                    'notes' => null,
+                ]);
 
-                'financial_table_id' => null,
-                'insurance_id' => $insurance?->id,
-                'installment_id' => $installment?->id,
-                'customer_type_id' => $customerType?->id,
+                $practice = Practice::create([
+                    'user_id' => $user?->id,
+                    'customer_id' => $customer->id,
+                    'practice_opportunity_id' => $opportunity->id,
 
-                'product_subtype_label' => $productSubtype?->name ?? $this->value($row, 'tipo_prodotto'),
-                'financial_table_percentage' => null,
-                'insurance_label' => $insurance?->name ?? $this->value($row, 'assicurazione'),
-                'installment_value_label' => $installment?->value ?? $this->value($row, 'numero_rate'),
-                'customer_type_label' => $customerType?->name ?? $this->value($row, 'tipo_cliente'),
+                    'inserted_at' => $this->parseDate($this->value($row, 'data_inserimento')) ?? now(),
+                    'early_settlement_date' => $this->parseDate($this->value($row, 'data_estinzione_anticipata')),
+                    'disbursement_date' => $disbursementDate,
 
-                'amount_disbursed' => $this->nullableNumber($this->value($row, 'finanziato')),
-                'total_amount' => $this->nullableNumber($this->value($row, 'montante')),
-                'rate_amount' => $this->nullableNumber($this->value($row, 'importo_rata')),
-                'tan' => $this->nullableNumber($this->value($row, 'tan')),
-                'teg' => $this->nullableNumber($this->value($row, 'teg')),
-                'taeg' => $this->nullableNumber($this->value($row, 'taeg')),
+                    'practice_status' => $practiceStatus,
 
-                'inserted_at' => $this->parseDate($this->value($row, 'data_inserimento')) ?? now(),
-                'first_installment_date' => $this->parseDate($this->getFirstInstallmentDate($row)),
-                'last_installment_date' => $this->parseDate($this->getLastInstallmentDate($row)),
-                'early_settlement_date' => $this->parseDate($this->value($row, 'data_estinzione_anticipata')),
-                'disbursement_date' => $disbursementDate,
+                    'days_transformation' => $this->value($row, 'trasformazione_gg'),
+                    'sum_dec_plus_35' => $this->nullableNumber($this->value($row, 'somma_dec_35')),
+                ]);
 
-                'renewability_percentage' => $installmentProductDefault?->renewability_percentage ?? 40.00,
-                'percentage_alert' => $installmentProductDefault?->percentage_alert ?? 35.00,
+                $this->createActivityLog($practice, 'import_success', 'Pratica importata con successo', $row);
 
-                'practice_status' => $practiceStatus,
-                'is_renewal' => $isRenewal,
-
-                'notes' => null,
-
-                'days_transformation' => $this->value($row, 'trasformazione_gg'),
-                'sum_dec_plus_35' => $this->nullableNumber($this->value($row, 'somma_dec_35')),
-            ]);
-
-            $this->createActivityLog($practice, 'import_success', 'Pratica importata con successo', $row);
+                return $practice;
+            });
 
             return $practice;
         } catch (Exception $e) {
