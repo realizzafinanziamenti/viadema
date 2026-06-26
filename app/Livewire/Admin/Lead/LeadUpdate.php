@@ -41,6 +41,25 @@ class LeadUpdate extends Component
     public array $insurances = [];
     public array $financialTables = [];
     public array $productionTypes = [];
+    public function setOpportunityIsRenewal($value = null): void
+    {
+        $this->opportunityForm->isRenewal = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+    }
+
+    public function setOpportunityProductionType(?string $value = null): void
+    {
+        $this->opportunityForm->productionType = $value;
+    }
+
+    public function setOpportunityCustomerType(?int $value = null): void
+    {
+        $this->opportunityForm->customerTypeId = $value;
+    }
+
+    public function setOpportunityFinancialTable(?int $value = null): void
+    {
+        $this->opportunityForm->financialTableId = $value;
+    }
 
     /**
      * Set title customer
