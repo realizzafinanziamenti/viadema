@@ -46,6 +46,8 @@ class Customer extends Model
         'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
         'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
         'notes',
+        'recontact_date',
+
     ];
 
     /**
@@ -60,6 +62,7 @@ class Customer extends Model
             'customer_status' => CustomerStatus::class,
             'lead_source' => LeadSource::class,
             'lead_status' => LeadStatus::class,
+            'recontact_date' => 'date',
         ];
     }
 
