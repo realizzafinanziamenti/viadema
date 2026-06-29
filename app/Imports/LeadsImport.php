@@ -237,6 +237,9 @@ protected function parseProductionType($value): ?string
                 'lead_source' => $leadSource,
                 'lead_status' => $leadStatus,
 
+                //data di ricontatto
+                'recontact_date' => $this->parseDate($row['data_ricontatto'] ?? null),
+
                 // Note
                 'notes' => $row['note'] ?? null,
             ];

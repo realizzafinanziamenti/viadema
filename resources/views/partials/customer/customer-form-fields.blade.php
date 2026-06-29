@@ -47,6 +47,14 @@
                 <flux:error name="{{ $form }}.leadStatus" />
             </div>
         </div>
+                {{-- Recontact Date --}}
+        <div class="flex flex-col gap-1.5">
+            <flux:label>Data ricontatto</flux:label>
+            <div class="flex flex-col gap-0.5">
+                <flux:input type="date" size="sm" wire:model='{{ $form }}.recontactDate' />
+                <flux:error name="{{ $form }}.recontactDate" />
+            </div>
+        </div>
     @endif
 
     {{-- Phone --}}

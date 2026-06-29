@@ -39,6 +39,7 @@ class CustomerForm extends Form
     public ?string $leadSource = null;
     public ?string $leadStatus = null;
     public ?string $notes = null;
+    public ?string $recontactDate = null;
 
     protected function rules()
     {
@@ -58,6 +59,7 @@ class CustomerForm extends Form
                 'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
                 'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
                 'notes' => ['nullable', 'string', 'max:65535'],
+                'recontactDate' => ['nullable', 'date'],
             ],
             $this->userIdRules(),
             $this->leadStatusRules()
@@ -145,6 +147,7 @@ class CustomerForm extends Form
         $this->customerStatus = $customer->customer_status?->value;
         $this->leadSource = $customer->lead_source?->value;
         $this->leadStatus = $customer->lead_status?->value;
+        $this->recontactDate = $customer->recontact_date?->format('Y-m-d');
         $this->notes = $customer->notes;
     }
 
@@ -169,6 +172,7 @@ class CustomerForm extends Form
         $this->customerStatus = null;
         $this->leadSource = null;
         $this->leadStatus = null;
+        $this->recontactDate = null;
         $this->notes = null;
     }
 
@@ -247,6 +251,7 @@ class CustomerForm extends Form
             'customer_status' => $this->customerStatus,
             'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
+            'recontact_date' => $this->recontactDate ?: null,
             'notes' => $this->notes ?: null,
         ];
     }

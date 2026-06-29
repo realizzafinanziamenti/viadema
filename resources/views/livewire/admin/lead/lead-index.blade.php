@@ -40,7 +40,7 @@
         @endif
 
         @if (count($this->rows) > 0)
-            <x-table class="mb-5" minWidth="min-w-[1600px]">
+            <x-table class="mb-5" minWidth="min-w-[1740px]">
                 {{-- Table Header --}}
                 <x-slot name="header" class="border-b">
                     {{-- Checkbox --}}
@@ -58,6 +58,7 @@
                     <x-table-header label="Assegnato a" class="w-1/2" />
                     <x-table-header label="Data creazione" class="w-[120px]" />
                     <x-table-header label="Ultimo contatto" class="w-[120px]" />
+                    <x-table-header label="Data ricontatto" class="w-[140px]" />
                     <x-table-header label="Note" class="w-[60px]" />
                     <x-table-header class="w-[150px]">
                         {{-- Actions --}}
@@ -97,6 +98,7 @@
 
                         <x-table-data truncate label="{{ $lead->formatted_created_at }}" />
                         <x-table-data truncate label="{{ $lead->formatted_updated_at }}" />
+                        <x-table-data truncate label="{{ $lead->recontact_date?->format('d/m/Y') ?? 'N/D' }}" />
 
                         {{-- Notes --}}
                         <x-table-data>
