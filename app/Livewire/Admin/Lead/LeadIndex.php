@@ -35,6 +35,7 @@ class LeadIndex extends Component
     public ?Customer $selectedLead = null;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
+    public ?string $selectedLeadRecontactDate = null;
     public $search = '';
     // Import file properties
     public ?TemporaryUploadedFile $temporaryImportFile = null;
@@ -188,6 +189,25 @@ class LeadIndex extends Component
      * This method is called when the user clicks the update status button.
      * It sets the selected lead and opens the modal for updating the status.
      */
+    private function leadStatusesWithRecontactDate(): array
+    {
+        return [
+            LeadStatus::NOT_FEASIBLE->value,
+            LeadStatus::NOT_INTERESTED->value,
+        ];
+    }
+    /**
+     * Check if the selected status should show the recontact date field.
+     */
+    private function selectedLeadStatusShowsRecontactDate(): bool
+    {
+        return in_array($this->selectedLeadStatus, $this->leadStatusesWithRecontactDate(), true);
+    }
+
+/**
+ * This method is called when the user clicks the update status button.
+ * It sets the selected lead and opens the modal for updating the status.
+ */
     public function selectLeadForStatus(int $id)
     {
         $this->selectEntityForAction(
@@ -198,6 +218,7 @@ class LeadIndex extends Component
             notFoundMessage: 'Profilo non trovata'
         );
         $this->setLeadStatus($this->selectedLead->lead_status?->value);
+        $this->selectedLeadRecontactDate = $this->selectedLead->recontact_date?->format('Y-m-d');
     }
 
     /**
@@ -223,14 +244,31 @@ class LeadIndex extends Component
     {
         Gate::authorize('updateLeadStatus', $this->selectedLead);
 
+        $showsRecontactDate = $this->selectedLeadStatusShowsRecontactDate();
+
+        $this->validate([
+            'selectedLeadStatus' => ['required'],
+            'selectedLeadRecontactDate' => ['nullable', 'date'],
+        ], [
+            'selectedLeadRecontactDate.date' => 'La data ricontatto non è valida.',
+        ]);
+
         try {
-            $this->selectedLead->update(['lead_status' => $this->selectedLeadStatus]);
+            $this->selectedLead->update([
+                'lead_status' => $this->selectedLeadStatus,
+                'recontact_date' => $showsRecontactDate
+                    ? ($this->selectedLeadRecontactDate ?: null)
+                    : $this->selectedLead->recontact_date?->format('Y-m-d'),
+            ]);
+
             Toaster::success('Stato profilo aggiornato con successo');
         } catch (Exception $e) {
             Toaster::error('Errore durante l\'aggiornamento dello stato del profilo: ' . $e->getMessage());
         }
 
         $this->selectedLead = null;
+        $this->selectedLeadRecontactDate = null;
+
         $this->resetPage();
         $this->dispatch('close-modal', 'update-lead-status');
     }

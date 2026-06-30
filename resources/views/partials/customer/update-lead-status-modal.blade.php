@@ -11,6 +11,19 @@
 
                 <flux:error name="selectedLeadStatus" />
             </div>
+                        @if (in_array($selectedLeadStatus, [
+                \App\Enums\LeadStatus::NOT_FEASIBLE->value,
+                \App\Enums\LeadStatus::NOT_INTERESTED->value,
+            ], true))
+                <div class="flex flex-col gap-1.5 mt-4">
+                    <flux:label>Data ricontatto </flux:label>
+
+                    <div class="flex flex-col gap-0.5">
+                        <flux:input type="date" size="sm" wire:model="selectedLeadRecontactDate" />
+                        <flux:error name="selectedLeadRecontactDate" />
+                    </div>
+                </div>
+            @endif
 
             {{-- Buttons --}}
             <div class="flex gap-3 justify-end mt-16">
