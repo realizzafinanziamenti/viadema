@@ -47,7 +47,7 @@ class Customer extends Model
         'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
         'notes',
         'recontact_date',
-
+        'recontact_notified_for_date',
     ];
 
     /**
@@ -63,6 +63,7 @@ class Customer extends Model
             'lead_source' => LeadSource::class,
             'lead_status' => LeadStatus::class,
             'recontact_date' => 'date',
+            'recontact_notified_for_date' => 'date',
         ];
     }
 
@@ -91,6 +92,7 @@ class Customer extends Model
                 'customer_status',
                 'lead_source',
                 'lead_status',
+                'recontact_date',
                 'notes',
             ])
             ->logOnlyDirty() // Solo campi che sono stati modificati
@@ -143,6 +145,7 @@ class Customer extends Model
                 'customer_status' => 'Stato cliente',
                 'lead_source' => 'Canale di acquisizione',
                 'lead_status' => 'Stato lead',
+                'recontact_date' => 'Data ricontatto',
 
                 // Note
                 'notes' => 'Note',

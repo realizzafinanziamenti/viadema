@@ -6,6 +6,8 @@ use App\Enums\LeadStatus;
 use App\Jobs\SendLeadFollowUpAlertJob;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendLeadRecontactReminderJob;
+use Carbon\Carbon;
 
 class CustomerObserver
 {
@@ -23,15 +25,82 @@ class CustomerObserver
 
             Log::info("Follow-up notification programmata per lead {$customer->id} tra 6 ore");
         }
+        $this->scheduleLeadRecontactReminder($customer);
     }
+
+    private function scheduleLeadRecontactReminder(Customer $customer): void
+        {
+            if (! $this->canScheduleLeadRecontactReminder($customer)) {
+                return;
+            }
+
+            $recontactDate = $customer->recontact_date->toDateString();
+            $delay = $this->getLeadRecontactReminderDelay($customer);
+
+            dispatch(new SendLeadRecontactReminderJob(
+                leadId: $customer->id,
+                recontactDate: $recontactDate
+            ))
+                ->delay($delay)
+                ->afterCommit();
+
+            Log::info("Recontact reminder programmato per lead {$customer->id} in data {$recontactDate}");
+        }
+
+private function canScheduleLeadRecontactReminder(Customer $customer): bool
+        {
+            if (! $customer->isLead()) {
+                return false;
+            }
+
+            if (! in_array($customer->lead_status, $this->leadRecontactReminderStatuses(), true)) {
+                return false;
+            }
+
+            if (! $customer->recontact_date) {
+                return false;
+            }
+
+            if ($customer->recontact_notified_for_date?->toDateString() === $customer->recontact_date->toDateString()) {
+                return false;
+            }
+
+            return true;
+        }
+
+private function leadRecontactReminderStatuses(): array
+        {
+            return [
+                LeadStatus::NOT_FEASIBLE,
+                LeadStatus::NOT_INTERESTED,
+            ];
+        }
+
+        private function getLeadRecontactReminderDelay(Customer $customer): Carbon
+        {
+            if ($customer->recontact_date->lessThanOrEqualTo(today())) {
+                return now();
+            }
+
+            return $customer->recontact_date->copy()->setTime(9, 0);
+        }
 
     /**
      * Handle the Customer "updated" event.
      */
     public function updated(Customer $customer): void
-    {
-        //
+{
+    if (! $customer->wasChanged([
+        'customer_status',
+        'lead_status',
+        'recontact_date',
+        'user_id',
+    ])) {
+        return;
     }
+
+    $this->scheduleLeadRecontactReminder($customer);
+}
 
     /**
      * Handle the Customer "deleted" event.
