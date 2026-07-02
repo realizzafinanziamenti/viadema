@@ -28,6 +28,9 @@ use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\LeadSource;
+use App\Models\CustomerType;
+use Illuminate\Validation\Rules\Enum;
 class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
@@ -37,11 +40,103 @@ class LeadIndex extends Component
     public ?string $selectedLeadStatus = null;
     public ?string $selectedLeadRecontactDate = null;
     public $search = '';
+
+        // Team Member Filter
+    public string $teamMemberSearch = '';
+    public ?int $selectedTeamMemberForFilter = null;
+    public ?int $tempSelectedTeamMemberForFilter = null;
+
+    // Lead Status Filter
+    public ?string $selectedLeadStatusForFilter = null;
+    public ?string $tempSelectedLeadStatusForFilter = null;
+
+    // Lead Source Filter
+    public array $leadSourcesForFilter = [];
+    public ?string $selectedLeadSourceForFilter = null;
+    public ?string $tempSelectedLeadSourceForFilter = null;
+
+    // Customer Type Filter
+    public array $customerTypes = [];
+    public ?int $selectedCustomerTypeForFilter = null;
+    public ?int $tempSelectedCustomerTypeForFilter = null;
+
+    // Created At Date filters
+    public ?string $createdAtDateMin = null;
+    public ?string $tempCreatedAtDateMin = null;
+    public ?string $createdAtDateMax = null;
+    public ?string $tempCreatedAtDateMax = null;
+
+    // Updated At Date filters
+    public ?string $updatedAtDateMin = null;
+    public ?string $tempUpdatedAtDateMin = null;
+    public ?string $updatedAtDateMax = null;
+    public ?string $tempUpdatedAtDateMax = null;
+
+    // Recontact Date filters
+    public ?string $recontactDateMin = null;
+    public ?string $tempRecontactDateMin = null;
+    public ?string $recontactDateMax = null;
+    public ?string $tempRecontactDateMax = null;
     // Import file properties
     public ?TemporaryUploadedFile $temporaryImportFile = null;
     public ?TemporaryUploadedFile $importFile = null;
     public ?int $userId = null;   // user for assigning imported practices
     public string $userSearch = '';
+
+        protected function rules(): array
+        {
+            return [
+                'tempSelectedTeamMemberForFilter' => ['nullable', 'integer', 'exists:users,id'],
+                'tempSelectedLeadStatusForFilter' => ['nullable', new Enum(LeadStatus::class)],
+                'tempSelectedLeadSourceForFilter' => ['nullable', new Enum(LeadSource::class)],
+                'tempSelectedCustomerTypeForFilter' => ['nullable', 'integer', 'exists:customer_types,id'],
+
+                'tempCreatedAtDateMin' => ['nullable', 'date', 'before_or_equal:tempCreatedAtDateMax'],
+                'tempCreatedAtDateMax' => ['nullable', 'date', 'after_or_equal:tempCreatedAtDateMin'],
+
+                'tempUpdatedAtDateMin' => ['nullable', 'date', 'before_or_equal:tempUpdatedAtDateMax'],
+                'tempUpdatedAtDateMax' => ['nullable', 'date', 'after_or_equal:tempUpdatedAtDateMin'],
+
+                'tempRecontactDateMin' => ['nullable', 'date', 'before_or_equal:tempRecontactDateMax'],
+                'tempRecontactDateMax' => ['nullable', 'date', 'after_or_equal:tempRecontactDateMin'],
+            ];
+        }
+
+        protected function messages(): array
+        {
+            return [
+                'tempSelectedTeamMemberForFilter.exists' => 'Il collaboratore selezionato non esiste.',
+                'tempSelectedLeadStatusForFilter.enum' => 'Lo stato lead selezionato non è valido.',
+                'tempSelectedLeadSourceForFilter.enum' => 'La provenienza selezionata non è valida.',
+                'tempSelectedCustomerTypeForFilter.exists' => 'La tipologia cliente selezionata non esiste.',
+
+                'tempCreatedAtDateMin.before_or_equal' => 'La data creazione minima deve essere prima o uguale alla data massima.',
+                'tempCreatedAtDateMax.after_or_equal' => 'La data creazione massima deve essere dopo o uguale alla data minima.',
+
+                'tempUpdatedAtDateMin.before_or_equal' => 'La data ultimo contatto minima deve essere prima o uguale alla data massima.',
+                'tempUpdatedAtDateMax.after_or_equal' => 'La data ultimo contatto massima deve essere dopo o uguale alla data minima.',
+
+                'tempRecontactDateMin.before_or_equal' => 'La data ricontatto minima deve essere prima o uguale alla data massima.',
+                'tempRecontactDateMax.after_or_equal' => 'La data ricontatto massima deve essere dopo o uguale alla data minima.',
+            ];
+        }
+
+        protected function validationAttributes(): array
+        {
+            return [
+                'tempSelectedTeamMemberForFilter' => 'collaboratore',
+                'tempSelectedLeadStatusForFilter' => 'stato lead',
+                'tempSelectedLeadSourceForFilter' => 'provenienza',
+                'tempSelectedCustomerTypeForFilter' => 'tipologia cliente',
+
+                'tempCreatedAtDateMin' => 'data creazione minima',
+                'tempCreatedAtDateMax' => 'data creazione massima',
+                'tempUpdatedAtDateMin' => 'data ultimo contatto minima',
+                'tempUpdatedAtDateMax' => 'data ultimo contatto massima',
+                'tempRecontactDateMin' => 'data ricontatto minima',
+                'tempRecontactDateMax' => 'data ricontatto massima',
+            ];
+        }
 
     /**
      * Open the import modal
@@ -184,6 +279,25 @@ class LeadIndex extends Component
     {
         $this->setSelectValue('selectedLeadStatus', $value, reset: false);
     }
+    public function setTeamMember(?int $value = null): void
+{
+    $this->setSelectValue('tempSelectedTeamMemberForFilter', $value, reset: false);
+}
+
+public function setLeadStatusForFilter(?string $value = null): void
+{
+    $this->setSelectValue('tempSelectedLeadStatusForFilter', $value, reset: false);
+}
+
+public function setLeadSourceForFilter(?string $value = null): void
+{
+    $this->setSelectValue('tempSelectedLeadSourceForFilter', $value, reset: false);
+}
+
+public function setCustomerType(?int $value = null): void
+{
+    $this->setSelectValue('tempSelectedCustomerTypeForFilter', $value, reset: false);
+}
 
     /**
      * This method is called when the user clicks the update status button.
@@ -310,15 +424,144 @@ class LeadIndex extends Component
     {
         $this->resetPage();
     }
+    public function openFilterModal(): void
+    {
+        $this->syncTempFiltersFromAppliedFilters();
+
+        $this->resetValidation();
+        $this->dispatch('open-modal', 'filter-modal');
+    }
+
+    private function syncTempFiltersFromAppliedFilters(): void
+    {
+        $this->tempSelectedTeamMemberForFilter = $this->selectedTeamMemberForFilter;
+        $this->tempSelectedLeadStatusForFilter = $this->selectedLeadStatusForFilter;
+        $this->tempSelectedLeadSourceForFilter = $this->selectedLeadSourceForFilter;
+        $this->tempSelectedCustomerTypeForFilter = $this->selectedCustomerTypeForFilter;
+
+        $this->tempCreatedAtDateMin = $this->createdAtDateMin;
+        $this->tempCreatedAtDateMax = $this->createdAtDateMax;
+
+        $this->tempUpdatedAtDateMin = $this->updatedAtDateMin;
+        $this->tempUpdatedAtDateMax = $this->updatedAtDateMax;
+
+        $this->tempRecontactDateMin = $this->recontactDateMin;
+        $this->tempRecontactDateMax = $this->recontactDateMax;
+    }
+
+    public function filter(): void
+    {
+        $this->validate();
+
+        $this->selectedTeamMemberForFilter = $this->tempSelectedTeamMemberForFilter;
+        $this->selectedLeadStatusForFilter = $this->tempSelectedLeadStatusForFilter;
+        $this->selectedLeadSourceForFilter = $this->tempSelectedLeadSourceForFilter;
+        $this->selectedCustomerTypeForFilter = $this->tempSelectedCustomerTypeForFilter;
+
+        $this->createdAtDateMin = $this->tempCreatedAtDateMin;
+        $this->createdAtDateMax = $this->tempCreatedAtDateMax;
+
+        $this->updatedAtDateMin = $this->tempUpdatedAtDateMin;
+        $this->updatedAtDateMax = $this->tempUpdatedAtDateMax;
+
+        $this->recontactDateMin = $this->tempRecontactDateMin;
+        $this->recontactDateMax = $this->tempRecontactDateMax;
+
+        $this->resetPage();
+        $this->dispatch('close-modal', 'filter-modal');
+    }
+
+    public function resetFilter(): void
+    {
+        $this->reset([
+            'selectedTeamMemberForFilter',
+            'tempSelectedTeamMemberForFilter',
+
+            'selectedLeadStatusForFilter',
+            'tempSelectedLeadStatusForFilter',
+
+            'selectedLeadSourceForFilter',
+            'tempSelectedLeadSourceForFilter',
+
+            'selectedCustomerTypeForFilter',
+            'tempSelectedCustomerTypeForFilter',
+
+            'createdAtDateMin',
+            'tempCreatedAtDateMin',
+            'createdAtDateMax',
+            'tempCreatedAtDateMax',
+
+            'updatedAtDateMin',
+            'tempUpdatedAtDateMin',
+            'updatedAtDateMax',
+            'tempUpdatedAtDateMax',
+
+            'recontactDateMin',
+            'tempRecontactDateMin',
+            'recontactDateMax',
+            'tempRecontactDateMax',
+        ]);
+
+        $this->resetPage();
+        $this->dispatch('close-modal', 'filter-modal');
+    }
+
+    public function applyFilters($query)
+    {
+        if ($this->selectedTeamMemberForFilter) {
+            $query->where('user_id', $this->selectedTeamMemberForFilter);
+        }
+
+        if ($this->selectedLeadStatusForFilter) {
+            $query->where('lead_status', $this->selectedLeadStatusForFilter);
+        }
+
+        if ($this->selectedLeadSourceForFilter) {
+            $query->where('lead_source', $this->selectedLeadSourceForFilter);
+        }
+
+        if ($this->selectedCustomerTypeForFilter) {
+            $query->where('customer_type_id', $this->selectedCustomerTypeForFilter);
+        }
+
+        if ($this->createdAtDateMin) {
+            $query->whereDate('created_at', '>=', $this->createdAtDateMin);
+        }
+
+        if ($this->createdAtDateMax) {
+            $query->whereDate('created_at', '<=', $this->createdAtDateMax);
+        }
+
+        if ($this->updatedAtDateMin) {
+            $query->whereDate('updated_at', '>=', $this->updatedAtDateMin);
+        }
+
+        if ($this->updatedAtDateMax) {
+            $query->whereDate('updated_at', '<=', $this->updatedAtDateMax);
+        }
+
+        if ($this->recontactDateMin) {
+            $query->whereDate('recontact_date', '>=', $this->recontactDateMin);
+        }
+
+        if ($this->recontactDateMax) {
+            $query->whereDate('recontact_date', '<=', $this->recontactDateMax);
+        }
+
+        return $query;
+    }
 
     #[Computed]
     public function query()
     {
-        return Customer::with('user', 'customerType')
-            ->leads()
-            ->filteredForDepartment()
-            ->filterBySearch($this->search)
-            ->orderByDesc('updated_at');
+        $query = Customer::with('user', 'customerType')
+        ->leads()
+        ->filteredForDepartment()
+        ->filterBySearch($this->search);
+
+        $query = $this->applyFilters($query);
+
+        return $query->orderByDesc('updated_at');
     }
 
     #[Computed]
@@ -333,6 +576,11 @@ class LeadIndex extends Component
         Gate::authorize('viewAny', [Customer::class, CustomerStatus::LEAD]);
 
         $this->leadStatuses = $this->getEnumOptions(LeadStatus::class);
+        $this->leadSourcesForFilter = $this->getEnumOptions(LeadSource::class);
+
+        $this->customerTypes = CustomerType::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
     }
 
     #[Layout('components.layouts.app')]
@@ -346,8 +594,17 @@ class LeadIndex extends Component
             ->pluck('full_name', 'id')
             ->toArray();
 
+            $teamMembers = User::assignableUsers()
+            ->filterBySearch($this->teamMemberSearch)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->pluck('full_name', 'id')
+            ->toArray();
+
         return view('livewire.admin.lead.lead-index', [
             'users' => $users,
+            'teamMembers' => $teamMembers,
         ]);
     }
 }

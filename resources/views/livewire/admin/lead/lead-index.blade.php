@@ -12,6 +12,7 @@
             </div>
 
             <div class="flex items-center gap-4">
+                <x-buttons.filter-modal-button />
                 @can('export leads')
                     <x-buttons.export-button :disabled="$this->selectedCount === 0" wire:click='exportSelectedLeads' />
                 @endcan
@@ -161,6 +162,8 @@
 
     {{-- Notes Modal --}}
     @include('partials.lead.lead-notes-modal')
+    {{-- Filters Modal --}}
+@include('partials.lead.lead-filters-modal')
 
     {{-- Import Modal --}}
 <x-modals.import-modal
