@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Enums\LeadStatus;
 use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\LeadRecontactReminder;
@@ -41,14 +40,6 @@ class SendLeadRecontactReminderJob implements ShouldQueue
 
             if (! $lead || ! $lead->isLead()) {
                 Log::info("Lead {$this->leadId} non valido per recontact reminder");
-                return;
-            }
-
-            if (! in_array($lead->lead_status, [
-                LeadStatus::NOT_FEASIBLE,
-                LeadStatus::NOT_INTERESTED,
-            ], true)) {
-                Log::info("Lead {$this->leadId} non ha più uno stato valido per recontact reminder");
                 return;
             }
 

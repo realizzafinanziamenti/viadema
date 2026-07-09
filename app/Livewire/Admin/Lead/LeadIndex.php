@@ -313,9 +313,9 @@ public function setCustomerType(?int $value = null): void
     /**
      * Check if the selected status should show the recontact date field.
      */
-    private function selectedLeadStatusShowsRecontactDate(): bool
+    public function selectedLeadStatusShowsRecontactDate(): bool
     {
-        return in_array($this->selectedLeadStatus, $this->leadStatusesWithRecontactDate(), true);
+        return filled($this->selectedLeadStatus);
     }
 
 /**

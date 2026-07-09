@@ -53,9 +53,6 @@ private function canScheduleLeadRecontactReminder(Customer $customer): bool
                 return false;
             }
 
-            if (! in_array($customer->lead_status, $this->leadRecontactReminderStatuses(), true)) {
-                return false;
-            }
 
             if (! $customer->recontact_date) {
                 return false;
@@ -66,14 +63,6 @@ private function canScheduleLeadRecontactReminder(Customer $customer): bool
             }
 
             return true;
-        }
-
-private function leadRecontactReminderStatuses(): array
-        {
-            return [
-                LeadStatus::NOT_FEASIBLE,
-                LeadStatus::NOT_INTERESTED,
-            ];
         }
 
         private function getLeadRecontactReminderDelay(Customer $customer): Carbon
