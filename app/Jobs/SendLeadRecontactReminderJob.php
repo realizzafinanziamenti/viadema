@@ -63,13 +63,21 @@ class SendLeadRecontactReminderJob implements ShouldQueue
                 return;
             }
 
+            $notifiables = collect();
+
             if ($lead->user) {
-                $lead->user->notify(new LeadRecontactReminder($lead));
-            } else {
-                User::role('superadmin')
-                    ->get()
-                    ->each(fn (User $superadmin) => $superadmin->notify(new LeadRecontactReminder($lead)));
+                $notifiables->push($lead->user);
             }
+
+            $superadmins = User::role('superadmin')->get();
+
+            $notifiables = $notifiables
+                ->merge($superadmins)
+                ->unique('id');
+
+            $notifiables->each(
+                fn (User $user) => $user->notify(new LeadRecontactReminder($lead))
+            );
 
             $lead->update([
                 'recontact_notified_for_date' => $this->recontactDate,

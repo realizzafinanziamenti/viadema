@@ -19,6 +19,7 @@
 
         <div class="text-sm mb-2.5">
             <span class="text-gray-custom-4">Nome: </span>
+
             <span>{{ $lead->full_name }}</span>
         </div>
 
@@ -39,6 +40,12 @@
                 @endif
             </div>
         @endif
+
+        <div class="text-sm mb-2.5">
+            <span class="text-gray-custom-4">Data ricontatto: </span>
+            <span>{{ $lead->recontact_date?->format('d/m/Y') ?? 'N/D' }}</span>
+        </div>
+
 
         @if ($lead->lead_source)
             <div class="text-sm mb-2.5">
