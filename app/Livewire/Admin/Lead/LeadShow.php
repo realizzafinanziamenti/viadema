@@ -23,7 +23,7 @@ class LeadShow extends Component
     public Customer $lead;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
-
+    public ?string $selectedLeadRecontactDate = null;
     /**
      * Set lead status for the selected lead.
      */
@@ -38,6 +38,11 @@ class LeadShow extends Component
      */
     public function openUpdateLeadStatusModal()
     {
+        $this->resetValidation();
+
+        $this->selectedLeadStatus = $this->lead->lead_status?->value;
+        $this->selectedLeadRecontactDate = $this->lead->recontact_date?->format('Y-m-d');
+
         $this->dispatch('open-modal', 'update-lead-status');
     }
 
@@ -46,18 +51,31 @@ class LeadShow extends Component
      * It updates the lead status.
      */
     public function updateLeadStatus(): void
-    {
-        Gate::authorize('update', $this->lead);
+{
+    Gate::authorize('update', $this->lead);
 
-        try {
-            $this->lead->update(['lead_status' => $this->selectedLeadStatus]);
-            Toaster::success('Stato profilo aggiornato con successo');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante l\'aggiornamento dello stato del profilo: ' . $e->getMessage());
-        }
+    $this->validate([
+        'selectedLeadStatus' => ['required'],
+        'selectedLeadRecontactDate' => ['nullable', 'date'],
+    ], [
+        'selectedLeadRecontactDate.date' => 'La data ricontatto non è valida.',
+    ]);
 
-        $this->dispatch('close-modal', 'update-lead-status');
+    try {
+        $this->lead->update([
+            'lead_status' => $this->selectedLeadStatus,
+            'recontact_date' => $this->selectedLeadRecontactDate ?: null,
+        ]);
+
+        $this->lead->refresh();
+
+        Toaster::success('Stato profilo aggiornato con successo');
+    } catch (Exception $e) {
+        Toaster::error('Errore durante l\'aggiornamento dello stato del profilo: ' . $e->getMessage());
     }
+
+    $this->dispatch('close-modal', 'update-lead-status');
+}
 
     /**
      * Create practice from lead
@@ -112,6 +130,7 @@ class LeadShow extends Component
 
         $this->initializeLeadStatuses();
         $this->setLeadStatus($this->lead->lead_status?->value);
+        $this->selectedLeadRecontactDate = $this->lead->recontact_date?->format('Y-m-d');
     }
 
     #[Layout('components.layouts.app')]

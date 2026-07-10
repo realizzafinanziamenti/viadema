@@ -11,7 +11,7 @@
 
                 <flux:error name="selectedLeadStatus" />
             </div>
-            @if ($this->selectedLeadStatusShowsRecontactDate())
+            @if (filled($selectedLeadStatus))
                 <div class="flex flex-col gap-1.5 mt-4">
                     <flux:label>Data ricontatto </flux:label>
 

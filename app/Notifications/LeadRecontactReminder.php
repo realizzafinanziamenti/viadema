@@ -1,39 +1,23 @@
 <?php
+
 namespace App\Notifications;
 
 use App\Models\Customer;
 use Carbon\Carbon;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LeadRecontactReminder extends Notification implements ShouldQueue
+class LeadRecontactReminder extends Notification
 {
-    use Queueable;
-
     public string $url;
 
     public function __construct(public Customer $lead)
     {
         $this->url = url('/leads/' . $lead->id);
-        $this->afterCommit();
     }
 
     public function via(object $notifiable): array
-{
-    return ['database', 'broadcast'];
-}
-
-    public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject('Ricontatto lead richiesto')
-            ->greeting('Ciao ' . $notifiable->name)
-            ->line("È il momento di ricontattare il lead **{$this->lead->full_name}**.")
-            ->line('Data ricontatto: ' . $this->lead->recontact_date?->format('d/m/Y'))
-            ->action('Visualizza Lead', $this->url)
-            ->salutation('Grazie');
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array
@@ -56,10 +40,5 @@ class LeadRecontactReminder extends Notification implements ShouldQueue
     public function initialDatabaseReadAtValue(): ?Carbon
     {
         return null;
-    }
-
-    public function broadcastType(): string
-    {
-        return 'broadcast.lead-recontact-reminder';
     }
 }
