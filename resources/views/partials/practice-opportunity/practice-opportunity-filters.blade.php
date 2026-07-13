@@ -1,10 +1,4 @@
 @php
-    /*
-     * Nelle pagine pratiche il prodotto può essere già determinato
-     * dal contesto della pagina tramite $type.
-     *
-     * Nei lead, invece, il filtro prodotto sarà sempre visibile.
-     */
     $showProductType = $showProductType ?? true;
 @endphp
 
@@ -75,231 +69,202 @@
 </div>
 
 {{-- First Installment Date --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Data di inizio</flux:label>
+<x-filters.range label="Data di inizio">
+    <x-slot:from>
+        <flux:input
+            type="date"
+            size="sm"
+            wire:model="tempFirstInstallmentDateMin"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempFirstInstallmentDateMin"
-            />
+        <flux:error name="tempFirstInstallmentDateMin" />
+    </x-slot:from>
 
-            <flux:error name="tempFirstInstallmentDateMin" />
-        </div>
+    <x-slot:to>
+        <flux:input
+            type="date"
+            size="sm"
+            wire:model="tempFirstInstallmentDateMax"
+        />
 
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempFirstInstallmentDateMax"
-            />
-
-            <flux:error name="tempFirstInstallmentDateMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempFirstInstallmentDateMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- Last Installment Date --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Data di fine</flux:label>
+<x-filters.range label="Data di fine">
+    <x-slot:from>
+        <flux:input
+            type="date"
+            size="sm"
+            wire:model="tempLastInstallmentDateMin"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempLastInstallmentDateMin"
-            />
+        <flux:error name="tempLastInstallmentDateMin" />
+    </x-slot:from>
 
-            <flux:error name="tempLastInstallmentDateMin" />
-        </div>
+    <x-slot:to>
+        <flux:input
+            type="date"
+            size="sm"
+            wire:model="tempLastInstallmentDateMax"
+        />
 
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempLastInstallmentDateMax"
-            />
-
-            <flux:error name="tempLastInstallmentDateMax" />
-        </div>
-    </div>
-</div>
-
+        <flux:error name="tempLastInstallmentDateMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- Amount Disbursed --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Importo</flux:label>
+<x-filters.range label="Importo">
+    <x-slot:from>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempAmountDisbursedMin"
+            symbol="€"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempAmountDisbursedMin"
-                symbol="€"
-            />
+        <flux:error name="tempAmountDisbursedMin" />
+    </x-slot:from>
 
-            <flux:error name="tempAmountDisbursedMin" />
-        </div>
+    <x-slot:to>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempAmountDisbursedMax"
+            symbol="€"
+        />
 
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempAmountDisbursedMax"
-                symbol="€"
-            />
-
-            <flux:error name="tempAmountDisbursedMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempAmountDisbursedMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- Total Amount --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Totale dovuto</flux:label>
+<x-filters.range label="Totale dovuto">
+    <x-slot:from>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempTotalAmountMin"
+            symbol="€"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempTotalAmountMin"
-                symbol="€"
-            />
+        <flux:error name="tempTotalAmountMin" />
+    </x-slot:from>
 
-            <flux:error name="tempTotalAmountMin" />
-        </div>
+    <x-slot:to>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempTotalAmountMax"
+            symbol="€"
+        />
 
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempTotalAmountMax"
-                symbol="€"
-            />
-
-            <flux:error name="tempTotalAmountMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempTotalAmountMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- Rate Amount --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Rata mensile</flux:label>
+<x-filters.range label="Rata mensile">
+    <x-slot:from>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempRateAmountMin"
+            symbol="€"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempRateAmountMin"
-                symbol="€"
-            />
+        <flux:error name="tempRateAmountMin" />
+    </x-slot:from>
 
-            <flux:error name="tempRateAmountMin" />
-        </div>
+    <x-slot:to>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="99999999.99"
+            step=".01"
+            size="sm"
+            wire:model="tempRateAmountMax"
+            symbol="€"
+        />
 
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="99999999.99"
-                step=".01"
-                size="sm"
-                wire:model="tempRateAmountMax"
-                symbol="€"
-            />
-
-            <flux:error name="tempRateAmountMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempRateAmountMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- TAN --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Tan</flux:label>
+<x-filters.range label="Tan">
+    <x-slot:from>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="10000.00"
+            step=".01"
+            size="sm"
+            wire:model="tempTanMin"
+            symbol="%"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="10000.00"
-                step=".01"
-                size="sm"
-                wire:model="tempTanMin"
-                symbol="%"
-            />
+        <flux:error name="tempTanMin" />
+    </x-slot:from>
 
-            <flux:error name="tempTanMin" />
-        </div>
+    <x-slot:to>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="10000.00"
+            step=".01"
+            size="sm"
+            wire:model="tempTanMax"
+            symbol="%"
+        />
 
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="10000.00"
-                step=".01"
-                size="sm"
-                wire:model="tempTanMax"
-                symbol="%"
-            />
-
-            <flux:error name="tempTanMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempTanMax" />
+    </x-slot:to>
+</x-filters.range>
 
 {{-- TAEG --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Taeg</flux:label>
+<x-filters.range label="Taeg">
+    <x-slot:from>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="10000.00"
+            step=".01"
+            size="sm"
+            wire:model="tempTaegMin"
+            symbol="%"
+        />
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="10000.00"
-                step=".01"
-                size="sm"
-                wire:model="tempTaegMin"
-                symbol="%"
-            />
+        <flux:error name="tempTaegMin" />
+    </x-slot:from>
 
-            <flux:error name="tempTaegMin" />
-        </div>
+    <x-slot:to>
+        <x-forms.input-with-symbol
+            type="number"
+            min="0.00"
+            max="10000.00"
+            step=".01"
+            size="sm"
+            wire:model="tempTaegMax"
+            symbol="%"
+        />
 
-        <div>
-            <x-forms.input-with-symbol
-                type="number"
-                min="0.00"
-                max="10000.00"
-                step=".01"
-                size="sm"
-                wire:model="tempTaegMax"
-                symbol="%"
-            />
-
-            <flux:error name="tempTaegMax" />
-        </div>
-    </div>
-</div>
+        <flux:error name="tempTaegMax" />
+    </x-slot:to>
+</x-filters.range>
