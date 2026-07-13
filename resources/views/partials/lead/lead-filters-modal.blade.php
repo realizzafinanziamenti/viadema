@@ -1,4 +1,4 @@
-<x-modals.filter-modal header="Filtra leads" maxWidth="4xl">
+<x-modals.filter-modal header="Filtra leads" maxWidth="5xl">
     <div class="grid grid-cols-3 gap-4">
         {{-- User --}}
         <div class="flex flex-col gap-1.5">
@@ -102,5 +102,12 @@
                 </div>
             </div>
         </div>
+        {{-- Practice Opportunity Filters --}}
+@include(
+    'partials.practice-opportunity.practice-opportunity-filters',
+    [
+        'showProductType' => true,
+    ]
+)
     </div>
 </x-modals.filter-modal>

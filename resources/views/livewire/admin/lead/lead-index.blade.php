@@ -58,7 +58,6 @@
                     <x-table-header label="Provenienza" class="w-[160px]" />
                     <x-table-header label="Assegnato a" class="w-1/2" />
                     <x-table-header label="Data creazione" class="w-[120px]" />
-                    <x-table-header label="Ultimo contatto" class="w-[120px]" />
                     <x-table-header label="Data ricontatto" class="w-[140px]" />
                     <x-table-header label="Note" class="w-[60px]" />
                     <x-table-header class="w-[150px]">
@@ -98,7 +97,6 @@
                         </x-table-data>
 
                         <x-table-data truncate label="{{ $lead->formatted_created_at }}" />
-                        <x-table-data truncate label="{{ $lead->formatted_updated_at }}" />
                         <x-table-data truncate label="{{ $lead->recontact_date?->format('d/m/Y') ?? 'N/D' }}" />
 
                         {{-- Notes --}}
