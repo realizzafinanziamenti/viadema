@@ -128,32 +128,6 @@
     </div>
 </div>
 
-{{-- Renewability Date --}}
-<div class="flex flex-col gap-1.5">
-    <flux:label>Data rinnovabilità</flux:label>
-
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempRenewabilityDateMin"
-            />
-
-            <flux:error name="tempRenewabilityDateMin" />
-        </div>
-
-        <div>
-            <flux:input
-                type="date"
-                size="sm"
-                wire:model="tempRenewabilityDateMax"
-            />
-
-            <flux:error name="tempRenewabilityDateMax" />
-        </div>
-    </div>
-</div>
 
 {{-- Amount Disbursed --}}
 <div class="flex flex-col gap-1.5">

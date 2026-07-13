@@ -2,6 +2,12 @@
 
 namespace App\Livewire\Admin\Lead;
 
+use App\Models\Installment;
+use App\Models\Insurance;
+use App\Models\ProductSubtype;
+use App\Models\ProductType;
+use Illuminate\Database\Eloquent\Builder;
+
 use App\Enums\CustomerStatus;
 use App\Enums\LeadStatus;
 use App\Exports\LeadsExport;
@@ -83,6 +89,68 @@ class LeadIndex extends Component
     public ?int $userId = null;   // user for assigning imported practices
     public string $userSearch = '';
 
+    // Product Type Filter
+public array $productTypes = [];
+public ?int $selectedProductTypeForFilter = null;
+public ?int $tempSelectedProductTypeForFilter = null;
+
+// Product Subtype Filter
+public array $productSubtypes = [];
+public ?int $selectedProductSubtypeForFilter = null;
+public ?int $tempSelectedProductSubtypeForFilter = null;
+
+// Insurance Filter
+public array $insurances = [];
+public ?int $selectedInsuranceForFilter = null;
+public ?int $tempSelectedInsuranceForFilter = null;
+
+// Installment Filter
+public array $installments = [];
+public ?int $selectedInstallmentForFilter = null;
+public ?int $tempSelectedInstallmentForFilter = null;
+
+// First Installment Date Filters
+public ?string $firstInstallmentDateMin = null;
+public ?string $tempFirstInstallmentDateMin = null;
+public ?string $firstInstallmentDateMax = null;
+public ?string $tempFirstInstallmentDateMax = null;
+
+// Last Installment Date Filters
+public ?string $lastInstallmentDateMin = null;
+public ?string $tempLastInstallmentDateMin = null;
+public ?string $lastInstallmentDateMax = null;
+public ?string $tempLastInstallmentDateMax = null;
+
+// Amount Disbursed Filters
+public ?float $amountDisbursedMin = null;
+public ?float $tempAmountDisbursedMin = null;
+public ?float $amountDisbursedMax = null;
+public ?float $tempAmountDisbursedMax = null;
+
+// Total Amount Filters
+public ?float $totalAmountMin = null;
+public ?float $tempTotalAmountMin = null;
+public ?float $totalAmountMax = null;
+public ?float $tempTotalAmountMax = null;
+
+// Rate Amount Filters
+public ?float $rateAmountMin = null;
+public ?float $tempRateAmountMin = null;
+public ?float $rateAmountMax = null;
+public ?float $tempRateAmountMax = null;
+
+// TAN Filters
+public ?float $tanMin = null;
+public ?float $tempTanMin = null;
+public ?float $tanMax = null;
+public ?float $tempTanMax = null;
+
+// TAEG Filters
+public ?float $taegMin = null;
+public ?float $tempTaegMin = null;
+public ?float $taegMax = null;
+public ?float $tempTaegMax = null;
+
         protected function rules(): array
         {
             return [
@@ -99,6 +167,123 @@ class LeadIndex extends Component
 
                 'tempRecontactDateMin' => ['nullable', 'date', 'before_or_equal:tempRecontactDateMax'],
                 'tempRecontactDateMax' => ['nullable', 'date', 'after_or_equal:tempRecontactDateMin'],
+                'tempSelectedProductTypeForFilter' => [
+                    'nullable',
+                    'integer',
+                    'exists:product_types,id',
+                ],
+                'tempSelectedProductSubtypeForFilter' => [
+                    'nullable',
+                    'integer',
+                    'exists:product_subtypes,id',
+                ],
+                'tempSelectedInsuranceForFilter' => [
+                    'nullable',
+                    'integer',
+                    'exists:insurances,id',
+                ],
+                'tempSelectedInstallmentForFilter' => [
+                    'nullable',
+                    'integer',
+                    'exists:installments,id',
+                ],
+
+                'tempFirstInstallmentDateMin' => [
+                    'nullable',
+                    'date',
+                    'before_or_equal:tempFirstInstallmentDateMax',
+                ],
+                'tempFirstInstallmentDateMax' => [
+                    'nullable',
+                    'date',
+                    'after_or_equal:tempFirstInstallmentDateMin',
+                ],
+
+                'tempLastInstallmentDateMin' => [
+                    'nullable',
+                    'date',
+                    'before_or_equal:tempLastInstallmentDateMax',
+                ],
+                'tempLastInstallmentDateMax' => [
+                    'nullable',
+                    'date',
+                    'after_or_equal:tempLastInstallmentDateMin',
+                ],
+
+                'tempAmountDisbursedMin' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'lte:tempAmountDisbursedMax',
+                ],
+                'tempAmountDisbursedMax' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'gte:tempAmountDisbursedMin',
+                ],
+
+                'tempTotalAmountMin' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'lte:tempTotalAmountMax',
+                ],
+                'tempTotalAmountMax' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'gte:tempTotalAmountMin',
+                ],
+
+                'tempRateAmountMin' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'lte:tempRateAmountMax',
+                ],
+                'tempRateAmountMax' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:99999999.99',
+                    'gte:tempRateAmountMin',
+                ],
+
+                'tempTanMin' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:10000',
+                    'lte:tempTanMax',
+                ],
+                'tempTanMax' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:10000',
+                    'gte:tempTanMin',
+                ],
+
+                'tempTaegMin' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:10000',
+                    'lte:tempTaegMax',
+                ],
+                'tempTaegMax' => [
+                    'nullable',
+                    'numeric',
+                    'min:0',
+                    'max:10000',
+                    'gte:tempTaegMin',
+                ],
             ];
         }
 
@@ -118,6 +303,59 @@ class LeadIndex extends Component
 
                 'tempRecontactDateMin.before_or_equal' => 'La data ricontatto minima deve essere prima o uguale alla data massima.',
                 'tempRecontactDateMax.after_or_equal' => 'La data ricontatto massima deve essere dopo o uguale alla data minima.',
+                'tempSelectedProductTypeForFilter.exists' =>
+                    'Il prodotto selezionato non esiste.',
+
+                'tempSelectedProductSubtypeForFilter.exists' =>
+                    'Il tipo prodotto selezionato non esiste.',
+
+                'tempSelectedInsuranceForFilter.exists' =>
+                    'L\'assicurazione selezionata non esiste.',
+
+                'tempSelectedInstallmentForFilter.exists' =>
+                    'Il numero di rate selezionato non esiste.',
+
+                'tempFirstInstallmentDateMin.before_or_equal' =>
+                    'La data iniziale minima deve essere prima o uguale alla data massima.',
+
+                'tempFirstInstallmentDateMax.after_or_equal' =>
+                    'La data iniziale massima deve essere dopo o uguale alla data minima.',
+
+                'tempLastInstallmentDateMin.before_or_equal' =>
+                    'La data finale minima deve essere prima o uguale alla data massima.',
+
+                'tempLastInstallmentDateMax.after_or_equal' =>
+                    'La data finale massima deve essere dopo o uguale alla data minima.',
+
+                'tempAmountDisbursedMin.lte' =>
+                    'L\'importo minimo deve essere minore o uguale all\'importo massimo.',
+
+                'tempAmountDisbursedMax.gte' =>
+                    'L\'importo massimo deve essere maggiore o uguale all\'importo minimo.',
+
+                'tempTotalAmountMin.lte' =>
+                    'Il totale dovuto minimo deve essere minore o uguale al massimo.',
+
+                'tempTotalAmountMax.gte' =>
+                    'Il totale dovuto massimo deve essere maggiore o uguale al minimo.',
+
+                'tempRateAmountMin.lte' =>
+                    'La rata minima deve essere minore o uguale alla rata massima.',
+
+                'tempRateAmountMax.gte' =>
+                    'La rata massima deve essere maggiore o uguale alla rata minima.',
+
+                'tempTanMin.lte' =>
+                    'Il TAN minimo deve essere minore o uguale al TAN massimo.',
+
+                'tempTanMax.gte' =>
+                    'Il TAN massimo deve essere maggiore o uguale al TAN minimo.',
+
+                'tempTaegMin.lte' =>
+                    'Il TAEG minimo deve essere minore o uguale al TAEG massimo.',
+
+                'tempTaegMax.gte' =>
+                    'Il TAEG massimo deve essere maggiore o uguale al TAEG minimo.',
             ];
         }
 
@@ -135,6 +373,31 @@ class LeadIndex extends Component
                 'tempUpdatedAtDateMax' => 'data ultimo contatto massima',
                 'tempRecontactDateMin' => 'data ricontatto minima',
                 'tempRecontactDateMax' => 'data ricontatto massima',
+                'tempSelectedProductTypeForFilter' => 'prodotto',
+                'tempSelectedProductSubtypeForFilter' => 'tipo prodotto',
+                'tempSelectedInsuranceForFilter' => 'assicurazione',
+                'tempSelectedInstallmentForFilter' => 'numero rate',
+
+                'tempFirstInstallmentDateMin' => 'data iniziale minima',
+                'tempFirstInstallmentDateMax' => 'data iniziale massima',
+
+                'tempLastInstallmentDateMin' => 'data finale minima',
+                'tempLastInstallmentDateMax' => 'data finale massima',
+
+                'tempAmountDisbursedMin' => 'importo minimo',
+                'tempAmountDisbursedMax' => 'importo massimo',
+
+                'tempTotalAmountMin' => 'totale dovuto minimo',
+                'tempTotalAmountMax' => 'totale dovuto massimo',
+
+                'tempRateAmountMin' => 'rata minima',
+                'tempRateAmountMax' => 'rata massima',
+
+                'tempTanMin' => 'TAN minimo',
+                'tempTanMax' => 'TAN massimo',
+
+                'tempTaegMin' => 'TAEG minimo',
+                'tempTaegMax' => 'TAEG massimo',
             ];
         }
 
@@ -182,6 +445,42 @@ class LeadIndex extends Component
         $this->setSelectValue('userId', $value);
     }
 
+    public function setProductType(?int $value = null): void
+    {
+        $this->setSelectValue(
+            'tempSelectedProductTypeForFilter',
+            $value,
+            reset: false
+        );
+    }
+
+    public function setProductSubtype(?int $value = null): void
+    {
+        $this->setSelectValue(
+            'tempSelectedProductSubtypeForFilter',
+            $value,
+            reset: false
+        );
+    }
+
+    public function setInsurance(?int $value = null): void
+    {
+        $this->setSelectValue(
+            'tempSelectedInsuranceForFilter',
+            $value,
+            reset: false
+        );
+    }
+
+
+    public function setInstallment(?int $value = null): void
+    {
+        $this->setSelectValue(
+            'tempSelectedInstallmentForFilter',
+            $value,
+            reset: false
+        );
+    }
     /**
      * Import the leads from the uploaded file.
      */
@@ -447,6 +746,53 @@ public function setCustomerType(?int $value = null): void
 
         $this->tempRecontactDateMin = $this->recontactDateMin;
         $this->tempRecontactDateMax = $this->recontactDateMax;
+        $this->tempSelectedProductTypeForFilter =
+            $this->selectedProductTypeForFilter;
+
+        $this->tempSelectedProductSubtypeForFilter =
+            $this->selectedProductSubtypeForFilter;
+
+        $this->tempSelectedInsuranceForFilter =
+            $this->selectedInsuranceForFilter;
+
+        $this->tempSelectedInstallmentForFilter =
+            $this->selectedInstallmentForFilter;
+
+        $this->tempFirstInstallmentDateMin =
+            $this->firstInstallmentDateMin;
+
+        $this->tempFirstInstallmentDateMax =
+            $this->firstInstallmentDateMax;
+
+        $this->tempLastInstallmentDateMin =
+            $this->lastInstallmentDateMin;
+
+        $this->tempLastInstallmentDateMax =
+            $this->lastInstallmentDateMax;
+
+        $this->tempAmountDisbursedMin =
+            $this->amountDisbursedMin;
+
+        $this->tempAmountDisbursedMax =
+            $this->amountDisbursedMax;
+
+        $this->tempTotalAmountMin =
+            $this->totalAmountMin;
+
+        $this->tempTotalAmountMax =
+            $this->totalAmountMax;
+
+        $this->tempRateAmountMin =
+            $this->rateAmountMin;
+
+        $this->tempRateAmountMax =
+            $this->rateAmountMax;
+
+        $this->tempTanMin = $this->tanMin;
+        $this->tempTanMax = $this->tanMax;
+
+        $this->tempTaegMin = $this->taegMin;
+        $this->tempTaegMax = $this->taegMax;
     }
 
     public function filter(): void
@@ -466,6 +812,54 @@ public function setCustomerType(?int $value = null): void
 
         $this->recontactDateMin = $this->tempRecontactDateMin;
         $this->recontactDateMax = $this->tempRecontactDateMax;
+
+        $this->selectedProductTypeForFilter =
+            $this->tempSelectedProductTypeForFilter;
+
+        $this->selectedProductSubtypeForFilter =
+            $this->tempSelectedProductSubtypeForFilter;
+
+        $this->selectedInsuranceForFilter =
+            $this->tempSelectedInsuranceForFilter;
+
+        $this->selectedInstallmentForFilter =
+            $this->tempSelectedInstallmentForFilter;
+
+        $this->firstInstallmentDateMin =
+            $this->tempFirstInstallmentDateMin;
+
+        $this->firstInstallmentDateMax =
+            $this->tempFirstInstallmentDateMax;
+
+        $this->lastInstallmentDateMin =
+            $this->tempLastInstallmentDateMin;
+
+        $this->lastInstallmentDateMax =
+            $this->tempLastInstallmentDateMax;
+
+        $this->amountDisbursedMin =
+            $this->tempAmountDisbursedMin;
+
+        $this->amountDisbursedMax =
+            $this->tempAmountDisbursedMax;
+
+        $this->totalAmountMin =
+            $this->tempTotalAmountMin;
+
+        $this->totalAmountMax =
+            $this->tempTotalAmountMax;
+
+        $this->rateAmountMin =
+            $this->tempRateAmountMin;
+
+        $this->rateAmountMax =
+            $this->tempRateAmountMax;
+
+        $this->tanMin = $this->tempTanMin;
+        $this->tanMax = $this->tempTanMax;
+
+        $this->taegMin = $this->tempTaegMin;
+        $this->taegMax = $this->tempTaegMax;
 
         $this->resetPage();
         $this->dispatch('close-modal', 'filter-modal');
@@ -500,11 +894,211 @@ public function setCustomerType(?int $value = null): void
             'tempRecontactDateMin',
             'recontactDateMax',
             'tempRecontactDateMax',
+            'selectedProductTypeForFilter',
+            'tempSelectedProductTypeForFilter',
+
+            'selectedProductSubtypeForFilter',
+            'tempSelectedProductSubtypeForFilter',
+
+            'selectedInsuranceForFilter',
+            'tempSelectedInsuranceForFilter',
+
+            'selectedInstallmentForFilter',
+            'tempSelectedInstallmentForFilter',
+
+            'firstInstallmentDateMin',
+            'tempFirstInstallmentDateMin',
+            'firstInstallmentDateMax',
+            'tempFirstInstallmentDateMax',
+
+            'lastInstallmentDateMin',
+            'tempLastInstallmentDateMin',
+            'lastInstallmentDateMax',
+            'tempLastInstallmentDateMax',
+
+            'amountDisbursedMin',
+            'tempAmountDisbursedMin',
+            'amountDisbursedMax',
+            'tempAmountDisbursedMax',
+
+            'totalAmountMin',
+            'tempTotalAmountMin',
+            'totalAmountMax',
+            'tempTotalAmountMax',
+
+            'rateAmountMin',
+            'tempRateAmountMin',
+            'rateAmountMax',
+            'tempRateAmountMax',
+
+            'tanMin',
+            'tempTanMin',
+            'tanMax',
+            'tempTanMax',
+
+            'taegMin',
+            'tempTaegMin',
+            'taegMax',
+            'tempTaegMax',
         ]);
 
         $this->resetPage();
         $this->dispatch('close-modal', 'filter-modal');
     }
+    private function hasPracticeOpportunityFilters(): bool
+{
+    return collect([
+        $this->selectedProductTypeForFilter,
+        $this->selectedProductSubtypeForFilter,
+        $this->selectedInsuranceForFilter,
+        $this->selectedInstallmentForFilter,
+
+        $this->firstInstallmentDateMin,
+        $this->firstInstallmentDateMax,
+        $this->lastInstallmentDateMin,
+        $this->lastInstallmentDateMax,
+
+        $this->amountDisbursedMin,
+        $this->amountDisbursedMax,
+        $this->totalAmountMin,
+        $this->totalAmountMax,
+        $this->rateAmountMin,
+        $this->rateAmountMax,
+
+        $this->tanMin,
+        $this->tanMax,
+        $this->taegMin,
+        $this->taegMax,
+    ])->contains(fn ($value) => filled($value));
+}
+
+private function applyPracticeOpportunityFilters(
+    Builder $query
+): void {
+    if ($this->selectedProductTypeForFilter !== null) {
+        $query->where(
+            'product_type_id',
+            $this->selectedProductTypeForFilter
+        );
+    }
+
+    if ($this->selectedProductSubtypeForFilter !== null) {
+        $query->where(
+            'product_subtype_id',
+            $this->selectedProductSubtypeForFilter
+        );
+    }
+
+    if ($this->selectedInsuranceForFilter !== null) {
+        $query->where(
+            'insurance_id',
+            $this->selectedInsuranceForFilter
+        );
+    }
+
+    if ($this->selectedInstallmentForFilter !== null) {
+        $query->where(
+            'installment_id',
+            $this->selectedInstallmentForFilter
+        );
+    }
+
+    if (filled($this->firstInstallmentDateMin)) {
+        $query->whereDate(
+            'first_installment_date',
+            '>=',
+            $this->firstInstallmentDateMin
+        );
+    }
+
+    if (filled($this->firstInstallmentDateMax)) {
+        $query->whereDate(
+            'first_installment_date',
+            '<=',
+            $this->firstInstallmentDateMax
+        );
+    }
+
+    if (filled($this->lastInstallmentDateMin)) {
+        $query->whereDate(
+            'last_installment_date',
+            '>=',
+            $this->lastInstallmentDateMin
+        );
+    }
+
+    if (filled($this->lastInstallmentDateMax)) {
+        $query->whereDate(
+            'last_installment_date',
+            '<=',
+            $this->lastInstallmentDateMax
+        );
+    }
+
+    if ($this->amountDisbursedMin !== null) {
+        $query->where(
+            'amount_disbursed',
+            '>=',
+            $this->amountDisbursedMin
+        );
+    }
+
+    if ($this->amountDisbursedMax !== null) {
+        $query->where(
+            'amount_disbursed',
+            '<=',
+            $this->amountDisbursedMax
+        );
+    }
+
+    if ($this->totalAmountMin !== null) {
+        $query->where(
+            'total_amount',
+            '>=',
+            $this->totalAmountMin
+        );
+    }
+
+    if ($this->totalAmountMax !== null) {
+        $query->where(
+            'total_amount',
+            '<=',
+            $this->totalAmountMax
+        );
+    }
+
+    if ($this->rateAmountMin !== null) {
+        $query->where(
+            'rate_amount',
+            '>=',
+            $this->rateAmountMin
+        );
+    }
+
+    if ($this->rateAmountMax !== null) {
+        $query->where(
+            'rate_amount',
+            '<=',
+            $this->rateAmountMax
+        );
+    }
+
+    if ($this->tanMin !== null) {
+        $query->where('tan', '>=', $this->tanMin);
+    }
+
+    if ($this->tanMax !== null) {
+        $query->where('tan', '<=', $this->tanMax);
+    }
+
+    if ($this->taegMin !== null) {
+        $query->where('taeg', '>=', $this->taegMin);
+    }
+
+    if ($this->taegMax !== null) {
+        $query->where('taeg', '<=', $this->taegMax);
+    }
+}
 
     public function applyFilters($query)
     {
@@ -547,6 +1141,16 @@ public function setCustomerType(?int $value = null): void
         if ($this->recontactDateMax) {
             $query->whereDate('recontact_date', '<=', $this->recontactDateMax);
         }
+        if ($this->hasPracticeOpportunityFilters()) {
+            $query->whereHas(
+                'practiceOpportunities',
+                function (Builder $opportunityQuery): void {
+                    $this->applyPracticeOpportunityFilters(
+                        $opportunityQuery
+                    );
+                }
+            );
+        }
 
         return $query;
     }
@@ -580,6 +1184,21 @@ public function setCustomerType(?int $value = null): void
 
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
+            ->toArray();
+            $this->productTypes = ProductType::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+
+        $this->productSubtypes = ProductSubtype::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+
+        $this->insurances = Insurance::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+
+        $this->installments = Installment::orderBy('value')
+            ->pluck('value', 'id')
             ->toArray();
     }
 
