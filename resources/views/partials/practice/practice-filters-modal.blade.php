@@ -5,7 +5,6 @@
             gap-y-4
             md:grid-cols-2 md:gap-x-6
             xl:grid-cols-3 xl:gap-x-8
-            text-center
         "
     >
         {{-- User --}}
