@@ -80,7 +80,11 @@ class CustomerPolicy
 
         // If the customer is a lead, check if the user has permission to update leads
         if ($customer->isLead()) {
-            return $user->hasPermissionTo('update leads') && $user->id === $customer->user_id;
+            return $user->hasPermissionTo('update leads')
+                && (
+                    $user->id === $customer->user_id
+                    || $user->isFloorManager()
+                );
         }
 
         return false;  // Default to false if no conditions are met
