@@ -55,6 +55,18 @@
                     <span class="text-gray-custom-4">Data di fine: </span>
                     <span>{{ $practice->opportunity?->last_installment_date?->format('d/m/y') ?? 'N/D' }}</span>
                 </div>
+                @if ($practice->renewability_date)
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">
+                        Data rinnovabilità:
+                    </span>
+
+                    <span>
+                        {{ $practice->renewability_date->format('d/m/Y') }}
+                    </span>
+                </div>
+            @endif
+
 
                 <div class="text-sm mb-2.5 flex items-center gap-2">
                     <span class="text-gray-custom-4">Stato pratica: </span>
