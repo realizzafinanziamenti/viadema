@@ -28,16 +28,6 @@
             </div>
         </div>
 
-        {{-- Lead Source --}}
-        <div class="flex flex-col gap-1.5">
-            <flux:label>Canale di acquisizione</flux:label>
-            <div class="flex flex-col gap-0.5">
-                <x-dropdown-select size="sm" align="right" :selectable-items="$leadSources" :selected="$selectedLeadSource"
-                    placeholder='Seleziona canale di acquisizione' setFunction="setLeadSource" :has-error="$errors->has('{{ $form }}.leadSource')" />
-                <flux:error name="{{ $form }}.leadSource" />
-            </div>
-        </div>
-
         {{-- Lead Status --}}
         <div class="flex flex-col gap-1.5">
             <flux:label>Stato</flux:label>
@@ -145,7 +135,12 @@
             <flux:error name="{{ $form }}.userId" />
         </div>
     @endif
-
+    @if ($context === 'lead')
+        <x-forms.acquisition-channel-field
+            :options="$leadSources"
+            :selected="$selectedAcquisitionChannel"
+        />
+    @endif
     {{-- Notes --}}
     <div class="flex flex-col gap-1.5 col-span-2">
         <flux:textarea label="Note" resize="none" wire:model='{{ $form }}.notes' />

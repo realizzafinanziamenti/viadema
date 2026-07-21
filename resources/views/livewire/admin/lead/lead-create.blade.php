@@ -9,8 +9,9 @@
                 'form' => 'form',
                 'selectedUserId' => $form->userId,
                 'selectedCustomerTypeId' => $form->customerTypeId,
-                'selectedLeadSource' => $form->leadSource,
                 'selectedLeadStatus' => $form->leadStatus,
+                'leadSources' => $leadSources,
+                'selectedAcquisitionChannel' => $opportunityForm->acquisitionChannel,
             ])
             @include('partials.practice.practice-opportunity-fields', [
                 'productTypes' => $productTypes,

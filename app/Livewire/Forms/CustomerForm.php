@@ -4,7 +4,6 @@ namespace App\Livewire\Forms;
 
 use App\Enums\CustomerStatus;
 use App\Enums\LeadCommunication;
-use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Models\Customer;
 use App\Models\User;
@@ -36,7 +35,6 @@ class CustomerForm extends Form
     public ?string $state = null;
     public ?string $taxId = null;
     public ?string $customerStatus = null;
-    public ?string $leadSource = null;
     public ?string $leadStatus = null;
     public ?string $notes = null;
     public ?string $recontactDate = null;
@@ -57,7 +55,6 @@ class CustomerForm extends Form
                 'state' => ['nullable', 'string', 'max:255'],
                 'taxId' => ['nullable', 'string', 'size:16', Rule::unique('customers', 'tax_id')->ignore($this->customer?->id)],
                 'customerStatus' => ['required', 'string', new Enum(CustomerStatus::class)],
-                'leadSource' => ['nullable', 'string', new Enum(LeadSource::class)],
                 'notes' => ['nullable', 'string', 'max:65535'],
                 'recontactDate' => ['nullable', 'date'],
             ],
@@ -114,7 +111,6 @@ class CustomerForm extends Form
             'state' => 'provincia',
             'taxId' => 'codice fiscale',
             'customerStatus' => 'stato cliente',
-            'leadSource' => 'canale di acquisizione',
             'leadStatus' => 'stato lead',
             'notes' => 'note',
         ];
@@ -145,7 +141,6 @@ class CustomerForm extends Form
         $this->state = $customer->state;
         $this->taxId = $customer->tax_id;
         $this->customerStatus = $customer->customer_status?->value;
-        $this->leadSource = $customer->lead_source?->value;
         $this->leadStatus = $customer->lead_status?->value;
         $this->recontactDate = $customer->recontact_date?->format('Y-m-d');
         $this->notes = $customer->notes;
@@ -170,7 +165,6 @@ class CustomerForm extends Form
         $this->state = null;
         $this->taxId = null;
         $this->customerStatus = null;
-        $this->leadSource = null;
         $this->leadStatus = null;
         $this->recontactDate = null;
         $this->notes = null;
@@ -249,7 +243,6 @@ class CustomerForm extends Form
             'state' => $this->state ?: null,
             'tax_id' => $this->taxId ?: null,
             'customer_status' => $this->customerStatus,
-            'lead_source' => $this->leadSource ?: null,
             'lead_status' => $this->leadStatus ?: null,
             'recontact_date' => $this->recontactDate ?: null,
             'notes' => $this->notes ?: null,

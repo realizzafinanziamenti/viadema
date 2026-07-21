@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LeadSource;
 use App\Enums\ProductionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class PracticeOpportunity extends Model
     protected $fillable = [
         'customer_id',
         'product_type_id',
+        'acquisition_channel',
         'product_subtype_id',
         'financial_table_id',
         'insurance_id',
@@ -39,6 +41,7 @@ class PracticeOpportunity extends Model
     ];
 
     protected $casts = [
+        'acquisition_channel' => LeadSource::class,
         'amount_disbursed' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'rate_amount' => 'decimal:2',

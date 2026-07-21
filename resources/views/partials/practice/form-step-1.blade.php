@@ -22,6 +22,14 @@
 
     @include('partials.practice.customer-preview-fields')
 
+    {{-- Acquisition Channel --}}
+    <x-forms.acquisition-channel-field
+        :options="$leadSources"
+        :selected="$practiceForm->acquisitionChannel"
+        set-function="setOpportunityAcquisitionChannel"
+        error-name="practiceForm.acquisitionChannel"
+    />
+
     {{-- Attachments --}}
     <div class="flex flex-col gap-6 col-span-2">
         {{-- Old Attachements for Uploaded Practice --}}

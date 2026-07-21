@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\LeadSource;
 use App\Enums\ProductionType;
 use App\Models\Customer;
 use App\Models\PracticeOpportunity;
@@ -11,6 +12,7 @@ use Illuminate\Validation\Rules\Enum;
 class PracticeOpportunityForm extends Form
 {
     public ?PracticeOpportunity $opportunity = null;
+    public ?string $acquisitionChannel = null;
 
     public $productTypeId = null;
     public $productSubtypeId = null;
@@ -45,6 +47,11 @@ class PracticeOpportunityForm extends Form
     protected function rules(): array
     {
         return [
+            'acquisitionChannel' => [
+                'nullable',
+                'string',
+                new Enum(LeadSource::class),
+            ],
             'productTypeId' => ['nullable', 'exists:product_types,id'],
             'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
             'financialTableId' => ['nullable', 'exists:financial_tables,id'],
@@ -85,6 +92,7 @@ class PracticeOpportunityForm extends Form
             return;
         }
 
+        $this->acquisitionChannel = $opportunity->acquisition_channel?->value;
         $this->productTypeId = $opportunity->product_type_id;
         $this->productSubtypeId = $opportunity->product_subtype_id;
         $this->financialTableId = $opportunity->financial_table_id;
@@ -141,6 +149,7 @@ class PracticeOpportunityForm extends Form
     private function data(): array
     {
         return [
+            'acquisition_channel' => $this->acquisitionChannel ?: null,
             'product_type_id' => $this->productTypeId ?: null,
             'product_subtype_id' => $this->productSubtypeId ?: null,
             'financial_table_id' => $this->financialTableId ?: null,
