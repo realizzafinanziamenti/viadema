@@ -90,7 +90,10 @@
                             @endif
                         </x-table-data>
 
-                        <x-table-data truncate label="{{ $lead->lead_source?->getLabelText() ?? 'N/D' }}" />
+                        <x-table-data
+                            truncate
+                            label="{{ $lead->latestPracticeOpportunity?->acquisition_channel?->getLabelText() ?? 'N/D' }}"
+                        />
 
                         <x-table-data truncate class="flex items-center">
                             <x-user-table-data :user="$lead->user" />

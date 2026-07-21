@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
@@ -277,6 +278,14 @@ class Customer extends Model
     public function practiceOpportunities(): HasMany
 {
     return $this->hasMany(PracticeOpportunity::class);
+}
+/**
+ * Latest practice opportunity associated with the customer profile.
+ */
+public function latestPracticeOpportunity(): HasOne
+{
+    return $this->hasOne(PracticeOpportunity::class)
+        ->latestOfMany();
 }
 
     /**
