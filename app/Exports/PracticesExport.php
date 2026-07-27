@@ -12,7 +12,13 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PracticesExport extends StringValueBinder implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithCustomValueBinder
+class PracticesExport extends StringValueBinder implements
+    FromQuery,
+    ShouldAutoSize,
+    WithHeadings,
+    WithMapping,
+    WithStyles,
+    WithCustomValueBinder
 {
     public function __construct(protected $query) {}
 
@@ -22,9 +28,11 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
             'customer',
             'user',
             'opportunity.productType',
+            'opportunity.productSubtype',
             'opportunity.installment',
             'opportunity.customerType',
             'opportunity.insurance',
+            'opportunity.financialTable',
         ]);
     }
 
@@ -32,25 +40,38 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
     {
         return [
             'ID pratica',
+            'Canale di acquisizione',
             'Prodotto',
+            'Tipo prodotto',
             'Ente erogante',
             'Istituto finanziario',
+            'Finanziaria estinta',
             'Stato',
             'Produzione',
             'Operatore',
+            'Data inserimento',
             'Data di inizio',
             'Data di fine',
             'Data liquidazione',
-            'Importo',
+            'Data estinzione anticipata',
+            'Data rinnovabilità',
+            'Data alert',
+            'Importo finanziato',
             'Rate',
             'Rata mensile',
             'Taeg',
             'Tan',
+            'Teg',
             'Totale dovuto',
             'Rinnovo',
-            'Data rinnovabilità',
+            'Percentuale rinnovabilità',
+            'Percentuale alert',
             'Tipologia cliente',
             'Assicurazione',
+            'Tabella provvigionale',
+            'Giorni trasformazione',
+            'Somma DEC + 35',
+            'Note pratica',
             'Cliente',
             'Email',
             'Telefono',
@@ -68,26 +89,69 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
 
         return [
             $practice->practice_code ?? '',
+
+            $opportunity?->acquisition_channel?->getLabelText() ?? '',
             $opportunity?->productType?->name ?? '',
+            $opportunity?->productSubtype?->name ?? '',
             $opportunity?->disbursing_institution ?? '',
             $opportunity?->financial_institution ?? '',
+            $opportunity?->previous_finance ?? '',
+
             $practice->practice_status?->getLabelText() ?? '',
             $opportunity?->production_type?->getLabelText() ?? '',
-            $this->fullName($practice->user?->first_name, $practice->user?->last_name),
+
+            $this->fullName(
+                $practice->user?->first_name,
+                $practice->user?->last_name
+            ),
+
+            $this->formatDate($practice->inserted_at),
             $this->formatDate($opportunity?->first_installment_date),
             $this->formatDate($opportunity?->last_installment_date),
             $this->formatDate($practice->disbursement_date),
+            $this->formatDate($practice->early_settlement_date),
+            $this->formatDate($practice->renewability_date),
+            $this->formatDate($practice->alert_date),
+
             $this->formatMoney($opportunity?->amount_disbursed),
             $opportunity?->installment?->value ?? '',
             $this->formatMoney($opportunity?->rate_amount),
+
             $this->formatPercent($opportunity?->taeg),
             $this->formatPercent($opportunity?->tan),
+            $this->formatPercent($opportunity?->teg),
+
             $this->formatMoney($opportunity?->total_amount),
-            $opportunity ? ($opportunity->is_renewal ? 'Sì' : 'No') : '',
-            $this->formatDate($practice->renewability_date),
+
+            $opportunity
+                ? ($opportunity->is_renewal ? 'Sì' : 'No')
+                : '',
+
+            $this->formatPercent(
+                $opportunity?->renewability_percentage
+            ),
+
+            $this->formatPercent(
+                $opportunity?->percentage_alert
+            ),
+
             $opportunity?->customerType?->name ?? '',
             $opportunity?->insurance?->name ?? '',
-            $this->fullName($practice->customer?->first_name, $practice->customer?->last_name),
+
+            $this->formatPercent(
+                $opportunity?->financialTable?->percentage
+            ),
+
+            $practice->days_transformation ?? '',
+            $this->formatMoney($practice->sum_dec_plus_35),
+
+            $opportunity?->notes ?? '',
+
+            $this->fullName(
+                $practice->customer?->first_name,
+                $practice->customer?->last_name
+            ),
+
             $practice->customer?->email ?? '',
             $practice->customer?->phone ?? '',
             $practice->customer?->address ?? '',
@@ -98,16 +162,25 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
         ];
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): array
     {
         return [
-            1 => ['font' => ['bold' => true, 'size' => 12]],
+            1 => [
+                'font' => [
+                    'bold' => true,
+                    'size' => 12,
+                ],
+            ],
         ];
     }
 
-    private function fullName(?string $firstName, ?string $lastName): string
-    {
-        return trim(($firstName ?? '') . ' ' . ($lastName ?? ''));
+    private function fullName(
+        ?string $firstName,
+        ?string $lastName
+    ): string {
+        return trim(
+            ($firstName ?? '') . ' ' . ($lastName ?? '')
+        );
     }
 
     private function formatDate(mixed $value): string
@@ -129,7 +202,12 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
             return '';
         }
 
-        return number_format((float) $value, 2, ',', '.') . '€';
+        return number_format(
+            (float) $value,
+            2,
+            ',',
+            '.'
+        ) . '€';
     }
 
     private function formatPercent(mixed $value): string
@@ -138,6 +216,11 @@ class PracticesExport extends StringValueBinder implements FromQuery, ShouldAuto
             return '';
         }
 
-        return number_format((float) $value, 2, ',', '.') . '%';
+        return number_format(
+            (float) $value,
+            2,
+            ',',
+            '.'
+        ) . '%';
     }
 }
