@@ -34,54 +34,92 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     use SkipsFailures;
 
     protected ?User $defaultUser;
-    protected function updateOrCreatePracticeOpportunity(Customer $lead, array $row, ?CustomerType $customerType = null): PracticeOpportunity
-{
-    return PracticeOpportunity::updateOrCreate(
-        ['customer_id' => $lead->id],
-        $this->practiceOpportunityData($row, $customerType)
-    );
-}
+    protected function updateOrCreatePracticeOpportunity(
+        Customer $lead,
+        array $row,
+        LeadSource $leadSource,
+        ?CustomerType $customerType = null
+    ): PracticeOpportunity {
+        return PracticeOpportunity::updateOrCreate(
+            ['customer_id' => $lead->id],
+            $this->practiceOpportunityData(
+                $row,
+                $leadSource,
+                $customerType
+            )
+        );
+    }
 
-protected function practiceOpportunityData(array $row, ?CustomerType $customerType = null): array
-{
-    $product = $this->getProduct($row);
-    $productSubtype = $this->getProductSubtype($row);
-    $installment = $this->getInstallment($row);
-    $insurance = $this->getInsurance($row);
-    $financialTable = $this->getFinancialTable($row);
+    protected function practiceOpportunityData(
+        array $row,
+        LeadSource $leadSource,
+        ?CustomerType $customerType = null
+    ): array {
+        $product = $this->getProduct($row);
+        $productSubtype = $this->getProductSubtype($row);
+        $installment = $this->getInstallment($row);
+        $insurance = $this->getInsurance($row);
+        $financialTable = $this->getFinancialTable($row);
 
-    return [
-        'product_type_id' => $product?->id,
-        'product_subtype_id' => $productSubtype?->id,
-        'financial_table_id' => $financialTable?->id,
-        'insurance_id' => $insurance?->id,
-        'installment_id' => $installment?->id,
-        'customer_type_id' => $customerType?->id,
+        return [
+            'product_type_id' => $product?->id,
+            'product_subtype_id' => $productSubtype?->id,
+            'financial_table_id' => $financialTable?->id,
+            'insurance_id' => $insurance?->id,
+            'installment_id' => $installment?->id,
+            'customer_type_id' => $customerType?->id,
+            'acquisition_channel' => $leadSource->value,
 
-        'amount_disbursed' => $this->nullableNumber($row['finanziato'] ?? $row['importo'] ?? null),
-        'total_amount' => $this->nullableNumber($row['montante'] ?? $row['totale_dovuto'] ?? null),
-        'rate_amount' => $this->nullableNumber($row['importo_rata'] ?? $row['rata_mensile'] ?? null),
+            'amount_disbursed' => $this->nullableNumber(
+                $row['finanziato'] ?? $row['importo'] ?? null
+            ),
+            'total_amount' => $this->nullableNumber(
+                $row['montante'] ?? $row['totale_dovuto'] ?? null
+            ),
+            'rate_amount' => $this->nullableNumber(
+                $row['importo_rata'] ?? $row['rata_mensile'] ?? null
+            ),
 
-        'tan' => $this->nullableNumber($row['tan'] ?? null),
-        'teg' => $this->nullableNumber($row['teg'] ?? null),
-        'taeg' => $this->nullableNumber($row['taeg'] ?? null),
+            'tan' => $this->nullableNumber($row['tan'] ?? null),
+            'teg' => $this->nullableNumber($row['teg'] ?? null),
+            'taeg' => $this->nullableNumber($row['taeg'] ?? null),
 
-        'first_installment_date' => $this->parseDate($row['data_prima_rata'] ?? $row['data_inizio_finanziamento'] ?? $row['data_inizio'] ?? null),
-        'last_installment_date' => $this->parseDate($row['data_ultima_rata'] ?? $row['data_fine'] ?? null),
+            'first_installment_date' => $this->parseDate(
+                $row['data_prima_rata']
+                    ?? $row['data_inizio_finanziamento']
+                    ?? $row['data_inizio']
+                    ?? null
+            ),
+            'last_installment_date' => $this->parseDate(
+                $row['data_ultima_rata']
+                    ?? $row['data_fine']
+                    ?? null
+            ),
 
-        'renewability_percentage' => $this->nullableNumber($row['percentuale_rinnovabilita'] ?? $row['percentuale_rinnovabilità'] ?? null) ?? 40.00,
-        'percentage_alert' => $this->nullableNumber($row['percentuale_alert'] ?? null) ?? 35.00,
+            'renewability_percentage' => $this->nullableNumber(
+                $row['percentuale_rinnovabilita']
+                    ?? $row['percentuale_rinnovabilità']
+                    ?? null
+            ) ?? 40.00,
 
-        'is_renewal' => $this->parseRenewalValue($row['rinnovo'] ?? null),
-        'production_type' => $this->parseProductionType($row['produzione'] ?? null),
+            'percentage_alert' => $this->nullableNumber(
+                $row['percentuale_alert'] ?? null
+            ) ?? 35.00,
 
-        'disbursing_institution' => $row['ente_erogante'] ?? null,
-        'financial_institution' => $row['istituto_finanziario'] ?? null,
-        'previous_finance' => $row['finanziaria_estinta'] ?? null,
+            'is_renewal' => $this->parseRenewalValue(
+                $row['rinnovo'] ?? null
+            ),
+            'production_type' => $this->parseProductionType(
+                $row['produzione'] ?? null
+            ),
 
-        'notes' => $row['note_pratica'] ?? null,
-    ];
-}
+            'disbursing_institution' => $row['ente_erogante'] ?? null,
+            'financial_institution' => $row['istituto_finanziario'] ?? null,
+            'previous_finance' => $row['finanziaria_estinta'] ?? null,
+
+            'notes' => $row['note_pratica'] ?? null,
+        ];
+    }
 
 protected function nullableNumber($value): ?float
 {
@@ -234,7 +272,6 @@ protected function parseProductionType($value): ?string
 
                 // Status e classificazione
                 'customer_status' => CustomerStatus::LEAD,
-                'lead_source' => $leadSource,
                 'lead_status' => $leadStatus,
 
                 //data di ricontatto
@@ -245,7 +282,13 @@ protected function parseProductionType($value): ?string
             ];
 
             $lead = $this->findOrCreateCustomer($row, $customerData);
-            $this->updateOrCreatePracticeOpportunity($lead, $row, $customerType);
+
+            $this->updateOrCreatePracticeOpportunity(
+                $lead,
+                $row,
+                $leadSource,
+                $customerType
+            );
             $this->createActivityLog($lead, 'import_success', 'Lead importato con successo', $row);
             return $lead;
         } catch (Exception $e) {
@@ -485,26 +528,71 @@ protected function parseProductionType($value): ?string
         return null;
     }
 
-    /**
-     * Parse lead source from string
-     */
-    protected function parseLeadSource(?string $source): LeadSource
-    {
-        if (!$source) {
-            return LeadSource::OTHER;
-        }
-
-        $normalized = strtolower(preg_replace('/\s+/', ' ', trim($source)));
-
-        return match (true) {
-            str_contains($normalized, 'tik tok') => LeadSource::TIK_TOK,
-            str_contains($normalized, 'meta') => LeadSource::META,
-            str_contains($normalized, 'motore di ricerca') => LeadSource::SEARCH_ENGINE,
-            str_contains($normalized, 'referral') => LeadSource::REFERRAL,
-            str_contains($normalized, 'altro') => LeadSource::OTHER,
-            default => LeadSource::OTHER,
-        };
+/**
+ * Parse acquisition channel from imported value.
+ */
+protected function parseLeadSource(?string $source): LeadSource
+{
+    if (! filled($source)) {
+        return LeadSource::OTHER;
     }
+
+    $normalized = strtolower(
+        preg_replace(
+            '/\s+/',
+            ' ',
+            trim(str_replace('_', ' ', $source))
+        )
+    );
+
+    // Supporta direttamente sia i value dell'enum
+    // sia le etichette mostrate nell'interfaccia.
+    foreach (LeadSource::cases() as $case) {
+        $normalizedValue = strtolower(
+            str_replace('_', ' ', $case->value)
+        );
+
+        $normalizedLabel = strtolower(
+            $case->getLabelText()
+        );
+
+        if (
+            $normalized === $normalizedValue
+            || $normalized === $normalizedLabel
+        ) {
+            return $case;
+        }
+    }
+
+    // Alias e valori provenienti da vecchi file Excel.
+    return match (true) {
+        str_contains($normalized, 'tik tok'),
+        str_contains($normalized, 'tiktok')
+            => LeadSource::TIK_TOK,
+
+        str_contains($normalized, 'meta')
+            => LeadSource::META,
+
+        str_contains($normalized, 'motore di ricerca'),
+        str_contains($normalized, 'search engine')
+            => LeadSource::SEARCH_ENGINE,
+
+        str_contains($normalized, 'referral'),
+        str_contains($normalized, 'passaparola')
+            => LeadSource::REFERRAL,
+
+        str_contains($normalized, 'portafoglio interno')
+            => LeadSource::INTERN_DOC,
+
+        str_contains($normalized, 'portafoglio esterno')
+            => LeadSource::EXTERN_DOC,
+
+        str_contains($normalized, 'altro')
+            => LeadSource::OTHER,
+
+        default => LeadSource::OTHER,
+    };
+}
 
     /**
      * Parse lead status from string

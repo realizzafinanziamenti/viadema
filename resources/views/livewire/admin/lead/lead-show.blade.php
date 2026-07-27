@@ -13,7 +13,9 @@
     </div>
 
     <x-page-title label="Dettaglio Lead" />
-
+    @php
+    $opportunity = $lead->practiceOpportunities->first();
+    @endphp
     <x-card class="max-w-3xl mx-auto">
         <x-card-header class="mb-6" label="Informazioni generali" />
 
@@ -47,12 +49,13 @@
         </div>
 
 
-        @if ($lead->lead_source)
-            <div class="text-sm mb-2.5">
-                <span class="text-gray-custom-4">Canale di acquisizione: </span>
-                <span>{{ $lead->lead_source?->getLabelText() }}</span>
-            </div>
-        @endif
+        <div class="text-sm mb-2.5">
+            <span class="text-gray-custom-4">Canale di acquisizione: </span>
+
+            <span>
+                {{ $opportunity?->acquisition_channel?->getLabelText() ?? 'N/D' }}
+            </span>
+        </div>
 
         <div class="text-sm mb-2.5">
             <span class="text-gray-custom-4">Cellulare: </span>
@@ -127,10 +130,6 @@
             </div>
         @endif
     </x-card>
-    @php
-    $opportunity = $lead->practiceOpportunities->sortByDesc('created_at')->first();
-@endphp
-
 @if ($opportunity)
     <x-card class="max-w-3xl mx-auto mt-4">
         <x-card-header class="mb-6" label="Dati pratica" />

@@ -27,6 +27,13 @@
                 </div>
 
                 <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Canale di acquisizione: </span>
+                    <span>
+                        {{ $practice->opportunity?->acquisition_channel?->getLabelText() ?? 'N/D' }}
+                    </span>
+                </div>
+
+                <div class="text-sm mb-2.5">
                     <span class="text-gray-custom-4">Prodotto: </span>
                     <span class="font-bold">{{ $practice->opportunity?->productType?->name ?? 'N/D' }}</span>
                 </div>
