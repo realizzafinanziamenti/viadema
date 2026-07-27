@@ -1,10 +1,13 @@
 <div class="grid grid-cols-2 gap-6 mt-10 pt-8 border-t border-zinc-200">
+
     <div class="col-span-2">
         <h3 class="text-base font-semibold">Dati pratica</h3>
         <p class="text-sm text-gray-custom-4 mt-1">
             Informazioni economiche e operative associate al lead.
         </p>
     </div>
+
+
 
     {{-- Ente erogante --}}
     <div class="flex flex-col gap-1.5">

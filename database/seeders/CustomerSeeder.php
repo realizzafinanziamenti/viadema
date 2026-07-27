@@ -25,7 +25,6 @@ class CustomerSeeder extends Seeder
                 ->create([
                     'user_id' => $user->id,
                     'customer_status' => CustomerStatus::CUSTOMER->value,
-                    'lead_source' => null,
                     'lead_status' => null,
                 ]);
 

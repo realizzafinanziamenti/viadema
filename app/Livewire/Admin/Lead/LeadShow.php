@@ -119,6 +119,11 @@ class LeadShow extends Component
     {
         $this->lead = Customer::with([
             'customerType',
+
+            'practiceOpportunities' => function ($query): void {
+                $query->latest('created_at');
+            },
+
             'practiceOpportunities.productType',
             'practiceOpportunities.productSubtype',
             'practiceOpportunities.financialTable',

@@ -948,6 +948,7 @@ public function setCustomerType(?int $value = null): void
     private function hasPracticeOpportunityFilters(): bool
 {
     return collect([
+        $this->selectedLeadSourceForFilter,
         $this->selectedProductTypeForFilter,
         $this->selectedProductSubtypeForFilter,
         $this->selectedInsuranceForFilter,
@@ -975,6 +976,12 @@ public function setCustomerType(?int $value = null): void
 private function applyPracticeOpportunityFilters(
     Builder $query
 ): void {
+    if ($this->selectedLeadSourceForFilter !== null) {
+        $query->where(
+            'acquisition_channel',
+            $this->selectedLeadSourceForFilter
+        );
+    }
     if ($this->selectedProductTypeForFilter !== null) {
         $query->where(
             'product_type_id',
@@ -1110,9 +1117,7 @@ private function applyPracticeOpportunityFilters(
             $query->where('lead_status', $this->selectedLeadStatusForFilter);
         }
 
-        if ($this->selectedLeadSourceForFilter) {
-            $query->where('lead_source', $this->selectedLeadSourceForFilter);
-        }
+
 
         if ($this->selectedCustomerTypeForFilter) {
             $query->where('customer_type_id', $this->selectedCustomerTypeForFilter);
@@ -1158,10 +1163,14 @@ private function applyPracticeOpportunityFilters(
     #[Computed]
     public function query()
     {
-        $query = Customer::with('user', 'customerType')
-        ->leads()
-        ->filteredForDepartment()
-        ->filterBySearch($this->search);
+        $query = Customer::with([
+            'user',
+            'customerType',
+            'latestPracticeOpportunity',
+        ])
+            ->leads()
+            ->filteredForDepartment()
+            ->filterBySearch($this->search);
 
         $query = $this->applyFilters($query);
 

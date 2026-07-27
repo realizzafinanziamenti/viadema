@@ -97,13 +97,17 @@ class LeadCreate extends Component
         $this->setFormSelectValue('customerTypeId', $value);
     }
 
-    /**
-     * Set lead source
-     */
-    public function setLeadSource(?string $value = null): void
-    {
-        $this->setFormSelectValue('leadSource', $value);
-    }
+/**
+ * Set acquisition channel on the practice opportunity.
+ */
+public function setOpportunityAcquisitionChannel(?string $value = null): void
+{
+    $this->setFormSelectValue(
+        'acquisitionChannel',
+        $value,
+        form: 'opportunityForm'
+    );
+}
 
     /**
      * Set lead status

@@ -32,6 +32,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Masmerise\Toaster\Toaster;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Enums\LeadSource;
 
 class PracticeUpdate extends Component
 {
@@ -57,6 +58,7 @@ class PracticeUpdate extends Component
     public bool $selectsInitialized = false;
     public bool $shouldConvertLead = false;
     public bool $customerPreselected = false;
+    public array $leadSources = [];
 
     /**
      * Set isRenewal in the form.
@@ -64,6 +66,18 @@ class PracticeUpdate extends Component
     public function setIsRenewal(string $value): void
     {
         $this->practiceForm->isRenewal = ($value === '1');
+    }
+/**
+ * Set the acquisition channel on the practice opportunity data.
+ */
+    public function setOpportunityAcquisitionChannel(
+        ?string $value = null
+    ): void {
+        $this->setFormSelectValue(
+            'acquisitionChannel',
+            $value,
+            'practiceForm'
+        );
     }
 
     /**
@@ -239,6 +253,8 @@ class PracticeUpdate extends Component
             ->toArray();
 
         $this->productionTypes = $this->getEnumOptions(ProductionType::class);
+
+        $this->leadSources = $this->getEnumOptions(LeadSource::class);
     }
 
     /**

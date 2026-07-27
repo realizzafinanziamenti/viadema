@@ -31,9 +31,13 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Masmerise\Toaster\Toaster;
 use App\Models\PracticeOpportunity;
+use App\Enums\LeadSource;
+
 class PracticeCreate extends Component
 {
     use InteractsWithDropdowns, HandlesPracticeInstallments, AcceptedFileTypes, WithFileUploads, EnumHelper;
+
+    public array $leadSources = [];
 
     public CustomerForm $customerForm;
     public PracticeForm $practiceForm;
@@ -60,6 +64,18 @@ class PracticeCreate extends Component
     public function setIsRenewal(string $value): void
     {
         $this->practiceForm->isRenewal = ($value === '1');
+    }
+/**
+ * Set acquisition channel on the practice opportunity data.
+ */
+    public function setOpportunityAcquisitionChannel(
+        ?string $value = null
+    ): void {
+        $this->setFormSelectValue(
+            'acquisitionChannel',
+            $value,
+            'practiceForm'
+        );
     }
 
     /**
@@ -375,6 +391,8 @@ class PracticeCreate extends Component
             ->toArray();
 
         $this->productionTypes = $this->getEnumOptions(ProductionType::class);
+
+        $this->leadSources = $this->getEnumOptions(LeadSource::class);
     }
 
     /**

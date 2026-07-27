@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Enums\CustomerStatus;
+use App\Enums\LeadSource;
 use App\Enums\PracticeStatus;
 use App\Models\Customer;
 use App\Models\CustomerType;
@@ -38,6 +39,84 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     {
         $this->defaultUser = $defaultUser;
     }
+    protected function getAcquisitionChannel(
+        array $row
+    ): ?LeadSource {
+        $value = $this->value($row, 'canale_acquisizione')
+            ?? $this->value($row, 'provenienza_lead');
+
+        if ($value === null) {
+            return null;
+        }
+
+        return $this->parseLeadSource((string) $value);
+    }
+
+    protected function parseLeadSource(
+        ?string $source
+    ): ?LeadSource {
+        if ($source === null || trim($source) === '') {
+            return null;
+        }
+
+        $rawValue = trim($source);
+
+        $enumValue = LeadSource::tryFrom($rawValue);
+
+        if ($enumValue !== null) {
+            return $enumValue;
+        }
+
+        $normalized = mb_strtolower(
+            preg_replace(
+                '/\s+/',
+                ' ',
+                str_replace('_', ' ', $rawValue)
+            )
+        );
+
+        foreach (LeadSource::cases() as $case) {
+            $caseValue = mb_strtolower(
+                str_replace('_', ' ', $case->value)
+            );
+
+            $caseLabel = mb_strtolower(
+                $case->getLabelText()
+            );
+
+            if (
+                $normalized === $caseValue
+                || $normalized === $caseLabel
+            ) {
+                return $case;
+            }
+        }
+
+        return match (true) {
+            str_contains($normalized, 'tik tok'),
+            str_contains($normalized, 'tiktok')
+                => LeadSource::TIK_TOK,
+
+            str_contains($normalized, 'meta')
+                => LeadSource::META,
+
+            str_contains($normalized, 'motore di ricerca'),
+            str_contains($normalized, 'search engine')
+                => LeadSource::SEARCH_ENGINE,
+
+            str_contains($normalized, 'referral'),
+            str_contains($normalized, 'passaparola')
+                => LeadSource::REFERRAL,
+
+            str_contains($normalized, 'portafoglio interno')
+                => LeadSource::INTERN_DOC,
+
+            str_contains($normalized, 'portafoglio esterno')
+                => LeadSource::EXTERN_DOC,
+
+            default => LeadSource::OTHER,
+        };
+    }
 
     public function model(array $row)
     {
@@ -65,6 +144,7 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                     ?? now()->format('Y-m-d');
             }
             $isRenewal = $this->parseRenewalValue($this->value($row, 'rinnovo'));
+            $acquisitionChannel = $this->getAcquisitionChannel($row);
             $practice = DB::transaction(function () use (
                 $customer,
                 $user,
@@ -77,10 +157,12 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
                 $practiceStatus,
                 $disbursementDate,
                 $isRenewal,
+                $acquisitionChannel,
                 $row
             ) {
                 $opportunity = PracticeOpportunity::create([
                     'customer_id' => $customer->id,
+                    'acquisition_channel' => $acquisitionChannel?->value,
 
                     'product_type_id' => $product?->id,
                     'product_subtype_id' => $productSubtype?->id,
@@ -211,6 +293,17 @@ class PracticesImport implements ToModel, WithHeadingRow, SkipsOnFailure, Should
     public function rules(): array
     {
         return [
+            'canale_acquisizione' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'provenienza_lead' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
             'cognome_nome_cliente' => ['nullable', 'string', 'max:255'],
             'nome' => ['required_without:cognome_nome_cliente', 'string', 'max:255'],
             'cognome' => ['required_without:cognome_nome_cliente', 'string', 'max:255'],

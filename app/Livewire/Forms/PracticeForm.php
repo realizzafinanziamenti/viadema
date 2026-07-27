@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Livewire\Forms;
+
+use App\Enums\LeadSource;
 use App\Models\PracticeOpportunity;
 use App\Enums\PracticeStatus;
 use App\Enums\ProductionType;
@@ -22,6 +24,7 @@ class PracticeForm extends Form
 {
     use AcceptedFileTypes;
 
+    public ?string $acquisitionChannel = null;
     public ?Practice $practice = null;
     public ?PracticeOpportunity $opportunity = null;
     public $productTypeId = null;
@@ -58,6 +61,7 @@ class PracticeForm extends Form
         $this->opportunity = $opportunity;
 
         $this->fill([
+            'acquisitionChannel' => $opportunity->acquisition_channel?->value,
             'customerId' => $opportunity->customer_id,
             'productTypeId' => $opportunity->product_type_id,
             'productSubtypeId' => $opportunity->product_subtype_id,
@@ -94,6 +98,11 @@ class PracticeForm extends Form
     {
         return array_merge(
             [
+                'acquisitionChannel' => [
+                    'nullable',
+                    'string',
+                    new Enum(LeadSource::class),
+                ],
                 'productTypeId' => ['nullable', 'exists:product_types,id'],
                 'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
                 'customerId' => ['required', 'exists:customers,id'],
@@ -141,6 +150,7 @@ class PracticeForm extends Form
     protected function validationAttributes(): array
     {
         return [
+            'acquisitionChannel' => 'canale di acquisizione',
             'productTypeId' => 'prodotto',
             'productSubtypeId' => 'tipo prodotto',
             'userId' => 'collaboratore',
@@ -184,6 +194,9 @@ class PracticeForm extends Form
         $this->opportunity = $opportunity;
 
             $this->fill([
+        'acquisitionChannel' => $opportunity
+                ?->acquisition_channel
+                ?->value,
         'productTypeId' => $opportunity?->product_type_id,
         'productSubtypeId' => $opportunity?->product_subtype_id,
         'financialTableId' => $opportunity?->financial_table_id,
@@ -350,6 +363,7 @@ if ($oldUserId !== $this->practice->user_id && $this->practice->user_id) {
 private function opportunityData(): array
 {
     return [
+        'acquisition_channel' => $this->acquisitionChannel ?: null,
         'customer_id' => $this->customerId,
         'product_type_id' => $this->productTypeId,
         'product_subtype_id' => $this->productSubtypeId ?: null,
