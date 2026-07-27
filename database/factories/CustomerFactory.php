@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\CustomerStatus;
-use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Models\CustomerType;
 use App\Models\User;
@@ -34,7 +33,6 @@ class CustomerFactory extends Factory
             'postal_code' => fake()->postcode(),
 
             'customer_status' => fake()->randomElement(CustomerStatus::cases())->value,
-            'lead_source' => fake()->randomElement(LeadSource::cases())->value,
             'lead_status' => fake()->randomElement(LeadStatus::cases())->value,
 
             'notes' => fake()->optional()->paragraph(),

@@ -57,7 +57,6 @@ class ActivityLogIndex extends Component
             'changed_department' => 'Cambio Dipartimento',
             'customer' => 'Clienti',
             'practice' => 'Pratiche',
-            'customer' => 'Clienti',
             'lead' => 'Lead',
             'event' => 'Eventi',
             'event_participants' => 'Partecipanti Evento',
@@ -92,6 +91,7 @@ class ActivityLogIndex extends Component
             'customer_status' => $this->getCustomerStatusLabel($value),
             'lead_status' => $this->getLeadStatusLabel($value),
             'lead_source' => $this->getLeadSourceLabel($value),
+            'acquisition_channel' => $this->getLeadSourceLabel($value),
             'inserted_at' => $this->formatDate($value),
             'first_installment_date' => $this->formatDate($value),
             'last_installment_date' => $this->formatDate($value),
@@ -207,16 +207,12 @@ class ActivityLogIndex extends Component
      */
     private function getLeadSourceLabel($leadSource): string
     {
-        if (!$leadSource) return 'Non specificato';
+        if (!$leadSource) {
+            return 'Non specificato';
+        }
 
-        return match ($leadSource) {
-            LeadSource::TIK_TOK->value => LeadSource::TIK_TOK->getLabelText(),
-            LeadSource::META->value => LeadSource::META->getLabelText(),
-            LeadSource::SEARCH_ENGINE->value => LeadSource::SEARCH_ENGINE->getLabelText(),
-            LeadSource::REFERRAL->value => LeadSource::REFERRAL->getLabelText(),
-            LeadSource::OTHER->value => LeadSource::OTHER->getLabelText(),
-            default => ucfirst(str_replace('_', ' ', $leadSource))
-        };
+        return LeadSource::tryFrom((string) $leadSource)?->getLabelText()
+            ?? ucfirst(str_replace('_', ' ', (string) $leadSource));
     }
 
     /**

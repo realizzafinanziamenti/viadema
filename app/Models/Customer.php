@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\CustomerStatus;
 use App\Enums\LeadCommunication;
-use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Observers\CustomerObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -44,7 +43,6 @@ class Customer extends Model
         'state',
         'postal_code',
         'customer_status', // LEAD or CUSTOMER
-        'lead_source', // Example: 'Tik Tok', 'Meta', 'Search Engine', 'Referral', etc.
         'lead_status', // NEW, CONTACTED, WAITING_REPLY, etc.
         'notes',
         'recontact_date',
@@ -61,7 +59,6 @@ class Customer extends Model
         return [
             'date_of_birth' => 'datetime',
             'customer_status' => CustomerStatus::class,
-            'lead_source' => LeadSource::class,
             'lead_status' => LeadStatus::class,
             'recontact_date' => 'date',
             'recontact_notified_for_date' => 'date',
@@ -91,7 +88,6 @@ class Customer extends Model
                 'state',
                 'postal_code',
                 'customer_status',
-                'lead_source',
                 'lead_status',
                 'recontact_date',
                 'notes',
@@ -144,7 +140,6 @@ class Customer extends Model
 
                 // Status e lead
                 'customer_status' => 'Stato cliente',
-                'lead_source' => 'Canale di acquisizione',
                 'lead_status' => 'Stato lead',
                 'recontact_date' => 'Data ricontatto',
 
