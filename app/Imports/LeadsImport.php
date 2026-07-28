@@ -12,16 +12,13 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\ProductionType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
@@ -29,11 +26,19 @@ use App\Models\Insurance;
 use App\Models\PracticeOpportunity;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
-class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation
-{
-    use SkipsFailures;
+use App\Services\Imports\ImportReportService;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\RemembersRowNumber;
+use Throwable;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\ImportFailed;
 
-    protected ?User $defaultUser;
+class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation, WithEvents
+{
+    use RemembersRowNumber;
+
+    protected ?int $defaultUserId;
+
     protected function updateOrCreatePracticeOpportunity(
         Customer $lead,
         array $row,
@@ -121,7 +126,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         ];
     }
 
-protected function nullableNumber($value): ?float
+    protected function nullableNumber($value): ?float
 {
     if ($value === null || $value === '') {
         return null;
@@ -130,7 +135,7 @@ protected function nullableNumber($value): ?float
     return (float) str_replace(',', '.', (string) $value);
 }
 
-protected function getProduct(array $row): ?ProductType
+    protected function getProduct(array $row): ?ProductType
 {
     $value = strtolower(trim((string) ($row['prodotto'] ?? $row['applicazione'] ?? '')));
 
@@ -144,20 +149,25 @@ protected function getProduct(array $row): ?ProductType
         ->first();
 }
 
-protected function getProductSubtype(array $row): ?ProductSubtype
+    protected function getProductSubtype(array $row): ?ProductSubtype
 {
-    $value = strtolower(trim((string) ($row['tipo_prodotto'] ?? '')));
+    $value = strtolower(
+        trim((string) ($row['tipo_prodotto'] ?? ''))
+    );
 
     if ($value === '') {
         return null;
     }
 
-    return ProductSubtype::whereRaw('LOWER(name) = ?', [$value])
-        ->orWhereRaw('LOWER(name) LIKE ?', ['%' . $value . '%'])
+    return ProductSubtype::query()
+        ->whereRaw('LOWER(name) = ?', [$value])
+        ->orWhereRaw('LOWER(name) LIKE ?', [
+            '%' . $value . '%',
+        ])
         ->first();
 }
 
-protected function getInstallment(array $row): ?Installment
+    protected function getInstallment(array $row): ?Installment
 {
     $value = $row['numero_rate'] ?? $row['rate'] ?? null;
 
@@ -168,7 +178,7 @@ protected function getInstallment(array $row): ?Installment
     return Installment::where('value', (int) $value)->first();
 }
 
-protected function getInsurance(array $row): ?Insurance
+    protected function getInsurance(array $row): ?Insurance
 {
     $value = strtolower(trim((string) ($row['assicurazione'] ?? '')));
 
@@ -181,7 +191,7 @@ protected function getInsurance(array $row): ?Insurance
         ->first();
 }
 
-protected function getFinancialTable(array $row): ?FinancialTable
+    protected function getFinancialTable(array $row): ?FinancialTable
 {
     $value = $row['tabella_provvigionale'] ?? $row['tabella_finanziaria'] ?? null;
 
@@ -192,7 +202,7 @@ protected function getFinancialTable(array $row): ?FinancialTable
     return FinancialTable::where('percentage', $this->nullableNumber($value))->first();
 }
 
-protected function parseRenewalValue($value): bool
+    protected function parseRenewalValue($value): bool
 {
     if (!$value) {
         return false;
@@ -204,7 +214,7 @@ protected function parseRenewalValue($value): bool
     };
 }
 
-protected function parseProductionType($value): ?string
+    protected function parseProductionType($value): ?string
 {
     if (!$value) {
         return null;
@@ -224,64 +234,97 @@ protected function parseProductionType($value): ?string
     return null;
 }
 
-    public function __construct(?User $defaultUser = null)
-    {
-        $this->defaultUser = $defaultUser;
-    }
+    public function __construct(
+    ?User $defaultUser,
+    protected int $importReportId,
+    protected string $runUuid,
+    protected int $initiatedByUserId,
+    protected string $fileName,
+) {
+    /*
+     * Conserviamo soltanto gli identificativi e altri valori scalari.
+     * L'istanza dell'import viene serializzata quando entra in coda.
+     */
+    $this->defaultUserId = $defaultUser?->getKey();
+}
 
     /**
-     * @param array $row
-     * @return Customer|null
+     * Import a single Excel row.
      */
-    public function model(array $row)
-    {
-        try {
-            // Recupera l'utente associato
-            $user = $this->getUser($row);
+    public function model(array $row): ?Customer
+{
+    $rowNumber = $this->getRowNumber();
+    $label = $this->buildRowLabel($row, $rowNumber);
 
-            // Recupera il tipo di cliente, se specificato
+    try {
+        /*
+         * Customer and PracticeOpportunity must be persisted atomically.
+         * We do not want a lead without its related opportunity when one
+         * of the two operations fails.
+         */
+        $lead = DB::transaction(function () use ($row): Customer {
+            $user = $this->getUser($row);
             $customerType = $this->getCustomerType($row);
 
-            // Parse lead source e status
-            $leadSource = $this->parseLeadSource($row['provenienza_lead'] ?? 'sconosciuto');
-            $leadStatus = $this->parseLeadStatus($row['stato_lead'] ?? 'nuovo');
+            $leadSource = $this->parseLeadSource(
+                $row['canale_acquisizione']
+                    ?? $row['provenienza_lead']
+                    ?? null
+            );
 
-            // Parsing semplificato nome, cognome, codice fiscale
-            $firstName = trim($row['nome'] ?? '');
-            $lastName = trim($row['cognome'] ?? '');
-            $cf = trim($row['codice_fiscale'] ?? '');
-            $cf = !empty($cf) ? $cf : null; // Se vuoto, setta NULL per evitare problemi di univocità
+            $leadStatus = $this->parseLeadStatus(
+                $row['stato_lead'] ?? null
+            );
+
+            $firstName = trim((string) ($row['nome'] ?? ''));
+            $lastName = trim((string) ($row['cognome'] ?? ''));
+
+            $taxId = trim(
+                (string) ($row['codice_fiscale'] ?? '')
+            );
+
+            $taxId = $taxId !== '' ? $taxId : null;
 
             $customerData = [
-                'user_id' => $user->id,
-                'customer_type_id' => $customerType?->id,
+                'user_id' => $user->getKey(),
+                'customer_type_id' => $customerType?->getKey(),
 
-                // Dati anagrafici semplificati
                 'first_name' => $firstName,
                 'last_name' => $lastName,
-                'phone' => $this->cleanPhone($row['telefono']),
+                'phone' => $this->cleanPhone(
+                    $row['telefono'] ?? null
+                ),
                 'email' => $row['email'] ?? null,
-                'date_of_birth' => isset($row['data_nascita']) ? $this->parseDate($row['data_nascita']) : (isset($row['data_di_nascita']) ? $this->parseDate($row['data_di_nascita']) : null),
-                'tax_id' => $cf,
 
-                // Indirizzo
+                'date_of_birth' => $this->parseDate(
+                    $row['data_nascita']
+                        ?? $row['data_di_nascita']
+                        ?? null
+                ),
+
+                'tax_id' => $taxId,
+
                 'address' => $row['indirizzo'] ?? null,
-                'city' => $row['citta'] ?? $row['città'] ?? null,
+                'city' => $row['citta']
+                    ?? $row['città']
+                    ?? null,
                 'state' => $row['provincia'] ?? null,
                 'postal_code' => $row['cap'] ?? null,
 
-                // Status e classificazione
                 'customer_status' => CustomerStatus::LEAD,
                 'lead_status' => $leadStatus,
 
-                //data di ricontatto
-                'recontact_date' => $this->parseDate($row['data_ricontatto'] ?? null),
+                'recontact_date' => $this->parseDate(
+                    $row['data_ricontatto'] ?? null
+                ),
 
-                // Note
                 'notes' => $row['note'] ?? null,
             ];
 
-            $lead = $this->findOrCreateCustomer($row, $customerData);
+            $lead = $this->findOrCreateCustomer(
+                $row,
+                $customerData
+            );
 
             $this->updateOrCreatePracticeOpportunity(
                 $lead,
@@ -289,66 +332,182 @@ protected function parseProductionType($value): ?string
                 $leadSource,
                 $customerType
             );
-            $this->createActivityLog($lead, 'import_success', 'Lead importato con successo', $row);
+
             return $lead;
-        } catch (Exception $e) {
-            $this->createActivityLog(null, 'import_failure', 'Errore durante l\'importazione del lead', $row, $e);
-            Log::warning("Errore nell'import lead alla riga con nome '{$row['nome']} {$row['cognome']}': {$e->getMessage()}");
-            return null;
-        }
+        }, 3);
+    } catch (Throwable $exception) {
+        $errors = [$exception->getMessage()];
+
+        $this->reportService()->recordFailedRow(
+            reportId: $this->importReportId,
+            runUuid: $this->runUuid,
+            rowNumber: $rowNumber,
+            label: $label,
+            message: 'Errore durante l\'importazione del lead.',
+            rawData: $row,
+            errors: $errors,
+        );
+
+        $this->createActivityLog(
+            lead: null,
+            logName: 'import_failure',
+            message: "Errore durante l'importazione del lead alla riga {$rowNumber}",
+            row: $row,
+            exception: $exception,
+            rowNumber: $rowNumber,
+            validationErrors: $errors,
+        );
+
+        Log::warning(
+            "Errore nell'import lead alla riga {$rowNumber}: {$exception->getMessage()}",
+            [
+                'import_report_id' => $this->importReportId,
+                'run_uuid' => $this->runUuid,
+                'row_number' => $rowNumber,
+                'label' => $label,
+                'exception' => $exception,
+            ]
+        );
+
+        /*
+         * L'errore riguarda questa riga, quindi l'import può continuare
+         * con le righe successive.
+         */
+        return null;
     }
 
-    public function onFailure(Failure ...$failures)
-    {
-        // Raggruppa per riga
-        $rows = collect($failures)->groupBy(fn($f) => $f->row());
+    $action = $lead->wasRecentlyCreated
+        ? 'creato'
+        : 'aggiornato';
 
-        foreach ($rows as $rowNumber => $failureGroup) {
+    /*
+     * Questa scrittura è idempotente grazie alla chiave:
+     * report_id + run_uuid + row_number.
+     */
+    $this->reportService()->recordImportedRow(
+        reportId: $this->importReportId,
+        runUuid: $this->runUuid,
+        rowNumber: $rowNumber,
+        label: $lead->full_name,
+        rawData: $row,
+        entityType: Customer::class,
+        entityId: $lead->getKey(),
+        message: "Lead {$action} correttamente.",
+    );
 
-            // Unisci gli errori della riga
-            $errors = $failureGroup
-                ->flatMap(fn($f) => $f->errors())
-                ->unique()
-                ->values()
-                ->toArray();
+    $this->createActivityLog(
+        lead: $lead,
+        logName: 'import_success',
+        message: "Lead {$action} correttamente",
+        row: $row,
+        rowNumber: $rowNumber,
+    );
 
-            // Prendi i valori della riga
-            $rowValues = $failureGroup->first()->values();
+    return $lead;
+}
+/**
+ * Register import lifecycle events.
+ */
+public function registerEvents(): array
+{
+    return [
+        ImportFailed::class => [
+            $this,
+            'handleImportFailed',
+        ],
+    ];
+}
 
-            // Crea un FakeFailure che contiene TUTTI gli errori della riga
-            $fake = new class($rowNumber, $errors, $rowValues) {
-                public function __construct(
-                    public int $row,
-                    public array $errors,
-                    public array $values
-                ) {}
-                public function row()
-                {
-                    return $this->row;
-                }
-                public function errors()
-                {
-                    return $this->errors;
-                }
-                public function values()
-                {
-                    return $this->values;
-                }
-            };
+/**
+ * Mark the report as failed when the queued import crashes globally.
+ */
+public function handleImportFailed(ImportFailed $event): void
+{
+    $exception = $event->getException();
 
-            // Log unico
-            Log::warning("Import fallito alla riga {$rowNumber}: " . implode(' | ', $errors));
+    $this->reportService()->fail(
+        reportId: $this->importReportId,
+        runUuid: $this->runUuid,
+        errorMessage: $exception->getMessage(),
+    );
 
-            $this->createActivityLog(
-                lead: null,
-                logName: 'import_validation_failure',
-                message: "Import lead fallito alla riga {$rowNumber}",
-                row: $rowValues,
-                e: null,
-                failures: $fake
-            );
-        }
+    Log::error(
+        'Queued lead import failed.',
+        [
+            'import_report_id' => $this->importReportId,
+            'run_uuid' => $this->runUuid,
+            'file_name' => $this->fileName,
+            'exception' => $exception,
+        ]
+    );
+}
+/**
+ * Register validation failures grouped by Excel row.
+ *
+ * @param Failure ...$failures
+ */
+    public function onFailure(Failure ...$failures): void
+{
+    $failuresByRow = collect($failures)
+        ->groupBy(
+            static fn (Failure $failure): int => $failure->row()
+        );
+
+    foreach ($failuresByRow as $rowNumber => $failureGroup) {
+        $errors = $failureGroup
+            ->flatMap(
+                static fn (Failure $failure): array =>
+                    $failure->errors()
+            )
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $rowValues = $failureGroup
+            ->first()
+            ->values();
+
+        $rowNumber = (int) $rowNumber;
+        $label = $this->buildRowLabel(
+            $rowValues,
+            $rowNumber
+        );
+
+        $message = $errors !== []
+            ? implode(' | ', $errors)
+            : 'La riga non ha superato la validazione.';
+
+        $this->reportService()->recordFailedRow(
+            reportId: $this->importReportId,
+            runUuid: $this->runUuid,
+            rowNumber: $rowNumber,
+            label: $label,
+            message: $message,
+            rawData: $rowValues,
+            errors: $errors,
+        );
+
+        Log::warning(
+            "Import lead fallito alla riga {$rowNumber}: {$message}",
+            [
+                'import_report_id' => $this->importReportId,
+                'run_uuid' => $this->runUuid,
+                'row_number' => $rowNumber,
+                'validation_errors' => $errors,
+            ]
+        );
+
+        $this->createActivityLog(
+            lead: null,
+            logName: 'import_validation_failure',
+            message: "Import lead fallito alla riga {$rowNumber}",
+            row: $rowValues,
+            rowNumber: $rowNumber,
+            validationErrors: $errors,
+        );
     }
+}
 
     public function chunkSize(): int
     {
@@ -401,6 +560,7 @@ protected function parseProductionType($value): ?string
             'codice_fiscale' => ['nullable', 'string', 'max:16'],
             'data_nascita' => ['nullable'],
             'data_di_nascita' => ['nullable'],
+            'canale_acquisizione' => ['nullable', 'string', 'max:100'],
             'provenienza_lead' => ['nullable', 'string', 'max:100'],
             'stato_lead' => ['nullable', 'string', 'max:100'],
             'tipologia_cliente' => ['nullable', 'string', 'max:255'],
@@ -474,29 +634,85 @@ protected function parseProductionType($value): ?string
     }
 
     /**
-     * Get user from row data
+     * Resolve the user assigned to the imported lead.
      */
-    protected function getUser($row): User
-    {
-        // Se viene passato un utente di default per l'importazione, usalo
-        if ($this->defaultUser) {
-            return $this->defaultUser;
+    protected function getUser(array $row): User
+{
+    /*
+     * The user explicitly selected in the import modal has priority.
+     */
+    if ($this->defaultUserId !== null) {
+        $defaultUser = User::query()
+            ->find($this->defaultUserId);
+
+        if ($defaultUser !== null) {
+            return $defaultUser;
         }
-
-        $userFullName = strtolower(preg_replace('/\s+/', ' ', trim($row['collaboratore_associato'] ?? '')));
-
-        if ($userFullName) {
-            $user = User::whereRaw("CONCAT(LOWER(first_name), ' ', LOWER(last_name)) LIKE ?", ['%' . $userFullName . '%'])
-                ->first();
-
-            if ($user) {
-                return $user;
-            }
-        }
-
-        // Fallback to superadmin
-        return Auth::user() ?? User::role('superadmin')->first();
     }
+
+    $userFullName = strtolower(
+        preg_replace(
+            '/\s+/',
+            ' ',
+            trim(
+                (string) (
+                    $row['collaboratore_associato']
+                    ?? ''
+                )
+            )
+        )
+    );
+
+    if ($userFullName !== '') {
+        $tokens = array_values(
+            array_filter(
+                explode(' ', $userFullName)
+            )
+        );
+
+        $query = User::query();
+
+        /*
+         * Each token must be present either in the first name or in
+         * the last name. This avoids database-specific CONCAT syntax.
+         */
+        foreach ($tokens as $token) {
+            $query->where(function ($query) use ($token): void {
+                $like = '%' . $token . '%';
+
+                $query
+                    ->whereRaw(
+                        'LOWER(first_name) LIKE ?',
+                        [$like]
+                    )
+                    ->orWhereRaw(
+                        'LOWER(last_name) LIKE ?',
+                        [$like]
+                    );
+            });
+        }
+
+        $matchedUser = $query->first();
+
+        if ($matchedUser !== null) {
+            return $matchedUser;
+        }
+    }
+
+    /*
+     * Queue workers do not have an authenticated HTTP user.
+     * Fall back to the user that started the import.
+     */
+    $initiatedBy = User::query()
+        ->find($this->initiatedByUserId);
+
+    if ($initiatedBy !== null) {
+        return $initiatedBy;
+    }
+
+    return User::role('superadmin')
+        ->firstOrFail();
+}
 
     /**
      * Get customer type from row data
@@ -531,7 +747,7 @@ protected function parseProductionType($value): ?string
 /**
  * Parse acquisition channel from imported value.
  */
-protected function parseLeadSource(?string $source): LeadSource
+    protected function parseLeadSource(?string $source): LeadSource
 {
     if (! filled($source)) {
         return LeadSource::OTHER;
@@ -673,43 +889,93 @@ protected function parseLeadSource(?string $source): LeadSource
     }
 
     /**
-     * Crea un log di attività per l'importazione.
+     * Resolve the report service at execution time.
+     *
+     * The service is resolved lazily so it is not serialized with the
+     * queued import instance.
      */
-    protected function createActivityLog($lead, $logName, $message, $row = [], $e = null, $failures = null)
+    private function reportService(): ImportReportService
     {
-        $properties = [
-            'import_type' => 'leads',
-            'raw_data' => $row,
-            'file_name' => request()->file('file')?->getClientOriginalName(),
-        ];
-
-        if ($lead) {
-            $properties = array_merge($properties, [
-                'customer_name' => $lead->full_name,
-                'email' => $lead->email,
-                'import_action' => $lead->wasRecentlyCreated ? 'created' : 'updated',
-                'url' => route('customer.show', $lead->id),
-            ]);
-        }
-
-        if ($e) {
-            $properties = array_merge($properties, [
-                'error_message' => $e->getMessage(),
-            ]);
-        }
-
-        if ($failures) {
-            $properties = array_merge($properties, [
-                'row_number' => $failures->row(),
-                'validation_errors' => $failures->errors(),
-                'failed_data' => $failures->values(),
-            ]);
-        }
-
-        activity($logName)
-            ->when($lead, fn($activity) => $activity->performedOn($lead))
-            ->causedBy(auth()->user())
-            ->withProperties($properties)
-            ->log($message);
+        return app(ImportReportService::class);
     }
+
+    /**
+     * Build a readable label for the report row.
+     */
+    private function buildRowLabel(array $row, int $rowNumber): string
+    {
+        $firstName = trim((string) ($row['nome'] ?? ''));
+        $lastName = trim((string) ($row['cognome'] ?? ''));
+        $fullName = trim("{$firstName} {$lastName}");
+
+        return $fullName !== ''
+            ? $fullName
+            : "Riga {$rowNumber}";
+    }
+
+    /**
+     * Create an activity log for an imported row.
+     */
+    protected function createActivityLog(
+    ?Customer $lead,
+    string $logName,
+    string $message,
+    array $row = [],
+    ?Throwable $exception = null,
+    ?int $rowNumber = null,
+    array $validationErrors = [],
+): void {
+    $properties = [
+        'import_type' => 'leads',
+        'import_report_id' => $this->importReportId,
+        'run_uuid' => $this->runUuid,
+        'file_name' => $this->fileName,
+        'raw_data' => $row,
+    ];
+
+    if ($lead !== null) {
+        $properties = array_merge($properties, [
+            'customer_name' => $lead->full_name,
+            'email' => $lead->email,
+            'import_action' => $lead->wasRecentlyCreated
+                ? 'created'
+                : 'updated',
+            'url' => route(
+                'customer.show',
+                $lead->getKey()
+            ),
+        ]);
+    }
+
+    if ($exception !== null) {
+        $properties['error_message'] =
+            $exception->getMessage();
+    }
+
+    if ($rowNumber !== null) {
+        $properties['row_number'] = $rowNumber;
+    }
+
+    if ($validationErrors !== []) {
+        $properties['validation_errors'] =
+            $validationErrors;
+    }
+
+    $activity = activity($logName);
+
+    if ($lead !== null) {
+        $activity->performedOn($lead);
+    }
+
+    $initiatedBy = User::query()
+        ->find($this->initiatedByUserId);
+
+    if ($initiatedBy !== null) {
+        $activity->causedBy($initiatedBy);
+    }
+
+    $activity
+        ->withProperties($properties)
+        ->log($message);
+}
 }
