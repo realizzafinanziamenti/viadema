@@ -1,5 +1,11 @@
-<div>
-    <x-page-title label="Leads" class="mt-1" />
+<div wire:init="initializeImportReportState">
+    @if ($pollImportReport)
+        <div
+            wire:poll.2s="checkImportStatus"
+            class="hidden"
+            aria-hidden="true"
+        ></div>
+    @endif
 
     <x-card>
         {{-- Filters and Create Button --}}
@@ -18,8 +24,34 @@
                 @endcan
 
                 @can('import leads')
-                    <x-buttons.import-button wire:click="openImportModal" />
-                @endcan
+                <flux:dropdown position="bottom" align="end">
+                    <x-buttons.import-button icon:trailing="chevron-down" />
+
+                    <flux:menu class="min-w-48">
+                        <flux:menu.item
+                            icon="arrow-up-tray"
+                            wire:click="openImportModal"
+                            :disabled="$this->isLeadImportRunning"
+                        >
+                            @if ($this->isLeadImportRunning)
+                                Import in corso...
+                            @else
+                                Importa
+                            @endif
+                        </flux:menu.item>
+
+                        <flux:menu.separator />
+
+                        <flux:menu.item
+                            icon="document-text"
+                            wire:click="openLatestImportReport"
+                            :disabled="$this->latestLeadImportReport === null || $this->isLeadImportRunning"
+                        >
+                            Ultimo report
+                        </flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+            @endcan
 
                 @can('create leads')
                     <a href="{{ route('lead.create') }}" wire:navigate>
@@ -178,4 +210,6 @@ submitFunction="importLeads"
 :userSearch="$userSearch"
 :canAssignUser="auth()->user()->can('assign lead to user')"
 />
+{{-- Import Report Modal --}}
+@include('partials.import.import-report-modal')
 </div>

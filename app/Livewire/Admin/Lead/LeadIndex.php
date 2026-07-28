@@ -41,6 +41,9 @@ use App\Models\ImportReport;
 use App\Services\Imports\ImportReportService;
 use DomainException;
 use Throwable;
+use App\Enums\ImportReportRowStatus;
+use App\Models\ImportReportRow;
+
 class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
@@ -87,6 +90,11 @@ class LeadIndex extends Component
     public ?string $tempRecontactDateMin = null;
     public ?string $recontactDateMax = null;
     public ?string $tempRecontactDateMax = null;
+    // Import report UI state
+    public ?int $activeImportReportId = null;
+    public ?int $selectedImportReportId = null;
+    public string $importReportFilter = 'all';
+    public bool $pollImportReport = false;
     // Import file properties
     public ?TemporaryUploadedFile $temporaryImportFile = null;
     public ?TemporaryUploadedFile $importFile = null;
@@ -155,6 +163,274 @@ public ?float $tempTaegMin = null;
 public ?float $taegMax = null;
 public ?float $tempTaegMax = null;
 
+/**
+ * Initialize the import report state after the component is rendered.
+ */
+public function initializeImportReportState(
+    ImportReportService $reportService
+): void {
+    if (!Gate::allows('importLead', Customer::class)) {
+        return;
+    }
+
+    $user = Auth::user();
+
+    if (!$user instanceof User) {
+        return;
+    }
+
+    $report = $reportService->findForUserAndType(
+        user: $user,
+        type: ImportReportType::LEADS,
+    );
+
+    if ($report === null) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if ($report->isRunning()) {
+        $this->activeImportReportId = $report->getKey();
+        $this->pollImportReport = true;
+
+        return;
+    }
+
+    $this->activeImportReportId = null;
+    $this->pollImportReport = false;
+
+    if (
+        $report->isFinished()
+        && $report->viewed_at === null
+    ) {
+        $this->showImportReport(
+            report: $report,
+            reportService: $reportService,
+        );
+    }
+}
+
+/**
+ * Open the latest lead import report belonging to the current user.
+ */
+public function openLatestImportReport(
+    ImportReportService $reportService
+): void {
+    Gate::authorize('importLead', Customer::class);
+
+    $user = Auth::user();
+
+    if (!$user instanceof User) {
+        return;
+    }
+
+    $report = $reportService->findForUserAndType(
+        user: $user,
+        type: ImportReportType::LEADS,
+    );
+
+    if ($report === null) {
+        Toaster::error(
+            'Non è disponibile alcun report di importazione.'
+        );
+
+        return;
+    }
+
+    $this->showImportReport(
+        report: $report,
+        reportService: $reportService,
+    );
+}
+
+/**
+ * Poll the active import until it reaches a final status.
+ */
+public function checkImportStatus(
+    ImportReportService $reportService
+): void {
+    if (!Gate::allows('importLead', Customer::class)) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if (
+        !$this->pollImportReport
+        || $this->activeImportReportId === null
+    ) {
+        return;
+    }
+
+    $report = ImportReport::query()
+        ->whereKey($this->activeImportReportId)
+        ->where('user_id', Auth::id())
+        ->where('type', ImportReportType::LEADS->value)
+        ->first();
+
+    if ($report === null) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if ($report->isRunning()) {
+        return;
+    }
+
+    $this->activeImportReportId = null;
+    $this->pollImportReport = false;
+
+    $this->showImportReport(
+        report: $report,
+        reportService: $reportService,
+    );
+}
+
+/**
+ * Select and display an import report.
+ */
+private function showImportReport(
+    ImportReport $report,
+    ImportReportService $reportService
+): void {
+    if (
+        (int) $report->user_id !== (int) Auth::id()
+        || $report->type !== ImportReportType::LEADS
+    ) {
+        return;
+    }
+
+    $this->selectedImportReportId = $report->getKey();
+    $this->importReportFilter = 'all';
+
+    $this->resetPage('importReportPage');
+
+    /*
+     * A running report must not be considered viewed yet.
+     *
+     * Otherwise, if the user leaves the page before completion,
+     * the completed report would no longer open automatically.
+     */
+    if (
+        $report->isFinished()
+        && $report->viewed_at === null
+    ) {
+        $reportService->markAsViewed(
+            reportId: $report->getKey(),
+            runUuid: $report->run_uuid,
+        );
+    }
+
+    $this->dispatch(
+        'open-modal',
+        'lead-import-report-modal'
+    );
+}
+
+/**
+ * Apply a status filter to the report rows.
+ */
+public function setImportReportFilter(string $filter): void
+{
+    if (!in_array(
+        $filter,
+        ['all', 'imported', 'failed'],
+        true
+    )) {
+        return;
+    }
+
+    $this->importReportFilter = $filter;
+
+    $this->resetPage('importReportPage');
+}
+
+/**
+ * Report currently displayed inside the modal.
+ */
+#[Computed]
+public function selectedImportReport(): ?ImportReport
+{
+    if ($this->selectedImportReportId === null) {
+        return null;
+    }
+
+    return ImportReport::query()
+        ->whereKey($this->selectedImportReportId)
+        ->where('user_id', Auth::id())
+        ->where('type', ImportReportType::LEADS->value)
+        ->first();
+}
+
+/**
+ * Paginated rows belonging to the selected import execution.
+ */
+#[Computed]
+public function importReportRows()
+{
+    $report = $this->selectedImportReport;
+
+    if ($report === null) {
+        return null;
+    }
+
+    $query = ImportReportRow::query()
+        ->where(
+            'import_report_id',
+            $report->getKey()
+        )
+        ->where(
+            'run_uuid',
+            $report->run_uuid
+        )
+        ->orderBy('row_number');
+
+    if ($this->importReportFilter === 'imported') {
+        $query->where(
+            'status',
+            ImportReportRowStatus::IMPORTED->value
+        );
+    }
+
+    if ($this->importReportFilter === 'failed') {
+        $query->where(
+            'status',
+            ImportReportRowStatus::FAILED->value
+        );
+    }
+
+    return $query->paginate(
+        perPage: 10,
+        pageName: 'importReportPage',
+    );
+}
+
+/**
+ * Latest lead import report belonging to the current user.
+ */
+#[Computed]
+public function latestLeadImportReport(): ?ImportReport
+{
+    return ImportReport::query()
+        ->where('user_id', Auth::id())
+        ->where('type', ImportReportType::LEADS->value)
+        ->first();
+}
+
+/**
+ * Determine whether a lead import is currently running.
+ */
+#[Computed]
+public function isLeadImportRunning(): bool
+{
+    return $this->latestLeadImportReport?->isRunning()
+        ?? false;
+}
         protected function rules(): array
         {
             return [
@@ -405,41 +681,79 @@ public ?float $tempTaegMax = null;
             ];
         }
 
-    /**
-     * Open the import modal
-     */
-    public function openImportModal(): void
-    {
-        $this->reset(['temporaryImportFile', 'importFile', 'userId', 'userSearch']);
-        $this->dispatch('open-modal', 'import-leads-modal');
+/**
+ * Open the lead import modal.
+ */
+public function openImportModal(): void
+{
+    Gate::authorize('importLead', Customer::class);
+
+    if ($this->isLeadImportRunning) {
+        Toaster::error(
+            'È già in corso un import di lead. Attendi il completamento.'
+        );
+
+        return;
     }
+
+    $this->reset([
+        'temporaryImportFile',
+        'importFile',
+        'userId',
+        'userSearch',
+    ]);
+
+    $this->resetValidation();
+
+    $this->dispatch(
+        'open-modal',
+        'import-leads-modal'
+    );
+}
 
     /**
      * Handle the file upload and import.
      */
-    public function updatedTemporaryImportFile()
-    {
-        if ($this->temporaryImportFile) {
-            $this->validate([
-                'temporaryImportFile' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:20480']
-            ], [
-                'temporaryImportFile.file' => 'File non valido.',
-                'temporaryImportFile.max' => 'Ogni file non può superare i 20MB.',
-                'temporaryImportFile.mimetypes' => 'Formato file non valido.',
-            ]);
-
-            $this->importFile = $this->temporaryImportFile;
-        }
+/**
+ * Validate the temporarily uploaded Excel file.
+ */
+public function updatedTemporaryImportFile(): void
+{
+    if ($this->temporaryImportFile === null) {
+        return;
     }
 
-    /**
-     * Remove the uploaded import file.
-     */
-    public function removeImportFile()
-    {
-        $this->importFile = null;
-        $this->temporaryImportFile = null;
-    }
+    $this->validate([
+        'temporaryImportFile' => [
+            'file',
+            'mimes:xlsx',
+            'max:20480',
+        ],
+    ], [
+        'temporaryImportFile.file' =>
+            'File non valido.',
+
+        'temporaryImportFile.mimes' =>
+            'Il file deve essere un file Excel valido (.xlsx).',
+
+        'temporaryImportFile.max' =>
+            'Il file non può superare i 20 MB.',
+    ]);
+
+    $this->importFile = $this->temporaryImportFile;
+}
+
+/**
+ * Remove the uploaded import file.
+ */
+public function removeImportFile(): void
+{
+    $this->importFile = null;
+    $this->temporaryImportFile = null;
+
+    $this->resetValidation('temporaryImportFile');
+    $this->resetValidation('importFile');
+}
 
     /**
      * Set user for import
@@ -621,6 +935,8 @@ public function importLeads(): void
 
         return;
     }
+    $this->activeImportReportId = $report->getKey();
+    $this->pollImportReport = true;
 
     $this->reset([
         'temporaryImportFile',
