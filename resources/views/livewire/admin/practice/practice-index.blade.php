@@ -1,4 +1,15 @@
 <div>
+    @if (!$expired)
+    <div wire:init="initializeImportReportState">
+        @if ($pollImportReport)
+            <div
+                wire:poll.2s="checkImportStatus"
+                class="hidden"
+                aria-hidden="true"
+            ></div>
+        @endif
+    </div>
+@endif
     @if ($productType)
         <x-page-title label="{{ $productType->name }}" class="mt-1" />
     @elseif ($expired)
@@ -28,16 +39,42 @@
                 @endcan
 
                 @if (!$expired)
-                    @can('import practices')
-                        <x-buttons.import-button wire:click="openImportModal" />
-                    @endcan
+                @can('import practices')
+                    <flux:dropdown position="bottom" align="end">
+                        <x-buttons.import-button icon:trailing="chevron-down" />
 
-                    @can('create practices')
-                        <a href="{{ route('practice.create') }}" wire:navigate>
-                            <x-buttons.create-button />
-                        </a>
-                    @endcan
-                @endif
+                        <flux:menu class="min-w-48">
+                            <flux:menu.item
+                                icon="arrow-up-tray"
+                                wire:click="openImportModal"
+                                :disabled="$this->isPracticeImportRunning"
+                            >
+                                @if ($this->isPracticeImportRunning)
+                                    Import in corso...
+                                @else
+                                    Importa
+                                @endif
+                            </flux:menu.item>
+
+                            <flux:menu.separator />
+
+                            <flux:menu.item
+                                icon="document-text"
+                                wire:click="openLatestImportReport"
+                                :disabled="$this->latestPracticeImportReport === null || $this->isPracticeImportRunning"
+                            >
+                                Ultimo report
+                            </flux:menu.item>
+                        </flux:menu>
+                    </flux:dropdown>
+                @endcan
+
+                @can('create practices')
+                    <a href="{{ route('practice.create') }}" wire:navigate>
+                        <x-buttons.create-button />
+                    </a>
+                @endcan
+            @endif
             </div>
         </div>
 
@@ -199,16 +236,28 @@
     {{-- Notes Modal --}}
     @include('partials.practice.practice-notes-modal')
 
-    {{-- Import Modal --}}
-    <x-modals.import-modal
-    name="import-practices-modal"
-    header="Importa pratiche da Excel"
-    submitFunction="importPractices"
-    :importFile="$importFile"
-    :temporaryImportFile="$temporaryImportFile"
-    :users="$users"
-    :userId="$userId"
-    :userSearch="$userSearch"
-    :canAssignUser="auth()->user()->can('assign practice to user')"
-/>
+    @if (!$expired)
+        @can('import practices')
+            {{-- Import Modal --}}
+            <x-modals.import-modal
+                name="import-practices-modal"
+                header="Importa pratiche da Excel"
+                submitFunction="importPractices"
+                :importFile="$importFile"
+                :temporaryImportFile="$temporaryImportFile"
+                :users="$users"
+                :userId="$userId"
+                :userSearch="$userSearch"
+                :canAssignUser="auth()->user()->can('assign practice to user')"
+            />
+
+            {{-- Import Report Modal --}}
+            @include('partials.import.import-report-modal', [
+                'modalName' => 'practice-import-report-modal',
+                'title' => 'Report importazione pratiche',
+                'entityIdLabel' => 'ID pratica',
+                'successMessage' => 'Pratica importata correttamente.',
+            ])
+        @endcan
+    @endif
 </div>

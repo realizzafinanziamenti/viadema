@@ -17,10 +17,8 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
-use App\Notifications\ImportExcelCompleted;
 use App\Notifications\PracticeStatusChanged;
 use App\Rules\ExceptEnumValues;
-use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
@@ -42,10 +40,26 @@ use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use Masmerise\Toaster\Toaster;
-
+use App\Enums\ImportReportRowStatus;
+use App\Enums\ImportReportType;
+use App\Jobs\FinalizeImportReport;
+use App\Models\ImportReport;
+use App\Models\ImportReportRow;
+use App\Services\Imports\ImportReportService;
+use DomainException;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
+use App\Traits\AcceptedFileTypes;
 class PracticeIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, EnumHelper, InteractsWithDropdowns, WithFileUploads, AcceptedFileTypes, WithBulkSelection;
+    use WithPagination;
+    use WithoutUrlPagination;
+    use HandlesEntityActions;
+    use EnumHelper;
+    use InteractsWithDropdowns;
+    use WithFileUploads;
+    use WithBulkSelection;
+    use AcceptedFileTypes;
 
     public ?ProductType $type = null;
     public ?bool $expired = false;
@@ -143,6 +157,11 @@ class PracticeIndex extends Component
     // Order by select
     public array $orderBySelect = [];
     public PracticeOrderBy $selectedOrderBy = PracticeOrderBy::UPDATED_AT_DESC;
+    // Import report UI state
+    public ?int $activeImportReportId = null;
+    public ?int $selectedImportReportId = null;
+    public string $importReportFilter = 'all';
+    public bool $pollImportReport = false;
     // Import file properties
     public ?TemporaryUploadedFile $temporaryImportFile = null;
     public ?TemporaryUploadedFile $importFile = null;
@@ -253,42 +272,357 @@ class PracticeIndex extends Component
             'tempTaegMax' => 'TAEG massimo',
         ];
     }
-
-    /**
-     * Open the import modal
-     */
-    public function openImportModal(): void
-    {
-        $this->reset(['temporaryImportFile', 'importFile', 'userId', 'userSearch']);
-        $this->dispatch('open-modal', 'import-practices-modal');
+/**
+ * Initialize the practice import report state.
+ */
+public function initializeImportReportState(
+    ImportReportService $reportService
+): void {
+    if (!Gate::allows('importPractice', Practice::class)) {
+        return;
     }
 
+    $user = Auth::user();
+
+    if (!$user instanceof User) {
+        return;
+    }
+
+    $report = $reportService->findForUserAndType(
+        user: $user,
+        type: ImportReportType::PRACTICES,
+    );
+
+    if ($report === null) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if ($report->isRunning()) {
+        $this->activeImportReportId = $report->getKey();
+        $this->pollImportReport = true;
+
+        return;
+    }
+
+    $this->activeImportReportId = null;
+    $this->pollImportReport = false;
+
+    if (
+        $report->isFinished()
+        && $report->viewed_at === null
+    ) {
+        $this->showImportReport(
+            report: $report,
+            reportService: $reportService,
+        );
+    }
+}
+
+/**
+ * Open the latest practice import report.
+ */
+public function openLatestImportReport(
+    ImportReportService $reportService
+): void {
+    Gate::authorize('importPractice', Practice::class);
+
+    $user = Auth::user();
+
+    if (!$user instanceof User) {
+        return;
+    }
+
+    $report = $reportService->findForUserAndType(
+        user: $user,
+        type: ImportReportType::PRACTICES,
+    );
+
+    if ($report === null) {
+        Toaster::error(
+            'Non è disponibile alcun report di importazione.'
+        );
+
+        return;
+    }
+
+    if ($report->isRunning()) {
+        Toaster::error(
+            'L\'importazione delle pratiche è ancora in corso.'
+        );
+
+        return;
+    }
+
+    $this->showImportReport(
+        report: $report,
+        reportService: $reportService,
+    );
+}
+
+/**
+ * Poll the active practice import.
+ */
+public function checkImportStatus(
+    ImportReportService $reportService
+): void {
+    if (!Gate::allows('importPractice', Practice::class)) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if (
+        !$this->pollImportReport
+        || $this->activeImportReportId === null
+    ) {
+        return;
+    }
+
+    $report = ImportReport::query()
+        ->whereKey($this->activeImportReportId)
+        ->where('user_id', Auth::id())
+        ->where(
+            'type',
+            ImportReportType::PRACTICES->value
+        )
+        ->first();
+
+    if ($report === null) {
+        $this->activeImportReportId = null;
+        $this->pollImportReport = false;
+
+        return;
+    }
+
+    if ($report->isRunning()) {
+        return;
+    }
+
+    $this->activeImportReportId = null;
+    $this->pollImportReport = false;
+
+    $this->showImportReport(
+        report: $report,
+        reportService: $reportService,
+    );
+}
+
+    /**
+     * Display the selected practice import report.
+     */
+    private function showImportReport(
+        ImportReport $report,
+        ImportReportService $reportService
+    ): void {
+        if (
+            (int) $report->user_id !== (int) Auth::id()
+            || $report->type !== ImportReportType::PRACTICES
+        ) {
+            return;
+        }
+
+        $this->selectedImportReportId = $report->getKey();
+        $this->importReportFilter = 'all';
+
+        $this->resetPage('importReportPage');
+
+        if (
+            $report->isFinished()
+            && $report->viewed_at === null
+        ) {
+            $reportService->markAsViewed(
+                reportId: $report->getKey(),
+                runUuid: $report->run_uuid,
+            );
+        }
+
+        $this->dispatch(
+            'open-modal',
+            'practice-import-report-modal'
+        );
+    }
+
+    /**
+     * Filter report rows by their outcome.
+     */
+    public function setImportReportFilter(string $filter): void
+    {
+        if (!in_array(
+            $filter,
+            ['all', 'imported', 'failed'],
+            true
+        )) {
+            return;
+        }
+
+        $this->importReportFilter = $filter;
+
+        $this->resetPage('importReportPage');
+    }
+
+    /**
+     * Report displayed in the modal.
+     */
+    #[Computed]
+    public function selectedImportReport(): ?ImportReport
+    {
+        if ($this->selectedImportReportId === null) {
+            return null;
+        }
+
+        return ImportReport::query()
+            ->whereKey($this->selectedImportReportId)
+            ->where('user_id', Auth::id())
+            ->where(
+                'type',
+                ImportReportType::PRACTICES->value
+            )
+            ->first();
+    }
+
+    /**
+     * Paginated rows of the selected report.
+     */
+    #[Computed]
+    public function importReportRows()
+    {
+        $report = $this->selectedImportReport;
+
+        if ($report === null) {
+            return null;
+        }
+
+        $query = ImportReportRow::query()
+            ->where(
+                'import_report_id',
+                $report->getKey()
+            )
+            ->where(
+                'run_uuid',
+                $report->run_uuid
+            )
+            ->orderBy('row_number');
+
+        if ($this->importReportFilter === 'imported') {
+            $query->where(
+                'status',
+                ImportReportRowStatus::IMPORTED->value
+            );
+        }
+
+        if ($this->importReportFilter === 'failed') {
+            $query->where(
+                'status',
+                ImportReportRowStatus::FAILED->value
+            );
+        }
+
+        return $query->paginate(
+            perPage: 10,
+            pageName: 'importReportPage',
+        );
+    }
+
+    /**
+     * Latest practice import report of the current user.
+     */
+    #[Computed]
+    public function latestPracticeImportReport(): ?ImportReport
+    {
+        return ImportReport::query()
+            ->where('user_id', Auth::id())
+            ->where(
+                'type',
+                ImportReportType::PRACTICES->value
+            )
+            ->first();
+    }
+
+    /**
+     * Determine whether a practice import is running.
+     */
+    #[Computed]
+    public function isPracticeImportRunning(): bool
+    {
+        return $this->latestPracticeImportReport?->isRunning()
+            ?? false;
+    }
+    /**
+ * Open the practice import modal.
+ */
+public function openImportModal(): void
+{
+    Gate::authorize('importPractice', Practice::class);
+
+    if ($this->isPracticeImportRunning) {
+        Toaster::error(
+            'È già in corso un import di pratiche. Attendi il completamento.'
+        );
+
+        return;
+    }
+
+    $this->reset([
+        'temporaryImportFile',
+        'importFile',
+        'userId',
+        'userSearch',
+    ]);
+
+    $this->resetValidation();
+
+    $this->dispatch(
+        'open-modal',
+        'import-practices-modal'
+    );
+}
     /**
      * Handle the file upload and import.
      */
-    public function updatedTemporaryImportFile()
-    {
-        if ($this->temporaryImportFile) {
-            $this->validate([
-                'temporaryImportFile' => ['nullable', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray()), 'max:20480']
-            ], [
-                'temporaryImportFile.file' => 'File non valido.',
-                'temporaryImportFile.max' => 'Ogni file non può superare i 20MB.',
-                'temporaryImportFile.mimetypes' => 'Formato file non valido.',
-            ]);
-
-            $this->importFile = $this->temporaryImportFile;
-        }
+/**
+ * Validate the temporarily uploaded Excel file.
+ */
+public function updatedTemporaryImportFile(): void
+{
+    if ($this->temporaryImportFile === null) {
+        return;
     }
 
-    /**
-     * Remove the uploaded import file.
-     */
-    public function removeImportFile()
-    {
-        $this->importFile = null;
-        $this->temporaryImportFile = null;
-    }
+    $this->validate([
+        'temporaryImportFile' => [
+            'file',
+            'mimes:xlsx',
+            'max:20480',
+        ],
+    ], [
+        'temporaryImportFile.file' =>
+            'File non valido.',
+
+        'temporaryImportFile.mimes' =>
+            'Il file deve essere un file Excel valido (.xlsx).',
+
+        'temporaryImportFile.max' =>
+            'Il file non può superare i 20 MB.',
+    ]);
+
+    $this->importFile = $this->temporaryImportFile;
+}
+
+/**
+ * Remove the uploaded import file.
+ */
+public function removeImportFile(): void
+{
+    $this->importFile = null;
+    $this->temporaryImportFile = null;
+
+    $this->resetValidation('temporaryImportFile');
+    $this->resetValidation('importFile');
+}
 
     /**
      * Set user for import
@@ -298,51 +632,150 @@ class PracticeIndex extends Component
         $this->setSelectValue('userId', $value);
     }
 
-    /**
-     * Import the practices from the uploaded file.
+/**
+ * Import practices from the uploaded Excel file.
+ */
+public function importPractices(): void
+{
+    Gate::authorize('importPractice', Practice::class);
+
+    /*
+     * Leave validation outside the try/catch so Livewire can
+     * display field errors without closing the modal.
      */
-    public function importPractices()
-    {
-        Gate::authorize('importPractice', Practice::class);
+    $this->validate([
+        'importFile' => [
+            'required',
+            'file',
+            'mimes:xlsx',
+        ],
+        'userId' => [
+            'nullable',
+            'integer',
+            'exists:users,id',
+        ],
+    ], [
+        'importFile.required' =>
+            'Devi selezionare un file da importare.',
 
-        try {
-            $this->validate([
-                'importFile' => ['required', 'file', 'mimes:xlsx,xls'],
-                'userId' => ['nullable', 'integer', 'exists:users,id'],
-            ], [
-                'importFile.required' => 'Devi selezionare un file da importare.',
-                'importFile.file' => 'File non valido.',
-                'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
-                'userId.exists' => 'L\'utente selezionato non esiste.',
-            ]);
+        'importFile.file' =>
+            'File non valido.',
 
-            // Ottieni l'utente di default se è stato selezionato
-            $defaultUser = $this->userId ? User::find($this->userId) : null;
+        'importFile.mimes' =>
+            'Il file deve essere un file Excel valido (.xlsx).',
 
-            $import = new PracticesImport($defaultUser);
+        'userId.exists' =>
+            'L\'utente selezionato non esiste.',
+    ]);
 
-            // Prepara la lista degli utenti da notificare
-            $users = User::role('superadmin')->get()
-                ->push(auth()->user())
-                ->unique('id')
-                ->values();
+    $initiatedBy = User::query()
+        ->findOrFail(Auth::id());
 
-            Excel::queueImport($import, $this->importFile)
-                ->chain([
-                    function () use ($import, $users) {
-                        // Invio notifica
-                        Notification::send($users, new ImportExcelCompleted('practices'));
-                    }
-                ]);
+    /*
+     * Preserve the existing practice import behaviour:
+     * without an explicit selection, PracticesImport tries
+     * nome_agenzia and then falls back to the initiating user.
+     */
+    $defaultUser = $this->userId !== null
+        ? User::query()->findOrFail($this->userId)
+        : null;
 
-            Toaster::success('Import avviato! Riceverai una notifica al termine.');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
+    $fileName = $this->importFile
+        ->getClientOriginalName();
+
+    $reportService = app(ImportReportService::class);
+
+    /** @var ImportReport|null $report */
+    $report = null;
+
+    try {
+        $report = $reportService->start(
+            user: $initiatedBy,
+            type: ImportReportType::PRACTICES,
+            fileName: $fileName,
+        );
+
+        $import = new PracticesImport(
+            defaultUser: $defaultUser,
+            importReportId: $report->getKey(),
+            runUuid: $report->run_uuid,
+            initiatedByUserId: $initiatedBy->getKey(),
+            fileName: $fileName,
+        );
+
+        Excel::queueImport(
+            $import,
+            $this->importFile
+        )->chain([
+            new FinalizeImportReport(
+                importReportId: $report->getKey(),
+                runUuid: $report->run_uuid,
+            ),
+        ]);
+    } catch (DomainException $exception) {
+        Toaster::error($exception->getMessage());
+
+        return;
+    } catch (Throwable $exception) {
+        if ($report !== null) {
+            try {
+                $reportService->fail(
+                    reportId: $report->getKey(),
+                    runUuid: $report->run_uuid,
+                    errorMessage: $exception->getMessage(),
+                );
+            } catch (Throwable $reportException) {
+                Log::error(
+                    'Unable to mark practice import report as failed.',
+                    [
+                        'import_report_id' =>
+                            $report->getKey(),
+
+                        'run_uuid' =>
+                            $report->run_uuid,
+
+                        'exception' =>
+                            $reportException,
+                    ]
+                );
+            }
         }
 
-        $this->reset(['temporaryImportFile', 'importFile', 'userId']);
-        $this->dispatch('close-modal', 'import-practices-modal');
+        Log::error(
+            'Unable to queue practice import.',
+            [
+                'user_id' => $initiatedBy->getKey(),
+                'file_name' => $fileName,
+                'exception' => $exception,
+            ]
+        );
+
+        Toaster::error(
+            'Non è stato possibile avviare l\'importazione. Riprova più tardi.'
+        );
+
+        return;
     }
+
+    $this->activeImportReportId = $report->getKey();
+    $this->pollImportReport = true;
+
+    $this->reset([
+        'temporaryImportFile',
+        'importFile',
+        'userId',
+        'userSearch',
+    ]);
+
+    $this->dispatch(
+        'close-modal',
+        'import-practices-modal'
+    );
+
+    Toaster::success(
+        'Import avviato! Il report sarà disponibile al termine.'
+    );
+}
 
     /**
      * Ensure that at least one practice is selected.

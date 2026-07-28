@@ -1,4 +1,9 @@
 @php
+    $modalName = $modalName ?? 'lead-import-report-modal';
+    $title = $title ?? 'Report importazione lead';
+    $entityIdLabel = $entityIdLabel ?? 'ID lead';
+    $successMessage = $successMessage ?? 'Lead importato correttamente.';
+
     $report = $this->selectedImportReport;
     $rows = $report !== null
         ? $this->importReportRows
@@ -6,14 +11,14 @@
 @endphp
 
 <x-modal
-    name="lead-import-report-modal"
+    :name="$modalName"
     maxWidth="5xl"
 >
     <div class="flex flex-col">
         {{-- Header --}}
         <div class="mb-6 flex items-start justify-between gap-4">
             <div class="min-w-0">
-                <x-modal-header label="Report importazione lead" />
+                <x-modal-header :label="$title" />
 
                 @if ($report)
                     <div class="mt-1 truncate text-sm text-gray-custom-4">
@@ -28,7 +33,7 @@
                 variant="ghost"
                 icon="x-mark"
                 inset
-                x-on:click="$dispatch('close-modal', 'lead-import-report-modal')"
+                x-on:click="$dispatch('close-modal', '{{ $modalName }}')"
                 title="Chiudi report"
                 aria-label="Chiudi report"
                 class="shrink-0"
@@ -218,7 +223,7 @@
                                     </th>
 
                                     <th class="w-28 px-4 py-3 font-semibold text-black-custom">
-                                        ID lead
+                                        {{ $entityIdLabel }}
                                     </th>
                                 </tr>
                             </thead>
@@ -284,7 +289,7 @@
                                                 </div>
                                             @elseif ($rowStatus === 'imported')
                                                 <span class="text-green-700">
-                                                    Lead importato correttamente.
+                                                    {{ $successMessage }}
                                                 </span>
                                             @else
                                                 <span>
@@ -329,7 +334,7 @@
                     type="button"
                     size="sm"
                     variant="primary"
-                    x-on:click="$dispatch('close-modal', 'lead-import-report-modal')"
+                    x-on:click="$dispatch('close-modal', '{{ $modalName }}')"
                     class="px-10 bg-gray-custom-2 border-gray-custom-2 text-gray-custom-5 hover:bg-gray-custom-3-hover hover:border-gray-custom-3-hover hover:text-white"
                 >
                     Chiudi
