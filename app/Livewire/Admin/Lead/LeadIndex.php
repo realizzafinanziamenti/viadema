@@ -14,7 +14,6 @@ use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
 use App\Models\Customer;
 use App\Models\User;
-use App\Notifications\ImportExcelCompleted;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
@@ -23,7 +22,6 @@ use App\Traits\WithBulkSelection;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -37,6 +35,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Enums\LeadSource;
 use App\Models\CustomerType;
 use Illuminate\Validation\Rules\Enum;
+use App\Enums\ImportReportType;
+use App\Jobs\FinalizeImportReport;
+use App\Models\ImportReport;
+use App\Services\Imports\ImportReportService;
+use DomainException;
+use Throwable;
 class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
@@ -481,53 +485,159 @@ public ?float $tempTaegMax = null;
             reset: false
         );
     }
-    /**
-     * Import the leads from the uploaded file.
+/**
+ * Import leads from the uploaded Excel file.
+ */
+public function importLeads(): void
+{
+    Gate::authorize('importLead', Customer::class);
+
+    /*
+     * Validation stays outside the try/catch.
+     *
+     * Livewire can therefore display validation errors inside the modal
+     * instead of converting them into a generic toaster message.
      */
-    public function importLeads()
-    {
-        Gate::authorize('importLead', Customer::class);
+    $this->validate([
+        'importFile' => [
+            'required',
+            'file',
+            'mimes:xlsx',
+        ],
+        'userId' => [
+            'nullable',
+            'integer',
+            'exists:users,id',
+        ],
+    ], [
+        'importFile.required' =>
+            'Devi selezionare un file da importare.',
 
-        try {
-            $this->validate([
-                'importFile' => ['required', 'file', 'mimes:xlsx,xls'],
-                'userId' => ['nullable', 'integer', 'exists:users,id'],
-            ], [
-                'importFile.required' => 'Devi selezionare un file da importare.',
-                'importFile.file' => 'File non valido.',
-                'importFile.mimes' => 'Il file deve essere un file Excel valido (.xlsx, .xls).',
-                'userId.exists' => 'L\'utente selezionato non esiste.',
-            ]);
+        'importFile.file' =>
+            'File non valido.',
 
-            // Ottieni l'utente di default se è stato selezionato
-            $defaultUser = $this->userId
-            ? User::find($this->userId)
-            : Auth::user();
+        'importFile.mimes' =>
+            'Il file deve essere un file Excel valido (.xlsx).',
 
-            $import = new LeadsImport($defaultUser);
+        'userId.exists' =>
+            'L\'utente selezionato non esiste.',
+    ]);
 
-            // Prepara la lista degli utenti da notificare
-            $users = User::role('superadmin')->get()
-                ->push(auth()->user())
-                ->unique('id')
-                ->values();
+    $initiatedBy = User::query()
+        ->findOrFail(Auth::id());
 
-            Excel::queueImport($import, $this->importFile)
-                ->chain([
-                    function () use ($import, $users) {
-                        // Invio notifica
-                        Notification::send($users, new ImportExcelCompleted('leads'));
-                    }
-                ]);
+    /*
+     * Preserve the current behaviour:
+     * when no user is selected, imported leads are assigned to the
+     * user who started the import.
+     */
+    $defaultUser = $this->userId !== null
+        ? User::query()->findOrFail($this->userId)
+        : $initiatedBy;
 
-            Toaster::success('Import avviato! Riceverai una notifica al termine.');
-        } catch (Exception $e) {
-            Toaster::error('Errore durante la validazione del file. Assicurati che sia un file Excel valido (.xlsx, .xls).');
+    $fileName = $this->importFile
+        ->getClientOriginalName();
+
+    $reportService = app(ImportReportService::class);
+
+    /** @var ImportReport|null $report */
+    $report = null;
+
+    try {
+        /*
+         * Create or reset the user's latest lead import report.
+         */
+        $report = $reportService->start(
+            user: $initiatedBy,
+            type: ImportReportType::LEADS,
+            fileName: $fileName,
+        );
+
+        $import = new LeadsImport(
+            defaultUser: $defaultUser,
+            importReportId: $report->getKey(),
+            runUuid: $report->run_uuid,
+            initiatedByUserId: $initiatedBy->getKey(),
+            fileName: $fileName,
+        );
+
+        /*
+         * FinalizeImportReport runs only after every import chunk has
+         * completed successfully.
+         */
+        Excel::queueImport(
+            $import,
+            $this->importFile
+        )->chain([
+            new FinalizeImportReport(
+                importReportId: $report->getKey(),
+                runUuid: $report->run_uuid,
+            ),
+        ]);
+    } catch (DomainException $exception) {
+        /*
+         * Most likely: another lead import is already running for
+         * the same user.
+         */
+        Toaster::error($exception->getMessage());
+
+        return;
+    } catch (Throwable $exception) {
+        /*
+         * This handles failures occurring before or while dispatching
+         * the queued import.
+         */
+        if ($report !== null) {
+            try {
+                $reportService->fail(
+                    reportId: $report->getKey(),
+                    runUuid: $report->run_uuid,
+                    errorMessage: $exception->getMessage(),
+                );
+            } catch (Throwable $reportException) {
+                Log::error(
+                    'Unable to mark lead import report as failed.',
+                    [
+                        'import_report_id' => $report->getKey(),
+                        'run_uuid' => $report->run_uuid,
+                        'exception' => $reportException,
+                    ]
+                );
+            }
         }
 
-        $this->reset(['temporaryImportFile', 'importFile', 'userId']);
-        $this->dispatch('close-modal', 'import-leads-modal');
+        Log::error(
+            'Unable to queue lead import.',
+            [
+                'user_id' => $initiatedBy->getKey(),
+                'file_name' => $fileName,
+                'exception' => $exception,
+            ]
+        );
+
+        Toaster::error(
+            'Non è stato possibile avviare l\'importazione. Riprova più tardi.'
+        );
+
+        return;
     }
+
+    $this->reset([
+        'temporaryImportFile',
+        'importFile',
+        'userId',
+        'userSearch',
+    ]);
+
+    $this->dispatch(
+        'close-modal',
+        'import-leads-modal'
+    );
+
+    Toaster::success(
+        'Import avviato! Il report sarà disponibile al termine.'
+    );
+}
 
     /**
      * Ensure that at least one lead is selected.
