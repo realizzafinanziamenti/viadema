@@ -43,6 +43,7 @@ use DomainException;
 use Throwable;
 use App\Enums\ImportReportRowStatus;
 use App\Models\ImportReportRow;
+use Illuminate\Support\Facades\DB;
 
 class LeadIndex extends Component
 {
@@ -210,6 +211,21 @@ public function initializeImportReportState(
             reportService: $reportService,
         );
     }
+}
+/**
+ * Build the lead query with search, permissions and active filters.
+ *
+ * This query does not include eager loading, ordering or pagination,
+ * so it can also be reused safely for aggregate calculations.
+ */
+private function filteredLeadQuery(): Builder
+{
+    $query = Customer::query()
+        ->leads()
+        ->filteredForDepartment()
+        ->filterBySearch($this->search);
+
+    return $this->applyFilters($query);
 }
 
 /**
@@ -1586,22 +1602,49 @@ private function applyPracticeOpportunityFilters(
         return $query;
     }
 
-    #[Computed]
-    public function query()
+        #[Computed]
+    public function query(): Builder
     {
-        $query = Customer::with([
-            'user',
-            'customerType',
-            'latestPracticeOpportunity',
-        ])
-            ->leads()
-            ->filteredForDepartment()
-            ->filterBySearch($this->search);
-
-        $query = $this->applyFilters($query);
-
-        return $query->orderByDesc('updated_at');
+        return $this->filteredLeadQuery()
+            ->with([
+                'user',
+                'customerType',
+                'latestPracticeOpportunity',
+            ])
+            ->orderByDesc('customers.updated_at');
     }
+
+    /**
+ * Return the aggregate values for all filtered leads.
+ *
+ * The amount is taken from the latest opportunity associated
+ * with each lead, so every lead contributes at most once.
+ *
+ * @return array{count: int, total: float}
+ */
+#[Computed]
+public function filteredSummary(): array
+{
+    $filteredLeads = $this->filteredLeadQuery()
+        ->select('customers.id')
+        ->withSum(
+            'latestPracticeOpportunity as summary_amount_disbursed',
+            'amount_disbursed'
+        );
+
+    $summary = DB::query()
+        ->fromSub($filteredLeads, 'filtered_leads')
+        ->selectRaw('COUNT(*) as total_count')
+        ->selectRaw(
+            'COALESCE(SUM(summary_amount_disbursed), 0) as total_amount'
+        )
+        ->first();
+
+    return [
+        'count' => (int) ($summary?->total_count ?? 0),
+        'total' => (float) ($summary?->total_amount ?? 0),
+    ];
+}
 
     #[Computed]
     public function rows()
