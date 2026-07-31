@@ -50,6 +50,7 @@ use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 use App\Traits\AcceptedFileTypes;
+use Illuminate\Database\Eloquent\Builder;
 class PracticeIndex extends Component
 {
     use WithPagination;
@@ -1401,10 +1402,31 @@ public function importPractices(): void
 
         return $query;
     }
-    #[Computed]
-    public function query()
-    {
-        $query = Practice::with([
+   /**
+ * Build the practice query with permissions, context, search and filters.
+ *
+ * Eager loading, ordering and pagination are intentionally excluded so
+ * the same query can be reused by the table and aggregate calculations.
+ */
+private function filteredPracticeQuery(): Builder
+{
+    $query = Practice::query()
+        ->filteredForDepartment()
+        ->filterByProductType($this->type)
+        ->isExpired($this->expired)
+        ->filterBySearch($this->search);
+
+    return $this->applyFilters($query);
+}
+
+/**
+ * Query used by the paginated practices table.
+ */
+#[Computed]
+public function query(): Builder
+{
+    return $this->filteredPracticeQuery()
+        ->with([
             'customer',
             'user',
             'opportunity.productType',
@@ -1414,22 +1436,64 @@ public function importPractices(): void
             'opportunity.installment',
             'opportunity.customerType',
         ])
-            ->filteredForDepartment()
-            ->filterByProductType($this->type)
-            ->isExpired($this->expired)
-            ->orderBy($this->selectedOrderBy->field(), $this->selectedOrderBy->direction())
-            ->filterBySearch($this->search);
+        ->orderBy(
+            $this->selectedOrderBy->field(),
+            $this->selectedOrderBy->direction()
+        );
+}
 
-        $query = $this->applyFilters($query);
-        return $query;
-    }
+/**
+ * Aggregate values for all practices matching the current filters.
+ *
+ * @return array{count: int, total: float}
+ */
+#[Computed]
+public function filteredSummary(): array
+{
+    /*
+     * Build a distinct subquery containing only the filtered practices.
+     * This protects the aggregate from possible duplicate rows introduced
+     * by future joins inside scopes or search filters.
+     */
+    $filteredPractices = $this->filteredPracticeQuery()
+        ->select([
+            'practices.id',
+            'practices.practice_opportunity_id',
+        ])
+        ->distinct();
 
-    #[Computed]
-    public function rows()
-    {
-        return $this->query()
-            ->paginate(15);
-    }
+    $summary = DB::query()
+        ->fromSub(
+            $filteredPractices,
+            'filtered_practices'
+        )
+        ->leftJoin(
+            'practice_opportunities',
+            'practice_opportunities.id',
+            '=',
+            'filtered_practices.practice_opportunity_id'
+        )
+        ->selectRaw('COUNT(*) as total_count')
+        ->selectRaw(
+            'COALESCE(SUM(practice_opportunities.amount_disbursed), 0) as total_amount'
+        )
+        ->first();
+
+    return [
+        'count' => (int) ($summary?->total_count ?? 0),
+        'total' => (float) ($summary?->total_amount ?? 0),
+    ];
+}
+
+/**
+ * Paginated practices.
+ */
+#[Computed]
+public function rows()
+{
+    return $this->query()
+        ->paginate(15);
+}
 
     public function mount(Request $request): void
     {
