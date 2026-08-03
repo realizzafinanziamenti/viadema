@@ -227,8 +227,11 @@
                         class="w-[120px]"
                     />
 
-                    <x-table-header
+                    <x-sortable-table-header
                         label="Data ricontatto"
+                        field="recontact_date"
+                        :sort-field="$sortField"
+                        :sort-direction="$sortDirection"
                         class="w-[140px]"
                     />
 

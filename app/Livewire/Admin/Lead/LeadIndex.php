@@ -49,11 +49,18 @@ class LeadIndex extends Component
 {
     use WithPagination, WithoutUrlPagination, HandlesEntityActions, InteractsWithDropdowns, EnumHelper, WithFileUploads, WithBulkSelection, AcceptedFileTypes;
 
+    private const SORTABLE_FIELDS = [
+        'recontact_date',
+    ];
+
+
     public ?Customer $selectedLead = null;
     public array $leadStatuses = [];
     public ?string $selectedLeadStatus = null;
     public ?string $selectedLeadRecontactDate = null;
     public $search = '';
+    public ?string $sortField = null;
+    public string $sortDirection = 'asc';
 
         // Team Member Filter
     public string $teamMemberSearch = '';
@@ -1173,6 +1180,27 @@ public function setCustomerType(?int $value = null): void
         $this->dispatch('open-modal', 'filter-modal');
     }
 
+/**
+ * Apply or toggle table sorting.
+ */
+public function sortBy(string $field): void
+{
+    if (!in_array($field, self::SORTABLE_FIELDS, true)) {
+        return;
+    }
+
+    if ($this->sortField !== $field) {
+        $this->sortField = $field;
+        $this->sortDirection = 'asc';
+    } else {
+        $this->sortDirection = $this->sortDirection === 'asc'
+            ? 'desc'
+            : 'asc';
+    }
+
+    $this->resetPage();
+}
+
     private function syncTempFiltersFromAppliedFilters(): void
     {
         $this->tempSelectedTeamMemberForFilter = $this->selectedTeamMemberForFilter;
@@ -1602,16 +1630,50 @@ private function applyPracticeOpportunityFilters(
         return $query;
     }
 
-        #[Computed]
+  /**
+ * Apply the active table sorting.
+ */
+private function applySorting(Builder $query): Builder
+{
+    if ($this->sortField !== 'recontact_date') {
+        return $query
+            ->orderByDesc('customers.updated_at')
+            ->orderByDesc('customers.id');
+    }
+
+    /*
+     * Explicit mapping:
+     * ASC  = oldest date first
+     * DESC = newest date first
+     */
+    $direction = $this->sortDirection === 'desc'
+        ? 'desc'
+        : 'asc';
+
+    return $query
+        // Keep leads without a recontact date at the bottom.
+        ->orderByRaw(
+            'CASE
+                WHEN customers.recontact_date IS NULL THEN 1
+                ELSE 0
+            END ASC'
+        )
+        ->orderBy('customers.recontact_date', $direction)
+        ->orderByDesc('customers.updated_at')
+        ->orderByDesc('customers.id');
+}
+
+    #[Computed]
     public function query(): Builder
     {
-        return $this->filteredLeadQuery()
+        $query = $this->filteredLeadQuery()
             ->with([
                 'user',
                 'customerType',
                 'latestPracticeOpportunity',
-            ])
-            ->orderByDesc('customers.updated_at');
+            ]);
+
+        return $this->applySorting($query);
     }
 
     /**
