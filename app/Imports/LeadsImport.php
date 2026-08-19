@@ -252,11 +252,75 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
      * Import a single Excel row.
      */
     public function model(array $row): ?Customer
-{
-    $rowNumber = $this->getRowNumber();
-    $label = $this->buildRowLabel($row, $rowNumber);
+    {
+        $rowNumber = $this->getRowNumber();
+        $label = $this->buildRowLabel($row, $rowNumber);
 
-    try {
+        try {
+            /*
+             * A lead is considered a duplicate only when
+             * first name + last name + phone are all equal.
+             *
+             * Same name with a different phone is allowed.
+             * Same phone with a different name is allowed.
+             */
+            $firstName = trim(
+                (string) ($row['nome'] ?? '')
+            );
+
+            $lastName = trim(
+                (string) ($row['cognome'] ?? '')
+            );
+
+            $phone = $this->cleanPhone(
+                $row['telefono'] ?? null
+            );
+
+            if (
+                $phone !== null
+                && $this->duplicateLeadExists(
+                    $firstName,
+                    $lastName,
+                    $phone
+                )
+            ) {
+                $errors = [
+                    'Lead duplicato: nome, cognome e numero di telefono sono già presenti.',
+                ];
+
+                $this->reportService()->recordFailedRow(
+                    reportId: $this->importReportId,
+                    runUuid: $this->runUuid,
+                    rowNumber: $rowNumber,
+                    label: $label,
+                    message: $errors[0],
+                    rawData: $row,
+                    errors: $errors,
+                );
+
+                $this->createActivityLog(
+                    lead: null,
+                    logName: 'import_duplicate',
+                    message: "Lead duplicato alla riga {$rowNumber}",
+                    row: $row,
+                    rowNumber: $rowNumber,
+                    validationErrors: $errors,
+                );
+
+                Log::info(
+                    "Lead duplicato ignorato alla riga {$rowNumber}.",
+                    [
+                        'import_report_id' => $this->importReportId,
+                        'run_uuid' => $this->runUuid,
+                        'row_number' => $rowNumber,
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'phone' => $phone,
+                    ]
+                );
+
+                return null;
+            }
         /*
          * Customer and PracticeOpportunity must be persisted atomically.
          * We do not want a lead without its related opportunity when one
@@ -321,8 +385,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 'notes' => $row['note'] ?? null,
             ];
 
-            $lead = $this->findOrCreateCustomer(
-                $row,
+            $lead = Customer::create(
                 $customerData
             );
 
@@ -854,39 +917,35 @@ public function handleImportFailed(ImportFailed $event): void
     /**
      * Find existing customer or create new one based on tax_id OR email
      */
-    protected function findOrCreateCustomer(array $row, array $customerData): Customer
-    {
-        $taxId = trim($row['codice_fiscale'] ?? '');
-        $email = trim($row['email'] ?? '');
+    /**
+ * Check whether a lead with the same
+ * first name + last name + phone already exists.
+ */
+protected function duplicateLeadExists(
+    string $firstName,
+    string $lastName,
+    string $phone
+): bool {
+    $normalizedFirstName = mb_strtolower(
+        trim($firstName)
+    );
 
-        // Se non c'è né codice fiscale né email, crea sempre nuovo
-        if (empty($taxId) && empty($email)) {
-            $lead = Customer::create($customerData);
-            return $lead;
-        }
+    $normalizedLastName = mb_strtolower(
+        trim($lastName)
+    );
 
-        // Cerca per tax_id (priorità 1)
-        if (!empty($taxId)) {
-            $lead = Customer::where('tax_id', $taxId)->first();
-            if ($lead) {
-                $lead->update($customerData);
-                return $lead;
-            }
-        }
-
-        // Cerca per email (priorità 2)
-        if (!empty($email)) {
-            $lead = Customer::where('email', $email)->first();
-            if ($lead) {
-                $lead->update($customerData);
-                return $lead;
-            }
-        }
-
-        // Crea nuovo customer
-        $lead = Customer::create($customerData);
-        return $lead;
-    }
+    return Customer::query()
+        ->whereRaw(
+            'LOWER(TRIM(first_name)) = ?',
+            [$normalizedFirstName]
+        )
+        ->whereRaw(
+            'LOWER(TRIM(last_name)) = ?',
+            [$normalizedLastName]
+        )
+        ->where('phone', $phone)
+        ->exists();
+}
 
     /**
      * Resolve the report service at execution time.
