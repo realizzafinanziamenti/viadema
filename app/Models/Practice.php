@@ -228,6 +228,23 @@ class Practice extends Model
     // END ACCESSORS
 
     // SCOPES
+    public function scopeForCustomerAndProduct(
+        Builder $query,
+        int $customerId,
+        int $productTypeId
+    ): Builder {
+        return $query
+            ->where('customer_id', $customerId)
+            ->whereHas(
+                'opportunity',
+                function (Builder $query) use ($productTypeId): void {
+                    $query->where(
+                        'product_type_id',
+                        $productTypeId
+                    );
+                }
+            );
+    }
 
     /**
      * Scope a query to only include practices of a given product type.

@@ -32,6 +32,7 @@ use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class PracticesImport implements
     ToModel,
@@ -81,6 +82,35 @@ class PracticesImport implements
                 $user = $this->getUser($row);
                 $customer = $this->setCustomer($row, $user);
                 $product = $this->setProduct($row);
+                if ($product === null) {
+                    throw ValidationException::withMessages([
+                        'applicazione' =>
+                            'Il prodotto indicato non è valido.',
+                    ]);
+                }
+
+                /*
+                 * Serialize Practice creation for the same Customer.
+                 * This prevents two concurrent imports from passing
+                 * the duplicate check at the same time.
+                 */
+                $customer = Customer::query()
+                    ->lockForUpdate()
+                    ->findOrFail($customer->getKey());
+
+                if (
+                    Practice::query()
+                        ->forCustomerAndProduct(
+                            $customer->getKey(),
+                            $product->getKey()
+                        )
+                        ->exists()
+                ) {
+                    throw ValidationException::withMessages([
+                        'applicazione' =>
+                            'Il cliente possiede già una pratica per questo prodotto.',
+                    ]);
+                }
                 $productSubtype = $this->getProductSubtype($row);
 
                 $installment = $this->value($row, 'numero_rate')
@@ -224,15 +254,24 @@ class PracticesImport implements
                 return $practice;
             }, 3);
         } catch (Throwable $exception) {
-            $errors = [$exception->getMessage()];
+            $errors = $exception instanceof ValidationException
+    ? collect($exception->errors())
+        ->flatten()
+        ->filter()
+        ->values()
+        ->all()
+    : [$exception->getMessage()];
+
+$message = $errors !== []
+    ? implode(' | ', $errors)
+    : 'Errore durante l\'importazione della pratica.';;
 
             $this->reportService()->recordFailedRow(
                 reportId: $this->importReportId,
                 runUuid: $this->runUuid,
                 rowNumber: $rowNumber,
                 label: $label,
-                message:
-                    'Errore durante l\'importazione della pratica.',
+                message: $message,
                 rawData: $row,
                 errors: $errors,
             );
@@ -444,11 +483,24 @@ class PracticesImport implements
                 'string',
                 'max:255',
             ],
-            'cf_cl' => ['nullable', 'string', 'max:16'],
-            'recapito_cell' => ['nullable', 'string', 'min:10', 'max:20'],
-            'numero_di_tel' => ['required_without:recapito_cell', 'string', 'min:10', 'max:20'],
+            'cf_cl' => ['required', 'string', 'max:16'],
+            'recapito_cell' => [
+                'nullable',
+                'required_without:numero_di_tel',
+                'string',
+                'min:10',
+                'max:20',
+            ],
+
+            'numero_di_tel' => [
+                'nullable',
+                'required_without:recapito_cell',
+                'string',
+                'min:10',
+                'max:20',
+            ],
             'data_nascita_cliente' => ['nullable'],
-            'applicazione' => ['nullable', 'string'],
+            'applicazione' => ['required', 'string'],
             'tipo_prodotto' => ['nullable', 'string', 'max:255'],
             'assicurazione' => ['nullable', 'string', 'max:255'],
             'numero_rate' => ['nullable', 'numeric'],
@@ -552,6 +604,28 @@ class PracticesImport implements
         return $this->value($row, 'recapito_cell')
             ?? $this->value($row, 'numero_di_tel');
     }
+    protected function normalizePhone(
+        ?string $phone
+    ): ?string {
+        if (! filled($phone)) {
+            return null;
+        }
+
+        $normalized = preg_replace(
+            '/[\s\-\(\)]/',
+            '',
+            trim($phone)
+        );
+
+        if (
+            ! is_string($normalized)
+            || ! preg_match('/^\d{10,20}$/', $normalized)
+        ) {
+            return null;
+        }
+
+        return $normalized;
+    }
 
     protected function getFirstInstallmentDate(array $row): mixed
     {
@@ -643,29 +717,104 @@ class PracticesImport implements
         return User::role('superadmin')->firstOrFail();
     }
 
-    protected function setCustomer(array $row, User $user): Customer
-    {
+    protected function setCustomer(
+        array $row,
+        User $user
+    ): Customer {
         $nameParts = $this->getCustomerNameParts($row);
-        $taxId = $this->value($row, 'cf_cl');
 
-        if ($taxId) {
-            $customer = Customer::query()->where('tax_id', $taxId)->first();
+        $taxId = mb_strtoupper(
+            trim((string) $this->value($row, 'cf_cl', ''))
+        );
 
-            if ($customer !== null) {
-                return $customer;
+        $phone = $this->normalizePhone(
+            $this->getPhone($row)
+        );
+
+        /*
+         * Priority 1:
+         * the tax ID already identifies an existing Customer.
+         */
+        $customer = Customer::query()
+            ->where('tax_id', $taxId)
+            ->first();
+
+        if ($customer !== null) {
+            /*
+             * Legacy case: a Lead already contains this tax ID.
+             * Creating/importing a Practice promotes it to Customer.
+             */
+            if ($customer->isLead()) {
+                $customer->update([
+                    'customer_status' =>
+                        CustomerStatus::CUSTOMER,
+                ]);
+            }
+
+            return $customer;
+        }
+
+        /*
+         * Priority 2:
+         * the person may already exist as a Lead without a tax ID.
+         *
+         * Leads are identified by:
+         * first name + last name + phone.
+         */
+        if ($phone !== null) {
+            $lead = Customer::query()
+                ->leads()
+                ->whereRaw(
+                    'LOWER(TRIM(first_name)) = ?',
+                    [
+                        mb_strtolower(
+                            trim($nameParts['first_name'])
+                        ),
+                    ]
+                )
+                ->whereRaw(
+                    'LOWER(TRIM(last_name)) = ?',
+                    [
+                        mb_strtolower(
+                            trim($nameParts['last_name'])
+                        ),
+                    ]
+                )
+                ->where('phone', $phone)
+                ->first();
+
+            if ($lead !== null) {
+                $lead->update([
+                    'tax_id' => $taxId,
+                    'customer_status' =>
+                        CustomerStatus::CUSTOMER,
+                ]);
+
+                return $lead;
             }
         }
 
+        /*
+         * No existing Customer and no matching Lead:
+         * create a new Customer.
+         */
         return Customer::create([
             'user_id' => $user->getKey(),
             'first_name' => $nameParts['first_name'],
             'last_name' => $nameParts['last_name'],
-            'phone' => $this->getPhone($row),
+            'phone' => $phone,
+
             'date_of_birth' => $this->parseDate(
-                $this->value($row, 'data_nascita_cliente')
+                $this->value(
+                    $row,
+                    'data_nascita_cliente'
+                )
             ),
+
             'tax_id' => $taxId,
-            'customer_status' => CustomerStatus::CUSTOMER->value,
+
+            'customer_status' =>
+                CustomerStatus::CUSTOMER,
         ]);
     }
 

@@ -66,13 +66,25 @@
     </div>
 
     {{-- Tax ID --}}
+    @if ($context !== 'lead')
+    {{-- Tax ID --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Codice Fiscale</flux:label>
+        <flux:label>
+            Codice Fiscale *
+        </flux:label>
+
         <div class="flex flex-col gap-0.5">
-            <flux:input size="sm" wire:model='{{ $form }}.taxId' />
-            <flux:error name="{{ $form }}.taxId" />
+            <flux:input
+                size="sm"
+                wire:model='{{ $form }}.taxId'
+            />
+
+            <flux:error
+                name="{{ $form }}.taxId"
+            />
         </div>
     </div>
+@endif
 
     {{-- Email --}}
     <div class="flex flex-col gap-1.5">

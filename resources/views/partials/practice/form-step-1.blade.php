@@ -21,6 +21,31 @@
     @endif
 
     @include('partials.practice.customer-preview-fields')
+    @if ($selectedCustomer)
+    <div class="col-span-2 mt-6">
+        <div class="mb-4">
+            <flux:heading size="lg">
+                Anagrafica cliente
+            </flux:heading>
+
+            <flux:text class="mt-1">
+                Verifica o completa i dati del cliente
+                prima di creare la pratica.
+            </flux:text>
+        </div>
+
+        @include(
+            'partials.customer.customer-form-fields',
+            [
+                'context' => 'practice',
+                'search' => 'teamMemberSearch',
+                'form' => 'customerForm',
+                'selectedUserId' =>
+                    $customerForm->userId,
+            ]
+        )
+    </div>
+@endif
 
     {{-- Acquisition Channel --}}
     <x-forms.acquisition-channel-field

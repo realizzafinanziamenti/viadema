@@ -618,7 +618,28 @@ public function handleImportFailed(ImportFailed $event): void
         return [
             'nome' => ['required', 'string', 'max:255'],
             'cognome' => ['required', 'string', 'max:255'],
-            'telefono' => ['required', 'string', 'min:10', 'max:24'],
+            'telefono' => [
+                'bail',
+                'required',
+                'string',
+
+                function (
+                    string $attribute,
+                    mixed $value,
+                    \Closure $fail
+                ): void {
+                    if (
+                        $this->cleanPhone(
+                            (string) $value
+                        ) === null
+                    ) {
+                        $fail(
+                            'Il numero di telefono deve contenere da 10 a 24 cifre. '
+                            . 'Sono ammessi solo numeri, spazi, trattini e parentesi.'
+                        );
+                    }
+                },
+            ],
             'email' => ['nullable', 'email', 'max:255'],
             'codice_fiscale' => ['nullable', 'string', 'max:16'],
             'data_nascita' => ['nullable'],
