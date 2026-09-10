@@ -453,14 +453,23 @@ class PracticeCreate extends Component
             $customer->getKey();
 
         /*
-         * Keep the form linked to the newly-created record.
+         * Reload the persisted Customer into the editable form.
+         *
+         * This keeps the Livewire form aligned with the actual
+         * values stored in the database.
          */
-        $this->customerForm->customer = $customer;
+        $this->customerForm->setCustomer(
+            $customer
+        );
 
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
 
         $this->customerForm->leadStatus = null;
+
+        $this->customerSearch = '';
+
+        $this->shouldConvertLead = false;
 
         $this->shouldConvertLead = false;
 

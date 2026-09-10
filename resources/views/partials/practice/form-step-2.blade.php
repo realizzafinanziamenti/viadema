@@ -10,7 +10,7 @@
 
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Prodotto </flux:label>
+        <flux:label>Prodotto *</flux:label>
         <div class="flex flex-col gap-0.5">
             <x-dropdown-select size="sm" :selectable-items="$productTypes" :selected="$practiceForm->productTypeId" placeholder='Seleziona prodotto'
                 setFunction="setProductType" :has-error="$errors->has('practiceForm.productTypeId')" />
