@@ -20,6 +20,8 @@ use Livewire\Attributes\Validate;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer;
+use Illuminate\Validation\ValidationException;
 class PracticeForm extends Form
 {
     use AcceptedFileTypes;
@@ -55,6 +57,49 @@ class PracticeForm extends Form
     public $financialInstitution = null;
     public $notes = null;
     public array $attachments = [];
+
+    private function ensurePracticeIsNotDuplicate(): void
+{
+    $customer = Customer::query()
+        ->whereKey($this->customerId)
+        ->lockForUpdate()
+        ->firstOrFail();
+
+    if (
+        ! $customer->isCustomer()
+        || blank($customer->tax_id)
+    ) {
+        throw ValidationException::withMessages([
+            'customerId' =>
+                'Il cliente deve avere un codice fiscale prima di creare una pratica.',
+        ]);
+    }
+
+    $query = Practice::query()
+        ->forCustomerAndProduct(
+            $customer->getKey(),
+            (int) $this->productTypeId
+        );
+
+    /*
+     * Durante la modifica non dobbiamo considerare
+     * la pratica corrente come duplicato di sé stessa.
+     */
+    if ($this->practice !== null) {
+        $query->where(
+            'id',
+            '!=',
+            $this->practice->getKey()
+        );
+    }
+
+    if ($query->exists()) {
+        throw ValidationException::withMessages([
+            'productTypeId' =>
+                'Il cliente possiede già una pratica per questo prodotto.',
+        ]);
+    }
+}
 
     public function setOpportunity(PracticeOpportunity $opportunity): void
     {
@@ -103,7 +148,7 @@ class PracticeForm extends Form
                     'string',
                     new Enum(LeadSource::class),
                 ],
-                'productTypeId' => ['nullable', 'exists:product_types,id'],
+                'productTypeId' => ['required', 'exists:product_types,id'],
                 'productSubtypeId' => ['nullable', 'exists:product_subtypes,id'],
                 'customerId' => ['required', 'exists:customers,id'],
                 'financialTableId' => ['nullable', 'exists:financial_tables,id'],
@@ -242,6 +287,7 @@ class PracticeForm extends Form
 
         try {
             $practice = DB::transaction(function () {
+                $this->ensurePracticeIsNotDuplicate();
                 $opportunity = $this->opportunity;
 
             if ($opportunity) {
@@ -300,6 +346,7 @@ return $practice;
 
         try {
             DB::transaction(function () {
+                $this->ensurePracticeIsNotDuplicate();
                 // get old user id before update
                 $oldUserId = $this->practice->user_id;
 

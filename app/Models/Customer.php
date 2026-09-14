@@ -18,17 +18,33 @@ use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Validation\ValidationException;
 
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
 {
     use SoftDeletes, HasFactory, LogsActivity;
 
+    protected static function booted(): void
+{
+    static::saving(function (Customer $customer): void {
+        if (
+            $customer->customer_status === CustomerStatus::CUSTOMER
+            && blank($customer->tax_id)
+        ) {
+            throw ValidationException::withMessages([
+                'tax_id' => 'Il codice fiscale è obbligatorio per un cliente.',
+            ]);
+        }
+    });
+}
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+
     protected $fillable = [
         'user_id',
         'customer_type_id',
@@ -199,6 +215,16 @@ class Customer extends Model
     /**
      * Accessor to obtain full name.
      */
+
+    protected function taxId(): Attribute
+{
+    return Attribute::make(
+        set: static fn ($value) =>
+            filled($value)
+                ? mb_strtoupper(trim((string) $value))
+                : null,
+    );
+}
     protected function fullName(): Attribute
     {
         return Attribute::get(fn() => "{$this->first_name} {$this->last_name}");
