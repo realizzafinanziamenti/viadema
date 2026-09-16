@@ -306,6 +306,40 @@ class PracticeCreate extends Component
     }
 
     /**
+ * Open the create customer modal.
+ */
+public function openCreateCustomerModal(): void
+{
+    /*
+     * Avoid carrying data from a previously selected
+     * customer into the "create new customer" modal.
+     */
+    $this->customerForm->setCustomer(null);
+
+    $this->customerForm->customerStatus =
+        CustomerStatus::CUSTOMER->value;
+
+    $this->customerForm->leadStatus = null;
+
+    $this->teamMemberSearch = '';
+
+    $this->dispatch(
+        'open-modal',
+        'customer-create'
+    );
+}
+/**
+ * Close create customer modal.
+ */
+public function closeCreateCustomerModal(): void
+{
+    $this->dispatch(
+        'close-modal',
+        'customer-create'
+    );
+}
+
+    /**
      * Validate selected customer data before Step 2.
      */
     public function firstNextStep(): void
