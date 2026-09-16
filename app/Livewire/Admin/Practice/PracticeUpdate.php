@@ -47,7 +47,18 @@ class PracticeUpdate extends Component
 
     public PracticeForm $practiceForm;
 
+    /**
+     * Customer currently associated with the Practice.
+     */
     public CustomerForm $customerForm;
+
+    /**
+     * Dedicated form used only by the "create customer" modal.
+     *
+     * This must remain separate from $customerForm so opening
+     * the modal does not destroy unsaved Step 1 changes.
+     */
+    public CustomerForm $newCustomerForm;
 
     public ?Customer $selectedCustomer = null;
 
@@ -107,7 +118,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Set team member for customer form.
+     * Set team member for the current Customer.
      */
     public function setTeamMember(?int $value = null): void
     {
@@ -119,7 +130,21 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Set team member for practice form.
+ * Set team member for the Customer being created
+ * inside the modal.
+ */
+public function setNewCustomerTeamMember(
+    ?int $value = null
+): void {
+    $this->setFormSelectValue(
+        'userId',
+        $value,
+        'newCustomerForm'
+    );
+}
+
+    /**
+     * Set team member for the Practice.
      */
     public function setPracticeTeamMember(
         ?int $value = null
@@ -132,7 +157,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Set customer.
+     * Select Customer.
      */
     public function setCustomer(?int $value = null): void
     {
@@ -154,6 +179,8 @@ class PracticeUpdate extends Component
             $this->customerForm->customerStatus =
                 CustomerStatus::CUSTOMER->value;
 
+            $this->customerForm->leadStatus = null;
+
             $this->resetValidation(
                 'practiceForm.productTypeId'
             );
@@ -167,7 +194,9 @@ class PracticeUpdate extends Component
 
         $this->selectedCustomer = $customer;
 
-        $this->customerForm->setCustomer($customer);
+        $this->customerForm->setCustomer(
+            $customer
+        );
 
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
@@ -177,8 +206,8 @@ class PracticeUpdate extends Component
         $this->customerSearch = '';
 
         /*
-         * If a product was already selected, changing the
-         * customer may change the duplicate condition.
+         * Changing Customer may also change whether the
+         * selected Customer + Product combination is valid.
          */
         if ($this->practiceForm->productTypeId) {
             $this->validatePracticeProductUniqueness();
@@ -186,7 +215,20 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Set product type and immediately verify duplicates.
+     * Set production type.
+     */
+    public function setProductionType(
+        ?string $value = null
+    ): void {
+        $this->setFormSelectValue(
+            'productionType',
+            $value,
+            'practiceForm'
+        );
+    }
+
+    /**
+     * Set Product Type and validate duplicate in realtime.
      */
     public function setProductType(
         ?int $value = null
@@ -306,7 +348,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Set customer type.
+     * Set Customer Type.
      */
     public function setCustomerType(
         ?int $value = null
@@ -319,7 +361,51 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Validate customer data before moving to step 2.
+     * Open "create customer" modal.
+     */
+    public function openCreateCustomerModal(): void
+    {
+        /*
+         * This is a completely separate form.
+         *
+         * $customerForm continues to contain the Customer
+         * associated with the Practice and any unsaved edits.
+         */
+        $this->newCustomerForm->reset();
+
+        $this->newCustomerForm->customerStatus =
+            CustomerStatus::CUSTOMER->value;
+
+        $this->newCustomerForm->leadStatus = null;
+
+        $this->teamMemberSearch = '';
+
+        $this->dispatch(
+            'open-modal',
+            'customer-create'
+        );
+    }
+
+    /**
+     * Close "create customer" modal.
+     */
+    public function closeCreateCustomerModal(): void
+    {
+        $this->newCustomerForm->reset();
+
+        $this->newCustomerForm->customerStatus =
+            CustomerStatus::CUSTOMER->value;
+
+        $this->newCustomerForm->leadStatus = null;
+
+        $this->dispatch(
+            'close-modal',
+            'customer-create'
+        );
+    }
+
+    /**
+     * Validate Customer before Step 2.
      */
     public function firstNextStep(): void
     {
@@ -336,8 +422,15 @@ class PracticeUpdate extends Component
             $this->practiceForm->customerId
         );
 
-        Gate::authorize('update', $customer);
+        Gate::authorize(
+            'update',
+            $customer
+        );
 
+        /*
+         * Bind the real Customer without overwriting
+         * the edited form values.
+         */
         $this->customerForm->customer = $customer;
 
         $this->customerForm->customerStatus =
@@ -345,7 +438,8 @@ class PracticeUpdate extends Component
 
         $this->customerForm->leadStatus = null;
 
-        $this->customerForm->validatedCustomerData();
+        $this->customerForm
+            ->validatedCustomerData();
 
         $this->teamMemberSearch = '';
 
@@ -354,6 +448,9 @@ class PracticeUpdate extends Component
         $this->dispatch('step-changed');
     }
 
+    /**
+     * Return to Step 1.
+     */
     public function firstPrevStep(): void
     {
         $this->step = 1;
@@ -362,16 +459,12 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Validate Practice data before moving to summary.
+     * Validate Step 2 before summary.
      */
     public function secondNextStep(): void
     {
         $this->practiceForm->validate();
 
-        /*
-         * The wizard must never reach Step 3 with an
-         * already existing customer + product combination.
-         */
         if (! $this->validatePracticeProductUniqueness()) {
             return;
         }
@@ -381,6 +474,9 @@ class PracticeUpdate extends Component
         $this->dispatch('step-changed');
     }
 
+    /**
+     * Return to Step 2.
+     */
     public function secondPrevStep(): void
     {
         $this->step = 2;
@@ -389,10 +485,10 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Realtime/UI duplicate validation.
+     * Realtime/UI Customer + Product duplicate check.
      *
-     * The transactional validation inside PracticeForm
-     * still remains the final integrity guarantee.
+     * PracticeForm still performs the definitive check
+     * inside the database transaction.
      */
     private function validatePracticeProductUniqueness(): bool
     {
@@ -418,39 +514,45 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Initialize selects.
+     * Initialize dropdown values.
      */
     protected function initializeSelects(): void
     {
-        $this->productTypes = ProductType::query()
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
+        $this->productTypes =
+            ProductType::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray();
 
-        $this->productSubtypes = ProductSubtype::query()
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
+        $this->productSubtypes =
+            ProductSubtype::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray();
 
-        $this->financialTables = FinancialTable::query()
-            ->orderBy('percentage')
-            ->pluck('percentage', 'id')
-            ->toArray();
+        $this->financialTables =
+            FinancialTable::query()
+                ->orderBy('percentage')
+                ->pluck('percentage', 'id')
+                ->toArray();
 
-        $this->insurances = Insurance::query()
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
+        $this->insurances =
+            Insurance::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray();
 
-        $this->installments = Installment::query()
-            ->orderBy('value')
-            ->pluck('value', 'id')
-            ->toArray();
+        $this->installments =
+            Installment::query()
+                ->orderBy('value')
+                ->pluck('value', 'id')
+                ->toArray();
 
-        $this->customerTypes = CustomerType::query()
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
+        $this->customerTypes =
+            CustomerType::query()
+                ->orderBy('name')
+                ->pluck('name', 'id')
+                ->toArray();
 
         $this->productionTypes =
             $this->getEnumOptions(
@@ -464,7 +566,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Create a customer from Practice update.
+     * Create a new Customer from Practice Update.
      */
     public function saveCustomer(): void
     {
@@ -476,17 +578,26 @@ class PracticeUpdate extends Component
             ]
         );
 
-        $customer = $this->customerForm->store();
+        $customer =
+            $this->newCustomerForm->store();
 
         if (! $customer instanceof Customer) {
             return;
         }
 
+        /*
+         * Newly created Customer becomes the Customer
+         * selected for this Practice.
+         */
         $this->selectedCustomer = $customer;
 
         $this->practiceForm->customerId =
             $customer->getKey();
 
+        /*
+         * The normal CustomerForm must now represent
+         * the newly selected Customer.
+         */
         $this->customerForm->setCustomer(
             $customer
         );
@@ -498,6 +609,13 @@ class PracticeUpdate extends Component
 
         $this->customerSearch = '';
 
+        $this->newCustomerForm->reset();
+
+        $this->newCustomerForm->customerStatus =
+            CustomerStatus::CUSTOMER->value;
+
+        $this->newCustomerForm->leadStatus = null;
+
         $this->dispatch(
             'close-modal',
             'customer-create'
@@ -505,7 +623,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Save practice and customer atomically.
+     * Save Customer and Practice atomically.
      */
     public function savePractice(): void
     {
@@ -517,12 +635,14 @@ class PracticeUpdate extends Component
         try {
             $practice = DB::transaction(
                 function (): Practice {
-                    $customer = Customer::query()
-                        ->whereKey(
-                            $this->practiceForm->customerId
-                        )
-                        ->lockForUpdate()
-                        ->firstOrFail();
+                    $customer =
+                        Customer::query()
+                            ->whereKey(
+                                $this->practiceForm
+                                    ->customerId
+                            )
+                            ->lockForUpdate()
+                            ->firstOrFail();
 
                     Gate::authorize(
                         'update',
@@ -530,8 +650,10 @@ class PracticeUpdate extends Component
                     );
 
                     /*
-                     * Do not call setCustomer() here:
-                     * it would overwrite edits made in Step 1.
+                     * Do not call setCustomer() here.
+                     *
+                     * That would reload values from the database
+                     * and overwrite Step 1 edits.
                      */
                     $this->customerForm->customer =
                         $customer;
@@ -612,8 +734,8 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Put validation errors in the Livewire error bag
-     * and return the wizard to the relevant step.
+     * Re-inject transactional validation errors into
+     * the Livewire error bag and return to the right Step.
      */
     private function handleValidationException(
         ValidationException $exception
@@ -631,28 +753,30 @@ class PracticeUpdate extends Component
 
         $fields = array_keys($errors);
 
-        $hasCustomerError = collect($fields)
-            ->contains(
-                fn (string $field): bool =>
-                    str_starts_with(
-                        $field,
-                        'customerForm.'
-                    )
-                    || $field
-                        === 'practiceForm.customerId'
-            );
-
-        if ($hasCustomerError) {
-            $this->step = 1;
-        } else {
-            $hasPracticeError = collect($fields)
+        $hasCustomerError =
+            collect($fields)
                 ->contains(
                     fn (string $field): bool =>
                         str_starts_with(
                             $field,
-                            'practiceForm.'
+                            'customerForm.'
                         )
+                        || $field
+                            === 'practiceForm.customerId'
                 );
+
+        if ($hasCustomerError) {
+            $this->step = 1;
+        } else {
+            $hasPracticeError =
+                collect($fields)
+                    ->contains(
+                        fn (string $field): bool =>
+                            str_starts_with(
+                                $field,
+                                'practiceForm.'
+                            )
+                    );
 
             if ($hasPracticeError) {
                 $this->step = 2;
@@ -674,7 +798,7 @@ class PracticeUpdate extends Component
     }
 
     /**
-     * Handle temporary attachment uploads.
+     * Handle temporary uploads.
      */
     public function updatedTemporaryFiles(): void
     {
@@ -715,6 +839,9 @@ class PracticeUpdate extends Component
         }
     }
 
+    /**
+     * Delete temporary upload.
+     */
     public function deleteTemporaryFile(
         int $index
     ): void {
@@ -739,6 +866,9 @@ class PracticeUpdate extends Component
             );
     }
 
+    /**
+     * Download attachment.
+     */
     public function download(
         int $id
     ): ?StreamedResponse {
@@ -765,6 +895,9 @@ class PracticeUpdate extends Component
         }
     }
 
+    /**
+     * Select attachment for deletion.
+     */
     public function selectAttachmentForDelete(
         int $id
     ): void {
@@ -777,6 +910,9 @@ class PracticeUpdate extends Component
         );
     }
 
+    /**
+     * Delete attachment.
+     */
     public function deleteAttachment(): void
     {
         Gate::authorize(
@@ -812,6 +948,9 @@ class PracticeUpdate extends Component
         }
     }
 
+    /**
+     * Initialize component.
+     */
     public function mount($id): void
     {
         $this->practice =
@@ -827,26 +966,31 @@ class PracticeUpdate extends Component
             $this->practice
         );
 
-        $this->practiceForm
-            ->setPractice(
-                $this->practice
-            );
+        $this->practiceForm->setPractice(
+            $this->practice
+        );
 
         $this->selectedCustomer =
             $this->practice->customer;
 
         if ($this->selectedCustomer) {
-            $this->customerForm
-                ->setCustomer(
-                    $this->selectedCustomer
-                );
+            $this->customerForm->setCustomer(
+                $this->selectedCustomer
+            );
 
             $this->customerForm->customerStatus =
                 CustomerStatus::CUSTOMER->value;
 
-            $this->customerForm->leadStatus =
-                null;
+            $this->customerForm->leadStatus = null;
         }
+
+        /*
+         * Modal form always starts as a fresh Customer.
+         */
+        $this->newCustomerForm->customerStatus =
+            CustomerStatus::CUSTOMER->value;
+
+        $this->newCustomerForm->leadStatus = null;
 
         $this->initializeSelects();
     }

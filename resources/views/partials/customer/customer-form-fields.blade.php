@@ -140,9 +140,17 @@
         <div class="flex flex-col gap-1.5">
             <flux:label>Collaboratore *</flux:label>
 
-            <x-dropdown-select size="sm" align="top" :selectable-items="$teamMembers" :selected="$selectedUserId" searchable
-                search="{{ $search }}" placeholder='Seleziona collaboratore' setFunction="setTeamMember"
-                :has-error="$errors->has('{{ $form }}.userId')" />
+            <x-dropdown-select
+    size="sm"
+    align="top"
+    :selectable-items="$teamMembers"
+    :selected="$selectedUserId"
+    searchable
+    search="{{ $search }}"
+    placeholder="Seleziona collaboratore"
+    setFunction="{{ $setTeamMemberFunction ?? 'setTeamMember' }}"
+    :has-error="$errors->has($form . '.userId')"
+/>
 
             <flux:error name="{{ $form }}.userId" />
         </div>
