@@ -73,12 +73,6 @@ class PracticeCreate extends Component
 
     public string $customerSearch = '';
 
-    /**
-     * Kept for compatibility with the current workflow.
-     *
-     * The actual conversion is performed transactionally
-     * inside savePractice().
-     */
     public bool $shouldConvertLead = false;
 
     public bool $customerPreselected = false;
@@ -88,13 +82,15 @@ class PracticeCreate extends Component
     /**
      * Set renewal flag.
      */
-    public function setIsRenewal(string $value): void
-    {
-        $this->practiceForm->isRenewal = $value === '1';
+    public function setIsRenewal(
+        string $value
+    ): void {
+        $this->practiceForm->isRenewal =
+            $value === '1';
     }
 
     /**
-     * Set acquisition channel on the practice opportunity.
+     * Set acquisition channel.
      */
     public function setOpportunityAcquisitionChannel(
         ?string $value = null
@@ -106,11 +102,9 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set team member for customer form.
-     */
-    public function setTeamMember(?int $value = null): void
-    {
+    public function setTeamMember(
+        ?int $value = null
+    ): void {
         $this->setFormSelectValue(
             'userId',
             $value,
@@ -118,9 +112,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set team member for practice form.
-     */
     public function setPracticeTeamMember(
         ?int $value = null
     ): void {
@@ -132,14 +123,11 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Select the customer associated with the practice.
-     *
-     * The same Customer record is also loaded into
-     * CustomerForm so its personal data can be edited
-     * directly while creating the practice.
+     * Select customer.
      */
-    public function setCustomer(?int $value = null): void
-    {
+    public function setCustomer(
+        ?int $value = null
+    ): void {
         $this->setFormSelectValue(
             'customerId',
             $value,
@@ -150,13 +138,21 @@ class PracticeCreate extends Component
             'practiceForm.customerId'
         );
 
-        $this->selectedCustomer = Customer::find(
-            $this->practiceForm->customerId
-        );
+        $this->selectedCustomer =
+            Customer::find(
+                $this->practiceForm->customerId
+            );
 
         if ($this->selectedCustomer === null) {
-            $this->customerForm->setCustomer(null);
+            $this->customerForm->setCustomer(
+                null
+            );
+
             $this->shouldConvertLead = false;
+
+            $this->resetValidation(
+                'practiceForm.productTypeId'
+            );
 
             return;
         }
@@ -164,29 +160,28 @@ class PracticeCreate extends Component
         $this->shouldConvertLead =
             $this->selectedCustomer->isLead();
 
-        /*
-         * Load current customer data into the editable
-         * customer form.
-         */
         $this->customerForm->setCustomer(
             $this->selectedCustomer
         );
 
-        /*
-         * Inside the Practice workflow the profile must
-         * satisfy CUSTOMER requirements.
-         *
-         * This makes taxId required even when the selected
-         * record is currently a Lead.
-         */
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
 
         $this->customerForm->leadStatus = null;
+
+        $this->customerSearch = '';
+
+        /*
+         * Customer changes can change the uniqueness
+         * of an already selected product.
+         */
+        if ($this->practiceForm->productTypeId) {
+            $this->validatePracticeProductUniqueness();
+        }
     }
 
     /**
-     * Set product type.
+     * Set product and immediately verify duplicates.
      */
     public function setProductType(
         ?int $value = null
@@ -204,11 +199,10 @@ class PracticeCreate extends Component
         $this->recalculateRenewabilityDate(
             $this->practiceForm
         );
+
+        $this->validatePracticeProductUniqueness();
     }
 
-    /**
-     * Set product subtype.
-     */
     public function setProductSubtype(
         ?int $value = null
     ): void {
@@ -219,9 +213,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set production type.
-     */
     public function setProductionType(
         ?string $value = null
     ): void {
@@ -232,9 +223,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set financial table.
-     */
     public function setFinancialTable(
         ?int $value = null
     ): void {
@@ -245,9 +233,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set insurance.
-     */
     public function setInsurance(
         ?int $value = null
     ): void {
@@ -258,9 +243,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set installment.
-     */
     public function setInstallment(
         ?int $value = null
     ): void {
@@ -284,9 +266,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Recalculate installment and renewability dates.
-     */
     public function updatedPracticeFormFirstInstallmentDate(): void
     {
         if ($this->practiceForm->firstInstallmentDate) {
@@ -302,13 +281,13 @@ class PracticeCreate extends Component
             return;
         }
 
-        $this->practiceForm->lastInstallmentDate = null;
-        $this->practiceForm->renewabilityDate = null;
+        $this->practiceForm->lastInstallmentDate =
+            null;
+
+        $this->practiceForm->renewabilityDate =
+            null;
     }
 
-    /**
-     * Recalculate renewability date.
-     */
     public function updatedPracticeFormRenewabilityPercentage(): void
     {
         $this->recalculateRenewabilityDate(
@@ -316,9 +295,6 @@ class PracticeCreate extends Component
         );
     }
 
-    /**
-     * Set customer type.
-     */
     public function setCustomerType(
         ?int $value = null
     ): void {
@@ -330,33 +306,7 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Open the create customer modal.
-     */
-    public function openCreateCustomerModal(): void
-    {
-        /*
-         * Avoid carrying data from a previously selected
-         * customer into the "create new customer" modal.
-         */
-        $this->customerForm->setCustomer(null);
-
-        $this->customerForm->customerStatus =
-            CustomerStatus::CUSTOMER->value;
-
-        $this->customerForm->leadStatus = null;
-
-        $this->teamMemberSearch = '';
-
-        $this->dispatch(
-            'open-modal',
-            'customer-create'
-        );
-    }
-
-    /**
-     * Validate customer data before moving to step 2.
-     *
-     * No database write happens here.
+     * Validate selected customer data before Step 2.
      */
     public function firstNextStep(): void
     {
@@ -374,22 +324,16 @@ class PracticeCreate extends Component
 
         $this->customerForm->leadStatus = null;
 
-        /*
-         * CustomerForm applies CUSTOMER validation here,
-         * therefore taxId is mandatory.
-         */
         $this->customerForm
             ->validatedCustomerData();
 
         $this->teamMemberSearch = '';
+
         $this->step = 2;
 
         $this->dispatch('step-changed');
     }
 
-    /**
-     * Return to step 1.
-     */
     public function firstPrevStep(): void
     {
         $this->step = 1;
@@ -398,7 +342,7 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Validate practice data before moving to summary.
+     * Validate Step 2 before summary.
      */
     public function secondNextStep(): void
     {
@@ -409,14 +353,15 @@ class PracticeCreate extends Component
 
         $this->practiceForm->validate();
 
+        if (! $this->validatePracticeProductUniqueness()) {
+            return;
+        }
+
         $this->step = 3;
 
         $this->dispatch('step-changed');
     }
 
-    /**
-     * Return to step 2.
-     */
     public function secondPrevStep(): void
     {
         $this->step = 2;
@@ -425,7 +370,33 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Create a new customer directly from the Practice page.
+     * Realtime/UI duplicate validation.
+     */
+    private function validatePracticeProductUniqueness(): bool
+    {
+        $this->resetValidation(
+            'practiceForm.productTypeId'
+        );
+
+        if (! $this->practiceForm->hasDuplicatePractice()) {
+            return true;
+        }
+
+        $message =
+            PracticeForm::DUPLICATE_PRODUCT_MESSAGE;
+
+        $this->addError(
+            'practiceForm.productTypeId',
+            $message
+        );
+
+        Toaster::error($message);
+
+        return false;
+    }
+
+    /**
+     * Create a customer directly from Practice creation.
      */
     public function saveCustomer(): void
     {
@@ -437,27 +408,19 @@ class PracticeCreate extends Component
             ]
         );
 
-        $customer = $this->customerForm->store();
+        $customer =
+            $this->customerForm->store();
 
-        /*
-         * CustomerForm currently handles generic persistence
-         * exceptions internally and can therefore return null.
-         */
         if (! $customer instanceof Customer) {
             return;
         }
 
-        $this->selectedCustomer = $customer;
+        $this->selectedCustomer =
+            $customer;
 
         $this->practiceForm->customerId =
             $customer->getKey();
 
-        /*
-         * Reload the persisted Customer into the editable form.
-         *
-         * This keeps the Livewire form aligned with the actual
-         * values stored in the database.
-         */
         $this->customerForm->setCustomer(
             $customer
         );
@@ -465,11 +428,10 @@ class PracticeCreate extends Component
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
 
-        $this->customerForm->leadStatus = null;
+        $this->customerForm->leadStatus =
+            null;
 
         $this->customerSearch = '';
-
-        $this->shouldConvertLead = false;
 
         $this->shouldConvertLead = false;
 
@@ -480,126 +442,99 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Persist customer data and create the practice atomically.
+     * Persist Customer and Practice atomically.
      */
     public function savePractice(): void
     {
-        Gate::authorize('create', Practice::class);
+        Gate::authorize(
+            'create',
+            Practice::class
+        );
 
         try {
-            $practice = DB::transaction(function (): Practice {
-                /*
-                 * Re-fetch and lock the selected Customer so
-                 * concurrent requests cannot modify the same
-                 * identity while the Practice is being created.
-                 */
-                $customer = Customer::query()
-                    ->whereKey(
-                        $this->practiceForm->customerId
-                    )
-                    ->lockForUpdate()
-                    ->firstOrFail();
+            $practice = DB::transaction(
+                function (): Practice {
+                    $customer =
+                        Customer::query()
+                            ->whereKey(
+                                $this->practiceForm
+                                    ->customerId
+                            )
+                            ->lockForUpdate()
+                            ->firstOrFail();
 
-                Gate::authorize(
-                    'update',
-                    $customer
-                );
-
-                $wasLead = $customer->isLead();
-
-                /*
-                 * Bind the locked database record to the form.
-                 *
-                 * Do NOT call setCustomer() here because that
-                 * would overwrite the edits performed by the
-                 * user in the Practice screen.
-                 */
-                $this->customerForm->customer =
-                    $customer;
-
-                /*
-                 * Any profile attached to a Practice must
-                 * satisfy CUSTOMER rules.
-                 */
-                $this->customerForm->customerStatus =
-                    CustomerStatus::CUSTOMER->value;
-
-                $this->customerForm->leadStatus = null;
-
-                /*
-                 * Validate again at write-time.
-                 *
-                 * Among other things:
-                 * - taxId is required
-                 * - taxId must be unique
-                 */
-                $customerData =
-                    $this->customerForm
-                        ->validatedCustomerData();
-
-                /*
-                 * Same database record:
-                 *
-                 * LEAD #123
-                 * becomes
-                 * CUSTOMER #123
-                 *
-                 * No duplicated Customer is created.
-                 */
-                $customer->update(
-                    $customerData
-                );
-
-                $this->selectedCustomer =
-                    $customer;
-
-                $this->practiceForm->customerId =
-                    $customer->getKey();
-
-                if ($wasLead) {
-                    Log::info(
-                        "Lead {$customer->id} convertito in cliente per la pratica"
-                    );
-                }
-
-                /*
-                 * PracticeForm handles:
-                 * - Practice validation
-                 * - required product
-                 * - customer + product duplicate check
-                 * - PracticeOpportunity persistence
-                 * - Practice persistence
-                 */
-                $practice =
-                    $this->practiceForm->store();
-
-                if (! $practice instanceof Practice) {
-                    throw new Exception(
-                        'Errore durante la creazione della pratica.'
-                    );
-                }
-
-                /*
-                 * Consume the Lead -> Practice creation token
-                 * only after the entire operation succeeds.
-                 */
-                if ($this->creationToken) {
-                    Cache::forget(
-                        "practice_creation_{$this->creationToken}"
+                    Gate::authorize(
+                        'update',
+                        $customer
                     );
 
-                    Log::info(
-                        "Token {$this->creationToken} rimosso dalla cache"
-                    );
-                }
+                    $wasLead =
+                        $customer->isLead();
 
-                return $practice;
-            }, 3);
+                    /*
+                     * Do not call setCustomer() here because
+                     * it would overwrite Step 1 edits.
+                     */
+                    $this->customerForm->customer =
+                        $customer;
+
+                    $this->customerForm->customerStatus =
+                        CustomerStatus::CUSTOMER->value;
+
+                    $this->customerForm->leadStatus =
+                        null;
+
+                    $customerData =
+                        $this->customerForm
+                            ->validatedCustomerData();
+
+                    $customer->update(
+                        $customerData
+                    );
+
+                    $this->selectedCustomer =
+                        $customer;
+
+                    $this->practiceForm->customerId =
+                        $customer->getKey();
+
+                    if ($wasLead) {
+                        Log::info(
+                            "Lead {$customer->id} convertito in cliente per la pratica"
+                        );
+                    }
+
+                    $practice =
+                        $this->practiceForm->store();
+
+                    if (! $practice instanceof Practice) {
+                        throw new Exception(
+                            'Errore durante la creazione della pratica.'
+                        );
+                    }
+
+                    if ($this->creationToken) {
+                        Cache::forget(
+                            "practice_creation_{$this->creationToken}"
+                        );
+
+                        Log::info(
+                            "Token {$this->creationToken} rimosso dalla cache"
+                        );
+                    }
+
+                    return $practice;
+                },
+                3
+            );
 
             if (Gate::allows('view', $practice)) {
                 $this->redirectRoute(
                     'practice.show',
-                    ['id' => $practice->getKey()],
+                    [
+                        'id' =>
+                            $practice->getKey(),
+                    ],
                     navigate: true
                 );
 
@@ -611,21 +546,24 @@ class PracticeCreate extends Component
                 navigate: true
             );
         } catch (ValidationException $exception) {
-            /*
-             * Let Livewire handle field validation errors
-             * instead of hiding them behind a generic toast.
-             */
-            throw $exception;
+            $this->handleValidationException(
+                $exception
+            );
         } catch (Exception $exception) {
             Log::error(
                 'Errore durante la creazione della pratica: '
                 . $exception->getMessage(),
                 [
                     'customer_id' =>
-                        $this->practiceForm->customerId,
+                        $this->practiceForm
+                            ->customerId,
+
                     'product_type_id' =>
-                        $this->practiceForm->productTypeId,
-                    'exception' => $exception,
+                        $this->practiceForm
+                            ->productTypeId,
+
+                    'exception' =>
+                        $exception,
                 ]
             );
 
@@ -637,8 +575,70 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Handle temporary attachment uploads.
+     * Handle validation that may still fail during
+     * the final transactional save.
      */
+    private function handleValidationException(
+        ValidationException $exception
+    ): void {
+        $errors = $exception->errors();
+
+        foreach ($errors as $field => $messages) {
+            foreach ($messages as $message) {
+                $this->addError(
+                    $field,
+                    $message
+                );
+            }
+        }
+
+        $fields =
+            array_keys($errors);
+
+        $hasCustomerError =
+            collect($fields)
+                ->contains(
+                    fn (string $field): bool =>
+                        str_starts_with(
+                            $field,
+                            'customerForm.'
+                        )
+                        || $field
+                            === 'practiceForm.customerId'
+                );
+
+        if ($hasCustomerError) {
+            $this->step = 1;
+        } else {
+            $hasPracticeError =
+                collect($fields)
+                    ->contains(
+                        fn (string $field): bool =>
+                            str_starts_with(
+                                $field,
+                                'practiceForm.'
+                            )
+                    );
+
+            if ($hasPracticeError) {
+                $this->step = 2;
+            }
+        }
+
+        $firstMessage =
+            collect($errors)
+                ->flatten()
+                ->first();
+
+        if ($firstMessage) {
+            Toaster::error(
+                (string) $firstMessage
+            );
+        }
+
+        $this->dispatch('step-changed');
+    }
+
     public function updatedTemporaryFiles(): void
     {
         $this->validate(
@@ -648,6 +648,7 @@ class PracticeCreate extends Component
                     'array',
                     'max:10',
                 ],
+
                 'temporaryFiles.*' => [
                     'nullable',
                     'file',
@@ -662,25 +663,21 @@ class PracticeCreate extends Component
             [
                 'temporaryFiles.max' =>
                     'Puoi caricare al massimo 10 file.',
+
                 'temporaryFiles.*.max' =>
                     'Ogni file non può superare i 10MB.',
+
                 'temporaryFiles.*.mimetypes' =>
                     'Formato file non valido.',
             ]
         );
 
-        foreach (
-            $this->temporaryFiles
-            as $file
-        ) {
+        foreach ($this->temporaryFiles as $file) {
             $this->practiceForm
                 ->attachments[] = $file;
         }
     }
 
-    /**
-     * Remove a temporary attachment.
-     */
     public function deleteTemporaryFile(
         int $index
     ): void {
@@ -758,8 +755,7 @@ class PracticeCreate extends Component
     }
 
     /**
-     * Load a Lead/Customer coming from the
-     * "create Practice" action.
+     * Load Customer/Lead from creation token.
      */
     private function loadCustomerFromToken(
         string $token
@@ -807,35 +803,25 @@ class PracticeCreate extends Component
         $this->practiceForm->customerId =
             $customer->getKey();
 
-        $this->customerPreselected = true;
+        $this->customerPreselected =
+            true;
 
         $this->shouldConvertLead =
             ($data['convert_lead'] ?? false)
             && $customer->isLead();
 
-        $this->creationToken = $token;
+        $this->creationToken =
+            $token;
 
-        /*
-         * Populate editable customer data.
-         */
         $this->customerForm->setCustomer(
             $customer
         );
 
-        /*
-         * setCustomer() copied the real status from DB.
-         * If this is a Lead it therefore copied LEAD.
-         *
-         * Inside Practice creation we intentionally
-         * validate it as CUSTOMER, making taxId required.
-         *
-         * The actual conversion is NOT persisted yet.
-         * It happens only inside savePractice().
-         */
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
 
-        $this->customerForm->leadStatus = null;
+        $this->customerForm->leadStatus =
+            null;
 
         $opportunityId =
             $data['practice_opportunity_id']
@@ -857,10 +843,6 @@ class PracticeCreate extends Component
                     $opportunity
                 );
 
-            /*
-             * setOpportunity() also restores its
-             * customer_id into PracticeForm.
-             */
             $this->practiceForm->customerId =
                 $customer->getKey();
 
@@ -879,9 +861,6 @@ class PracticeCreate extends Component
         }
     }
 
-    /**
-     * Initialize the Practice creation page.
-     */
     public function mount(
         ?string $token = null
     ): void {
@@ -892,10 +871,6 @@ class PracticeCreate extends Component
 
         $this->initSelectValues();
 
-        /*
-         * A new customer created from this page is always
-         * a CUSTOMER, therefore taxId is required.
-         */
         $this->customerForm->customerStatus =
             CustomerStatus::CUSTOMER->value;
 
@@ -933,8 +908,11 @@ class PracticeCreate extends Component
         return view(
             'livewire.admin.practice.practice-create',
             [
-                'teamMembers' => $teamMembers,
-                'customers' => $customers,
+                'teamMembers' =>
+                    $teamMembers,
+
+                'customers' =>
+                    $customers,
             ]
         );
     }

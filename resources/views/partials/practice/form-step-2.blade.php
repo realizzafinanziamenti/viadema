@@ -183,6 +183,8 @@
         </div>
     </div>
 
+
+
     {{-- Insurance --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Assicurazione</flux:label>
@@ -193,6 +195,19 @@
             <flux:error name="practiceForm.insuranceId" />
         </div>
     </div>
+
+    {{-- Employment Start Date --}}
+<div class="flex flex-col gap-1.5">
+    <flux:label>Data di assunzione</flux:label>
+
+    <flux:input
+        size="sm"
+        type="date"
+        wire:model="opportunityForm.employmentStartDate"
+    />
+
+    <flux:error name="opportunityForm.employmentStartDate" />
+</div>
 
     {{-- Financial Table --}}
     <div class="flex flex-col gap-1.5">
