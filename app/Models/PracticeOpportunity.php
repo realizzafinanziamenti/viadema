@@ -22,6 +22,7 @@ class PracticeOpportunity extends Model
         'insurance_id',
         'installment_id',
         'customer_type_id',
+        'employment_start_date',
         'amount_disbursed',
         'total_amount',
         'rate_amount',
@@ -42,6 +43,7 @@ class PracticeOpportunity extends Model
 
     protected $casts = [
         'acquisition_channel' => LeadSource::class,
+        'employment_start_date' => 'date',
         'amount_disbursed' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'rate_amount' => 'decimal:2',

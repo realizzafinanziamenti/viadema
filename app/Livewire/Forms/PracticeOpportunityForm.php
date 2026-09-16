@@ -21,6 +21,8 @@ class PracticeOpportunityForm extends Form
     public $installmentId = null;
     public $customerTypeId = null;
 
+    public ?string $employmentStartDate = null;
+
     public $amountDisbursed = null;
     public $totalAmount = null;
     public $rateAmount = null;
@@ -58,6 +60,11 @@ class PracticeOpportunityForm extends Form
             'insuranceId' => ['nullable', 'exists:insurances,id'],
             'installmentId' => ['nullable', 'exists:installments,id'],
             'customerTypeId' => ['nullable', 'exists:customer_types,id'],
+
+            'employmentStartDate' => [
+                'nullable',
+                'date',
+            ],
 
             'amountDisbursed' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'totalAmount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
@@ -99,6 +106,9 @@ class PracticeOpportunityForm extends Form
         $this->insuranceId = $opportunity->insurance_id;
         $this->installmentId = $opportunity->installment_id;
         $this->customerTypeId = $opportunity->customer_type_id;
+        $this->employmentStartDate =
+    $opportunity->employment_start_date?->format('Y-m-d');
+
 
         $this->amountDisbursed = $opportunity->amount_disbursed;
         $this->totalAmount = $opportunity->total_amount;
@@ -156,6 +166,7 @@ class PracticeOpportunityForm extends Form
             'insurance_id' => $this->insuranceId ?: null,
             'installment_id' => $this->installmentId ?: null,
             'customer_type_id' => $this->customerTypeId ?: null,
+            'employment_start_date' => $this->employmentStartDate ?: null,
 
             'amount_disbursed' => $this->nullableNumber($this->amountDisbursed),
             'total_amount' => $this->nullableNumber($this->totalAmount),
