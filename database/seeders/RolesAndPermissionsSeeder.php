@@ -227,7 +227,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'access customers',
             'create customers',
             'view customers',
-            'view all customers',
             'update customers',
             'delete customers',
             'assign customer to user',
@@ -359,6 +358,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'access customers',
             'create customers',
             'view customers',
+            'view all customers',
             'update customers',
             'delete customers',
             // leads permissions
