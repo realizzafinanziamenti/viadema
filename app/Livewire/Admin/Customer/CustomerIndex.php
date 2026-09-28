@@ -80,17 +80,26 @@ class CustomerIndex extends Component
         }
 
         try {
-            $query = Customer::whereIn('id', $this->selected);
+    $query = Customer::query()
+        ->customers()
+        ->whereIn('id', $this->selected);
 
-            return Excel::download(
-                new CustomersExport($query),
-                'clienti_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
-            );
-        } catch (Exception $e) {
-            Log::error('Errore durante l\'export customer: ' . $e->getMessage(), [
-                'selected_customers' => $this->selected,
-                'user_id' => auth()->id(),
-            ]);
+    if (! auth()->user()->can('view all customers')) {
+        $query->where('user_id', auth()->id());
+    }
+
+    return Excel::download(
+        new CustomersExport($query),
+        'clienti_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+    );
+} catch (Exception $e) {
+    Log::error(
+        'Errore durante l\'export customer: ' . $e->getMessage(),
+        [
+            'selected_customers' => $this->selected,
+            'user_id' => auth()->id(),
+        ]
+    );
 
             Toaster::error('Errore durante l\'esportazione dei profili. Riprova più tardi.');
             return;
@@ -106,13 +115,19 @@ class CustomerIndex extends Component
     }
 
     #[Computed]
-    public function query()
-    {
-        return Customer::with('user')
-            ->customers()
-            ->filterBySearch($this->search)
-            ->orderByDesc('updated_at');
+public function query()
+{
+    $query = Customer::with('user')
+        ->customers();
+
+    if (! auth()->user()->can('view all customers')) {
+        $query->where('user_id', auth()->id());
     }
+
+    return $query
+        ->filterBySearch($this->search)
+        ->orderByDesc('updated_at');
+}
 
     #[Computed]
     public function rows()

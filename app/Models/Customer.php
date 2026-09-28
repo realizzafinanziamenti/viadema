@@ -267,6 +267,7 @@ class Customer extends Model
 
     // SCOPES
 
+
     /**
      * Scope a query to filter customer by customer status
      */

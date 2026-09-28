@@ -74,9 +74,13 @@ class CustomerPolicy
     public function update(User $user, Customer $customer): bool
     {
         // If the customer is a customer, check if the user has permission to update customers
-        if ($customer->isCustomer()) {
-            return $user->hasPermissionTo('update customers') && $user->id === $customer->user_id;
-        }
+    if ($customer->isCustomer()) {
+    return $user->hasPermissionTo('view customers')
+        && (
+            $user->hasPermissionTo('view all customers')
+            || $user->id === $customer->user_id
+    );
+}
 
         // If the customer is a lead, check if the user has permission to update leads
         if ($customer->isLead()) {
