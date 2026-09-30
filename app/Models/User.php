@@ -422,7 +422,11 @@ class User extends Authenticatable
 
         $query = User::where('id', '!=', auth()->id())
             ->where(function ($query) use ($search) {
-                $query->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%'])
+                $fullName = $query->getConnection()->getDriverName() === 'sqlite'
+                    ? "first_name || ' ' || last_name"
+                    : "CONCAT(first_name, ' ', last_name)";
+
+                $query->whereRaw("{$fullName} LIKE ?", ['%' . $search . '%'])
                     ->orWhere('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%");
             })
