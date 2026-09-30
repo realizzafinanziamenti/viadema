@@ -303,7 +303,7 @@ class Practice extends Model
     /**
      * Scope a query to filter practices for a given department/role.
      */
-    public function scopeFilteredForDepartment(Builder $query): Builder
+public function scopeFilteredForDepartment(Builder $query): Builder
 {
     $user = auth()->user();
 
@@ -311,11 +311,7 @@ class Practice extends Model
         return $query->whereRaw('1 = 0');
     }
 
-    if (
-        $user->isFloorManager()
-        || $user->isConsultant()
-        || $user->isExternal()
-    ) {
+    if ($user->isConsultant() || $user->isExternal()) {
         return $query->where('user_id', $user->getKey());
     }
 
