@@ -159,6 +159,16 @@ class Practice extends Model
     // END RELATIONSHIPS
 
     // ACCESSORS
+    public function scopeFilteredForArchive(Builder $query): Builder
+{
+    $user = auth()->user();
+
+    if ($user->can('view all archived practices')) {
+        return $query;
+    }
+
+    return $query->where('user_id', $user->id);
+}
 
     /**
      * Accessor to obtain the practice code.

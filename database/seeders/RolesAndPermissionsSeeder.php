@@ -96,6 +96,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'export practices',
             'view practices',
             'view all practices',
+            'view all archived practices',
             'update practices',
             'update practice status',
             'delete practices',
@@ -199,6 +200,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'update practice status',
             'delete practices',
             'assign practice to user',
+            'view all archived practices',
             // simulator permissions
             'access simulator',
             'view simulator',
