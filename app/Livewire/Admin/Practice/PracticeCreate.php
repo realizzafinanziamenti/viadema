@@ -915,39 +915,49 @@ public function closeCreateCustomerModal(): void
         }
     }
 
-    #[Layout('components.layouts.app')]
-    public function render()
-    {
-        $teamMembers =
-            User::assignableUsers()
-                ->filterBySearch(
-                    $this->teamMemberSearch
-                )
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->get()
-                ->pluck('full_name', 'id')
-                ->toArray();
+#[Layout('components.layouts.app')]
+public function render()
+{
+    $user = auth()->user();
 
-        $customers =
-            Customer::filterBySearch(
-                $this->customerSearch
-            )
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->get()
-                ->pluck('full_name', 'id')
-                ->toArray();
+    $teamMembers = User::assignableUsers()
+        ->filterBySearch($this->teamMemberSearch)
+        ->orderBy('first_name')
+        ->orderBy('last_name')
+        ->get()
+        ->pluck('full_name', 'id')
+        ->toArray();
 
-        return view(
-            'livewire.admin.practice.practice-create',
-            [
-                'teamMembers' =>
-                    $teamMembers,
+    $customersQuery = Customer::query()
+        ->filterBySearch($this->customerSearch);
 
-                'customers' =>
-                    $customers,
-            ]
+    /*
+     * Gli utenti che non possono vedere tutte le anagrafiche
+     * possono creare pratiche solamente sui propri clienti.
+     *
+     * Il controllo backend in savePractice() rimane comunque
+     * attivo come ulteriore protezione.
+     */
+    if (! $user->can('view all customers')) {
+        $customersQuery->where(
+            'user_id',
+            $user->getKey()
         );
     }
+
+    $customers = $customersQuery
+        ->orderBy('first_name')
+        ->orderBy('last_name')
+        ->get()
+        ->pluck('full_name', 'id')
+        ->toArray();
+
+    return view(
+        'livewire.admin.practice.practice-create',
+        [
+            'teamMembers' => $teamMembers,
+            'customers' => $customers,
+        ]
+    );
+}
 }
