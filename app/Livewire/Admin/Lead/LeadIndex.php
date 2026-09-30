@@ -863,14 +863,18 @@ public function importLeads(): void
     $initiatedBy = User::query()
         ->findOrFail(Auth::id());
 
-    /*
-     * Preserve the current behaviour:
-     * when no user is selected, imported leads are assigned to the
-     * user who started the import.
-     */
-    $defaultUser = $this->userId !== null
-        ? User::query()->findOrFail($this->userId)
-        : $initiatedBy;
+/*
+ * Assignment priority:
+ *
+ * 1. User explicitly selected in the import modal.
+ * 2. "collaboratore_associato" from the Excel row.
+ * 3. User who started the import as fallback.
+ *
+ * The last two cases are resolved inside LeadsImport::getUser().
+ */
+$defaultUser = $this->userId !== null
+    ? User::query()->findOrFail($this->userId)
+    : null;
 
     $fileName = $this->importFile
         ->getClientOriginalName();
