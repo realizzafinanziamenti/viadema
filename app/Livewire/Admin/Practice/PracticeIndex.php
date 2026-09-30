@@ -1410,35 +1410,8 @@ public function importPractices(): void
  */
 private function filteredPracticeQuery(): Builder
 {
-    $query = Practice::query();
-
-    if ($this->expired === true) {
-        $user = Auth::user();
-
-        /*
-         * Archivio:
-         * - Superadmin vede tutte le pratiche archiviate
-         * - Coordinatore di Sala vede tutte le pratiche archiviate
-         * - Tutti gli altri vedono esclusivamente le proprie
-         */
-        if (
-            ! $user->isSuperAdmin()
-            && ! $user->isFloorManager()
-        ) {
-            $query->where(
-                'user_id',
-                $user->getKey()
-            );
-        }
-    } else {
-        /*
-         * Pratiche attive:
-         * manteniamo esattamente la logica esistente.
-         */
-        $query->filteredForDepartment();
-    }
-
-    $query
+    $query = Practice::query()
+        ->filteredForDepartment()
         ->filterByProductType($this->type)
         ->isExpired($this->expired)
         ->filterBySearch($this->search);

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 use App\Enums\PracticeStatus;
-use App\Enums\UserDepartment;
 use App\Observers\PracticeObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -159,16 +158,7 @@ class Practice extends Model
     // END RELATIONSHIPS
 
     // ACCESSORS
-    public function scopeFilteredForArchive(Builder $query): Builder
-{
-    $user = auth()->user();
 
-    if ($user->can('view all archived practices')) {
-        return $query;
-    }
-
-    return $query->where('user_id', $user->id);
-}
 
     /**
      * Accessor to obtain the practice code.
@@ -313,25 +303,24 @@ class Practice extends Model
     /**
      * Scope a query to filter practices for a given department/role.
      */
-    public function scopeFilteredForDepartment(Builder $query)
-    {
-        // Coordinatore di sala vede solo le pratiche assegnate a collaboratori dello stesso dipartimento
-        if (auth()->user()->isFloorManager()) {
-            $floorManagerIds = User::whereHas('roles', function ($q) {
-                $q->where('name', UserDepartment::FLOOR_MANAGER->value)
-                    ->orWhere('name', UserDepartment::CONSULTANT->value);
-            })->pluck('id');
+    public function scopeFilteredForDepartment(Builder $query): Builder
+{
+    $user = auth()->user();
 
-            return $query->whereIn('user_id', $floorManagerIds);
-        }
-
-        // I consulenti e gli esterni vedono solo le loro pratiche
-        if (auth()->user()->isConsultant() || auth()->user()->isExternal()) {
-            return $query->where('user_id', auth()->id());
-        }
-
-        return $query;
+    if ($user === null) {
+        return $query->whereRaw('1 = 0');
     }
+
+    if (
+        $user->isFloorManager()
+        || $user->isConsultant()
+        || $user->isExternal()
+    ) {
+        return $query->where('user_id', $user->getKey());
+    }
+
+    return $query;
+}
 
     // END SCOPES
 }
