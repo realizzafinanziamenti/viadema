@@ -97,17 +97,25 @@ class PracticePolicy
      * Determine whether the user can restore the model.
      */
     public function restore(User $user, Practice $practice): bool
-    {
-        return false;
-    }
+{
+    return $user->hasPermissionTo('restore trash')
+        && (
+            $user->hasPermissionTo('view all trash')
+            || $practice->deleted_by === $user->id
+        );
+}
 
     /**
      * Determine whether the user can permanently delete the model.
      */
     public function forceDelete(User $user, Practice $practice): bool
-    {
-        return false;
-    }
+{
+    return $user->hasPermissionTo('force delete trash')
+        && (
+            $user->hasPermissionTo('view all trash')
+            || $practice->deleted_by === $user->id
+        );
+}
 
     /**
      * Determine whether the user can import models.

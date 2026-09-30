@@ -35,6 +35,11 @@ class RolesAndPermissionsSeeder extends Seeder
          * Create permissions
          */
         $permissions = [
+            // trash permissions
+            'access trash',
+            'view all trash',
+            'restore trash',
+            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters', // numero pratiche
@@ -147,6 +152,10 @@ class RolesAndPermissionsSeeder extends Seeder
          * For now, all roles will have the same permissions, except for the observer role.
          */
         $floorManagerPermissions = [
+            // trash permissions
+            'access trash',
+            'restore trash',
+            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters',
@@ -200,6 +209,10 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         $webPermissions = [
+            // trash permissions
+            'access trash',
+            'restore trash',
+            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view latest disbursed practices',
@@ -277,6 +290,10 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         $consultantPermissions = [
+                        // trash permissions
+            'access trash',
+            'restore trash',
+            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters',
@@ -327,6 +344,11 @@ class RolesAndPermissionsSeeder extends Seeder
         $externalPermissions = $consultantPermissions;
 
         $backOfficePermissions = [
+                        // trash permissions
+            'access trash',
+            'restore trash',
+            'force delete trash',
+            'view all trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters',

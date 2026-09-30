@@ -24,6 +24,7 @@ class Practice extends Model
 
     protected $fillable = [
         'user_id',
+        'deleted_by',
         'customer_id',
         'practice_opportunity_id',
 
@@ -124,6 +125,11 @@ class Practice extends Model
         return $this->belongsTo(User::class, 'user_id')
             ->withTrashed();
     }
+    public function deletedBy(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'deleted_by')
+        ->withTrashed();
+}
 
     /**
      * Get the customer associated with the practice.
