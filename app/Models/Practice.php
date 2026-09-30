@@ -24,6 +24,7 @@ class Practice extends Model
 
     protected $fillable = [
         'user_id',
+        'deleted_by',
         'customer_id',
         'practice_opportunity_id',
 
@@ -124,6 +125,11 @@ class Practice extends Model
         return $this->belongsTo(User::class, 'user_id')
             ->withTrashed();
     }
+    public function deletedBy(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'deleted_by')
+        ->withTrashed();
+}
 
     /**
      * Get the customer associated with the practice.
@@ -153,6 +159,16 @@ class Practice extends Model
     // END RELATIONSHIPS
 
     // ACCESSORS
+    public function scopeFilteredForArchive(Builder $query): Builder
+{
+    $user = auth()->user();
+
+    if ($user->can('view all archived practices')) {
+        return $query;
+    }
+
+    return $query->where('user_id', $user->id);
+}
 
     /**
      * Accessor to obtain the practice code.

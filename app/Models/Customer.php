@@ -47,6 +47,8 @@ class Customer extends Model
 
     protected $fillable = [
         'user_id',
+        'deleted_by',
+        'customer_type_id',
         'customer_type_id',
         'first_name',
         'last_name',
@@ -183,6 +185,15 @@ class Customer extends Model
     }
 
     // RELATIONSHIPS
+    /** user that own deleted customer/ */
+
+    public function deletedBy(): BelongsTo
+{
+    return $this->belongsTo(
+        User::class,
+        'deleted_by'
+    );
+}
 
     /**
      * Get the user that owns the customer.

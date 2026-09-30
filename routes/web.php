@@ -27,6 +27,7 @@ use App\Livewire\Admin\User\UserIndex;
 use App\Livewire\Admin\User\UserShow;
 use App\Livewire\Admin\User\UserUpdate;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Admin\Trash\TrashIndex;
 use Livewire\Volt\Volt;
 
 Route::permanentRedirect('/', 'login');
@@ -70,6 +71,11 @@ Route::prefix('/')->middleware(['auth', 'verified'])->group(function () {
     Route::get('leads/create', LeadCreate::class)->name('lead.create')->middleware('can:create leads');
     Route::get('leads/{id}', LeadShow::class)->name('lead.show')->middleware(['can:view leads', 'customer.type:lead']);
     Route::get('leads/{id}/edit', LeadUpdate::class)->name('lead.edit')->middleware(['can:update leads', 'customer.type:lead']);
+
+    // Trash Route
+Route::get('trash', TrashIndex::class)
+    ->name('trash.index')
+    ->middleware('can:access trash');
 
     // Document Routes
     Route::get('form-documents', FormDocumentIndex::class)->name('form-document.index')->middleware('can:access form documents');

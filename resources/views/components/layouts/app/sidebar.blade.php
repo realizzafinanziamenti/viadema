@@ -79,6 +79,12 @@
                         <x-icons.icon-akar-clipboard />
                     </x-sidebar-item>
                 @endcan
+
+                @can('access trash')
+    <x-sidebar-item route="trash.index" routeIs="trash" label="Cestino">
+        <x-icons.icon-akar-inbox />
+    </x-sidebar-item>
+@endcan
             </flux:navlist.group>
 
             {{-- CALENDAR --}}

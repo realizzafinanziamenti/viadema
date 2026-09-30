@@ -123,18 +123,30 @@ class CustomerPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Customer $customer): bool
-    {
-        return false;
-    }
+    public function restore(
+    User $user,
+    Customer $customer
+): bool {
+    return $user->hasPermissionTo('restore trash')
+        && (
+            $user->hasPermissionTo('view all trash')
+            || $customer->deleted_by === $user->id
+        );
+}
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Customer $customer): bool
-    {
-        return false;
-    }
+    public function forceDelete(
+    User $user,
+    Customer $customer
+): bool {
+    return $user->hasPermissionTo('force delete trash')
+        && (
+            $user->hasPermissionTo('view all trash')
+            || $customer->deleted_by === $user->id
+        );
+}
 
     /**
      * Determine whether the user can import models.
