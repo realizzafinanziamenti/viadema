@@ -395,6 +395,11 @@ class User extends Authenticatable
     }
 
     // WIRECHAT TRAITS AND METHODS
+    public function canCreateChats(): bool
+    {
+        return true;
+    }
+
     /**
      * Returns the URL for the user's cover image for chats (avatar).
      */
