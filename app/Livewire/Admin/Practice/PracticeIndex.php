@@ -17,7 +17,6 @@ use App\Models\Practice;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
-use App\Notifications\PracticeStatusChanged;
 use App\Rules\ExceptEnumValues;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
@@ -29,7 +28,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -982,22 +980,7 @@ public function importPractices(): void
      */
     protected function notifyPracticeStatusChanged(Practice $practice, PracticeStatus $oldStatus, PracticeStatus $newStatus): void
     {
-        $usersToNotify = collect([
-            $practice->user,
-            User::role('superadmin')->get(),
-        ])
-            ->flatten()
-            ->unique('id')
-            ->reject(fn($user) => $user->id === auth()->id());
-
-        Notification::send(
-            $usersToNotify,
-            new PracticeStatusChanged(
-                $practice,
-                $oldStatus->getLabelText(),
-                $newStatus->getLabelText()
-            )
-        );
+        \App\Services\PracticeNotifications::statusChanged($practice, $oldStatus, $newStatus);
     }
 
     /**
@@ -1097,20 +1080,6 @@ public function importPractices(): void
         $this->customerTypes = CustomerType::orderBy('name')
             ->pluck('name', 'id')
             ->toArray();
-    }
-
-    /**
-     * This method is called when the component is mounted.
-     * It initializes the selects and sets the disbursement date if expired.
-     */
-    protected function setDisbursementDateIfExpired(): void
-    {
-        if ($this->expired === true) {
-            $this->disbursementDateMin = now()->subYear()->format('Y-m-d');
-            $this->tempDisbursementDateMin = $this->disbursementDateMin;
-            $this->disbursementDateMax = now()->format('Y-m-d');
-            $this->tempDisbursementDateMax = $this->disbursementDateMax;
-        }
     }
 
     /**
@@ -1522,7 +1491,6 @@ public function rows()
         // the expired status based on the request parameter
         // This allows the component to be used with or without the expired filter
         $this->expired = $request->boolean('expired');
-        $this->setDisbursementDateIfExpired();
 
         $this->initializeSelects();
     }

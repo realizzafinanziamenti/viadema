@@ -6,7 +6,6 @@ use App\Enums\PracticeStatus;
 use App\Models\Attachment;
 use App\Models\Practice;
 use App\Models\User;
-use App\Notifications\PracticeStatusChanged;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesEntityActions;
 use App\Traits\InteractsWithDropdowns;
@@ -15,7 +14,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
@@ -107,22 +105,7 @@ class PracticeShow extends Component
      */
     protected function notifyPracticeStatusChanged(Practice $practice, PracticeStatus $oldStatus, PracticeStatus $newStatus): void
     {
-        $usersToNotify = collect([
-            $practice->user,
-            User::role('superadmin')->get(),
-        ])
-            ->flatten()
-            ->unique('id')
-            ->reject(fn($user) => $user->id === auth()->id());
-
-        Notification::send(
-            $usersToNotify,
-            new PracticeStatusChanged(
-                $practice,
-                $oldStatus->getLabelText(),
-                $newStatus->getLabelText()
-            )
-        );
+        \App\Services\PracticeNotifications::statusChanged($practice, $oldStatus, $newStatus);
     }
 
     /**

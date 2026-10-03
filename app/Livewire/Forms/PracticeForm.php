@@ -752,6 +752,7 @@ public function hasDuplicatePractice(): bool
                 $this->ensurePracticeIsNotDuplicate();
 
                 $oldUserId = $this->practice->user_id;
+                $oldStatus = $this->practice->practice_status;
 
                 $this->practice->loadMissing(
                     'opportunity'
@@ -778,6 +779,10 @@ public function hasDuplicatePractice(): bool
                                 $opportunity->getKey(),
                         ]
                     )
+                );
+
+                \App\Services\PracticeNotifications::statusChanged(
+                    $this->practice, $oldStatus, $this->practice->practice_status
                 );
 
                 foreach ($this->attachments as $attachment) {
