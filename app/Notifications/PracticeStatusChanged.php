@@ -16,7 +16,7 @@ class PracticeStatusChanged extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Practice $practice, public string $oldStatus, public string $newStatus)
+    public function __construct(public Practice $practice, public string $oldStatus, public string $newStatus, public ?int $actorId = null, public ?string $actorName = null)
     {
         $this->afterCommit();
     }
@@ -39,7 +39,7 @@ class PracticeStatusChanged extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('Stato pratica aggiornato')
             ->greeting('Ciao ' . $notifiable->full_name . '!')
-            ->line('Una pratica ha cambiato stato da ' . $this->oldStatus . ' a ' . $this->newStatus . '.')
+            ->line($this->message())
             ->action('Visualizza pratica', route('practice.show', ['id' => $this->practice->id]))
             ->line('Grazie per utilizzare la nostra applicazione!');
     }
@@ -53,11 +53,22 @@ class PracticeStatusChanged extends Notification implements ShouldQueue
     {
         return [
             'practice_id' => $this->practice->id,
+            'actor_id' => $this->actorId,
+            'actor_name' => $this->actorName,
             'title' => 'Stato pratica aggiornato',
-            'message' => 'Una pratica ha cambiato stato da ' . $this->oldStatus . ' a ' . $this->newStatus . '.',
+            'message' => $this->message(),
             'url' => route('practice.show', ['id' => $this->practice->id]),
             'type' => 'practice-status-changed',
         ];
+    }
+
+    private function message(): string
+    {
+        $subject = $this->actorName
+            ? $this->actorName . ' ha cambiato lo stato della pratica '
+            : 'Cambio di stato della pratica ';
+
+        return $subject . $this->practice->id . ' da ' . $this->oldStatus . ' a ' . $this->newStatus . '.';
     }
 
     /**
@@ -65,7 +76,7 @@ class PracticeStatusChanged extends Notification implements ShouldQueue
      */
     public function databaseType(object $notifiable): string
     {
-        return 'user-added-to-practice';
+        return 'practice-status-changed';
     }
 
     /**
@@ -81,6 +92,6 @@ class PracticeStatusChanged extends Notification implements ShouldQueue
      */
     public function broadcastType(): string
     {
-        return 'broadcast.user-added-to-practice';
+        return 'broadcast.practice-status-changed';
     }
 }
