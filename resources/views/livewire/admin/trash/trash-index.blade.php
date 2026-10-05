@@ -365,6 +365,7 @@
                                         </span>
                                     </flux:button>
 
+                                    @if (auth()->user()->isSuperAdmin())
                                     <flux:button
                                         type="button"
                                         size="sm"
@@ -384,6 +385,7 @@
                                             Attendi...
                                         </span>
                                     </flux:button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

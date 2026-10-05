@@ -141,11 +141,7 @@ class CustomerPolicy
     User $user,
     Customer $customer
 ): bool {
-    return $user->hasPermissionTo('force delete trash')
-        && (
-            $user->hasPermissionTo('view all trash')
-            || $customer->deleted_by === $user->id
-        );
+    return $user->isSuperAdmin();
 }
 
     /**

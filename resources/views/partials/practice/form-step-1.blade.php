@@ -66,6 +66,7 @@
                 @foreach ($practice->attachments as $attachment)
                     <x-display-file
                         :attachment="$attachment"
+                        :can-delete="Gate::allows('delete', $practice)"
                         value="{{ $attachment->file_name }}"
                     />
                 @endforeach

@@ -29,6 +29,10 @@ class PracticePolicy
 
     public function update(User $user, Practice $practice): bool
     {
+        if ($this->isReadOnly($user, $practice)) {
+            return false;
+        }
+
         if (! $user->hasPermissionTo('update practices')) {
             return false;
         }
@@ -38,6 +42,10 @@ class PracticePolicy
 
     public function updateStatus(User $user, Practice $practice): bool
     {
+        if ($user->isConsultant() || $user->isExternal()) {
+            return false;
+        }
+
         if (! $user->hasPermissionTo('update practice status')) {
             return false;
         }
@@ -51,6 +59,10 @@ class PracticePolicy
 
     public function delete(User $user, Practice $practice): bool
     {
+        if ($this->isReadOnly($user, $practice)) {
+            return false;
+        }
+
         if (! $user->hasPermissionTo('delete practices')) {
             return false;
         }
@@ -69,11 +81,7 @@ class PracticePolicy
 
     public function forceDelete(User $user, Practice $practice): bool
     {
-        return $user->hasPermissionTo('force delete trash')
-            && (
-                $user->hasPermissionTo('view all trash')
-                || $practice->deleted_by === $user->getKey()
-            );
+        return $user->isSuperAdmin();
     }
 
     public function importPractice(User $user): bool
@@ -84,6 +92,12 @@ class PracticePolicy
     public function exportPractice(User $user): bool
     {
         return $user->hasPermissionTo('export practices');
+    }
+
+    private function isReadOnly(User $user, Practice $practice): bool
+    {
+        return ($user->isConsultant() || $user->isExternal())
+            && $practice->practice_status === PracticeStatus::DISBURSED;
     }
 
     private function canAccessPractice(

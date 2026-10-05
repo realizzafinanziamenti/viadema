@@ -913,6 +913,8 @@ public function importPractices(): void
      */
     public function selectPracticeForStatus(int $id)
     {
+        Gate::authorize('updateStatus', Practice::findOrFail($id));
+
         $this->selectEntityForAction(
             id: $id,
             modelClass: Practice::class,
@@ -1005,6 +1007,8 @@ public function importPractices(): void
      */
     public function selectPracticeForDelete(int $id): void
     {
+        Gate::authorize('delete', Practice::findOrFail($id));
+
         $this->selectEntityForAction(
             id: $id,
             modelClass: Practice::class,
