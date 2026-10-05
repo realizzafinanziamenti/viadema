@@ -679,32 +679,27 @@ $message = $errors !== []
             }
         }
 
-        $userFullName = mb_strtolower(
-            preg_replace(
-                '/\s+/',
-                ' ',
-                trim((string) $this->value($row, 'nome_agenzia', ''))
-            )
+        $normalizeName = static fn (string $name): string => mb_strtolower(
+            trim(preg_replace('/\s+/u', ' ', $name))
         );
 
+        $userFullName = $normalizeName((string) $this->value($row, 'nome_agenzia', ''));
+
         if ($userFullName !== '') {
-            $tokens = array_values(array_filter(explode(' ', $userFullName)));
-            $query = User::query();
+            // Normalize both sides identically, independently of database collation.
+            // Count each user once, including matches in the reversed name order.
+            $matches = User::query()
+                ->select(['id', 'first_name', 'last_name'])
+                ->cursor()
+                ->filter(static fn (User $user): bool =>
+                    $normalizeName($user->first_name . ' ' . $user->last_name) === $userFullName
+                    || $normalizeName($user->last_name . ' ' . $user->first_name) === $userFullName
+                )
+                ->take(2)
+                ->collect();
 
-            foreach ($tokens as $token) {
-                $query->where(function ($query) use ($token): void {
-                    $like = '%' . $token . '%';
-
-                    $query
-                        ->whereRaw('LOWER(first_name) LIKE ?', [$like])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', [$like]);
-                });
-            }
-
-            $matchedUser = $query->first();
-
-            if ($matchedUser !== null) {
-                return $matchedUser;
+            if ($matches->count() === 1) {
+                return $matches->first();
             }
         }
 
@@ -714,7 +709,9 @@ $message = $errors !== []
             return $initiatedBy;
         }
 
-        return User::role('superadmin')->firstOrFail();
+        throw ValidationException::withMessages([
+            'nome_agenzia' => 'Impossibile assegnare la pratica: nessun collaboratore valido e autore dell\'import non disponibile.',
+        ]);
     }
 
     protected function setCustomer(
