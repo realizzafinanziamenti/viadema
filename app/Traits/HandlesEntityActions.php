@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 trait HandlesEntityActions
 {
-    public function selectEntityForAction(
+    protected function selectEntityForAction(
         int $id,
         string $modelClass,
         string $property = 'selectedEntity',
@@ -26,7 +26,7 @@ trait HandlesEntityActions
         $this->dispatch('open-modal', $modalName);
     }
 
-    public function deleteSelectedEntity(
+    protected function deleteSelectedEntity(
     string $property = 'selectedEntity',
     string $modalName = 'delete-modal',
     string $successMessage = 'Elemento eliminato con successo',

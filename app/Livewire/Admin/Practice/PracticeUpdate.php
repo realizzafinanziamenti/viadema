@@ -901,13 +901,9 @@ public function setNewCustomerTeamMember(
     public function selectAttachmentForDelete(
         int $id
     ): void {
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Attachment::class,
-            property: 'selectedAttachment',
-            modalName: 'delete-attachment',
-            notFoundMessage: 'Allegato non trovato'
-        );
+        Gate::authorize('delete', $this->practice);
+        $this->selectedAttachment = $this->practice->attachments()->findOrFail($id);
+        $this->dispatch('open-modal', 'delete-attachment');
     }
 
     /**
@@ -919,6 +915,9 @@ public function setNewCustomerTeamMember(
             'delete',
             $this->practice
         );
+
+        $this->selectedAttachment = $this->practice->attachments()
+            ->findOrFail($this->selectedAttachment?->getKey());
 
         try {
             DB::transaction(function (): void {

@@ -37,6 +37,8 @@ class PracticeShow extends Component
      */
     public function openUpdatePracticeStatusModal()
     {
+        Gate::authorize('updateStatus', $this->practice);
+
         $this->dispatch('open-modal', 'update-practice-status');
     }
 
@@ -140,13 +142,9 @@ class PracticeShow extends Component
      */
     public function selectAttachmentForDelete(int $id): void
     {
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Attachment::class,
-            property: 'selectedAttachment',
-            modalName: 'delete-attachment',
-            notFoundMessage: 'Allegato non trovato'
-        );
+        Gate::authorize('delete', $this->practice);
+        $this->selectedAttachment = $this->practice->attachments()->findOrFail($id);
+        $this->dispatch('open-modal', 'delete-attachment');
     }
 
     /**
@@ -156,6 +154,9 @@ class PracticeShow extends Component
     public function deleteAttachment(): void
     {
         Gate::authorize('delete', $this->practice);
+
+        $this->selectedAttachment = $this->practice->attachments()
+            ->findOrFail($this->selectedAttachment?->getKey());
 
         try {
             DB::transaction(function () {

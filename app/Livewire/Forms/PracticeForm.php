@@ -14,6 +14,7 @@ use App\Traits\AcceptedFileTypes;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Enum;
@@ -745,6 +746,16 @@ public function hasDuplicatePractice(): bool
      */
     public function update(): Practice|false
     {
+        // Recheck persisted state, including forms opened before disbursement.
+        $this->practice->refresh();
+        Gate::authorize('update', $this->practice);
+
+        $user = Auth::user();
+        if (($user->isConsultant() || $user->isExternal())
+            && $this->practiceStatus !== $this->practice->practice_status?->value) {
+            Gate::authorize('updateStatus', $this->practice);
+        }
+
         $this->validate();
 
         try {

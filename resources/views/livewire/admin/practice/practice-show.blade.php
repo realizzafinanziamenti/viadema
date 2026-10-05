@@ -225,7 +225,7 @@
 
                 <div class="flex flex-col gap-2.5">
                     @foreach ($practice->attachments as $attachment)
-                        <x-display-file :attachment="$attachment" />
+                        <x-display-file :attachment="$attachment" :can-delete="Gate::allows('delete', $practice)" />
                     @endforeach
                 </div>
             </x-card>

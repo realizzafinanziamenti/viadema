@@ -156,7 +156,6 @@ class RolesAndPermissionsSeeder extends Seeder
             // trash permissions
             'access trash',
             'restore trash',
-            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters',
@@ -214,7 +213,6 @@ class RolesAndPermissionsSeeder extends Seeder
             // trash permissions
             'access trash',
             'restore trash',
-            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view latest disbursed practices',
@@ -295,7 +293,6 @@ class RolesAndPermissionsSeeder extends Seeder
                         // trash permissions
             'access trash',
             'restore trash',
-            'force delete trash',
             // dashboard permissions
             'access dashboard',
             'view practice counters',
@@ -330,7 +327,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view practices',
             'create practices',
             'update practices',
-            'update practice status',
             'delete practices',
             // simulator permissions
             'access simulator',
@@ -350,7 +346,6 @@ class RolesAndPermissionsSeeder extends Seeder
                         // trash permissions
             'access trash',
             'restore trash',
-            'force delete trash',
             'view all trash',
             // dashboard permissions
             'access dashboard',
