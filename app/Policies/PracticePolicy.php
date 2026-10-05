@@ -96,8 +96,7 @@ class PracticePolicy
 
     private function isReadOnly(User $user, Practice $practice): bool
     {
-        return ($user->isConsultant() || $user->isExternal())
-            && $practice->practice_status === PracticeStatus::DISBURSED;
+        return $user->isConsultant() || $user->isExternal();
     }
 
     private function canAccessPractice(

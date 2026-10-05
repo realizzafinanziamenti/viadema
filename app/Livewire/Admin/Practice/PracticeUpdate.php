@@ -948,6 +948,14 @@ public function setNewCustomerTeamMember(
     }
 
     /**
+     * Recheck edit access on every subsequent Livewire request.
+     */
+    public function hydrate(): void
+    {
+        Gate::authorize('update', $this->practice->fresh());
+    }
+
+    /**
      * Initialize component.
      */
     public function mount($id): void
