@@ -654,6 +654,11 @@ public function hasDuplicatePractice(): bool
      */
     public function store(): ?Practice
     {
+        $user = Auth::user();
+        if ($user->isConsultant() || $user->isExternal()) {
+            $this->userId = $user->getKey();
+        }
+
         $this->validate();
 
         try {
