@@ -382,6 +382,7 @@ $message = $errors !== []
         }
     }
 
+
     public function registerEvents(): array
     {
         return [
@@ -427,7 +428,7 @@ $message = $errors !== []
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 100;
     }
 
     public function prepareForValidation(array $row): array

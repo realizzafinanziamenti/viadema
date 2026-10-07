@@ -574,7 +574,7 @@ public function handleImportFailed(ImportFailed $event): void
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 100;
     }
 
     /* Prepara i dati per la validazione */
