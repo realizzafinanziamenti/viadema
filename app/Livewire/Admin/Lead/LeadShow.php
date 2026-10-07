@@ -11,6 +11,7 @@ use App\Traits\InteractsWithDropdowns;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
@@ -38,6 +39,9 @@ class LeadShow extends Component
      */
     public function openUpdateLeadStatusModal()
     {
+        $this->lead = Customer::leads()->findOrFail($this->lead->getKey());
+        Gate::authorize('updateLeadStatus', $this->lead);
+
         $this->resetValidation();
 
         $this->selectedLeadStatus = $this->lead->lead_status?->value;
@@ -52,10 +56,11 @@ class LeadShow extends Component
      */
     public function updateLeadStatus(): void
 {
-    Gate::authorize('update', $this->lead);
+    $this->lead = Customer::leads()->findOrFail($this->lead->getKey());
+    Gate::authorize('updateLeadStatus', $this->lead);
 
     $this->validate([
-        'selectedLeadStatus' => ['required'],
+        'selectedLeadStatus' => ['required', new Enum(LeadStatus::class)],
         'selectedLeadRecontactDate' => ['nullable', 'date'],
     ], [
         'selectedLeadRecontactDate.date' => 'La data ricontatto non è valida.',
@@ -84,9 +89,7 @@ class LeadShow extends Component
     {
         Gate::authorize('create', Practice::class);
 
-        $opportunity = $this->lead->practiceOpportunities()
-        ->latest()
-        ->first();
+        $opportunity = $this->lead->latestPracticeOpportunity()->first();
         if (! $opportunity) {
             Toaster::error('Non è presente nessuna opportunità pratica associata a questo lead.');
             return;
@@ -120,16 +123,12 @@ class LeadShow extends Component
         $this->lead = Customer::with([
             'customerType',
 
-            'practiceOpportunities' => function ($query): void {
-                $query->latest('created_at');
-            },
-
-            'practiceOpportunities.productType',
-            'practiceOpportunities.productSubtype',
-            'practiceOpportunities.financialTable',
-            'practiceOpportunities.insurance',
-            'practiceOpportunities.installment',
-            'practiceOpportunities.customerType',
+            'latestPracticeOpportunity.productType',
+            'latestPracticeOpportunity.productSubtype',
+            'latestPracticeOpportunity.financialTable',
+            'latestPracticeOpportunity.insurance',
+            'latestPracticeOpportunity.installment',
+            'latestPracticeOpportunity.customerType',
         ])->findOrFail($id);
         Gate::authorize('view', $this->lead);
 

@@ -159,7 +159,7 @@ public function setOpportunityAcquisitionChannel(?string $value = null): void
 
         $this->form->setCustomer($this->lead);
         $this->opportunityForm->setOpportunity(
-            $this->lead->practiceOpportunities()->latest()->first()
+            $this->lead->latestPracticeOpportunity
         );
         $this->initializeLists();
     }

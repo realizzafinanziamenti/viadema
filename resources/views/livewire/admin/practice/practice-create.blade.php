@@ -50,6 +50,7 @@
         <form wire:submit.prevent='saveCustomer' class="w-full mt-10 mb-5">
             @include('partials.customer.customer-form-fields', [
                 'context' => 'customer',
+                'showNotes' => false,
                 'search' => 'teamMemberSearch',
                 'form' => 'customerForm',
                 'selectedUserId' => $customerForm->userId,

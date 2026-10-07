@@ -1076,15 +1076,13 @@ public function setCustomerType(?int $value = null): void
  */
     public function selectLeadForStatus(int $id)
     {
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Customer::class,
-            property: 'selectedLead',
-            modalName: 'update-lead-status',
-            notFoundMessage: 'Profilo non trovata'
-        );
+        $lead = Customer::leads()->findOrFail($id);
+        Gate::authorize('updateLeadStatus', $lead);
+        $this->selectedLead = $lead;
+        $this->resetValidation();
         $this->setLeadStatus($this->selectedLead->lead_status?->value);
         $this->selectedLeadRecontactDate = $this->selectedLead->recontact_date?->format('Y-m-d');
+        $this->dispatch('open-modal', 'update-lead-status');
     }
 
     /**
@@ -1093,13 +1091,10 @@ public function setCustomerType(?int $value = null): void
      */
     public function selectLeadForNotes(int $id): void
     {
-        $this->selectEntityForAction(
-            id: $id,
-            modelClass: Customer::class,
-            property: 'selectedLead',
-            modalName: 'lead-notes',
-            notFoundMessage: 'Note non trovate'
-        );
+        $lead = Customer::leads()->with('latestPracticeOpportunity')->findOrFail($id);
+        Gate::authorize('view', $lead);
+        $this->selectedLead = $lead;
+        $this->dispatch('open-modal', 'lead-notes');
     }
 
     /**
@@ -1108,12 +1103,13 @@ public function setCustomerType(?int $value = null): void
      */
     public function updateLeadStatus(): void
     {
+        $this->selectedLead = Customer::leads()->findOrFail($this->selectedLead?->getKey());
         Gate::authorize('updateLeadStatus', $this->selectedLead);
 
         $showsRecontactDate = $this->selectedLeadStatusShowsRecontactDate();
 
         $this->validate([
-            'selectedLeadStatus' => ['required'],
+            'selectedLeadStatus' => ['required', new Enum(LeadStatus::class)],
             'selectedLeadRecontactDate' => ['nullable', 'date'],
         ], [
             'selectedLeadRecontactDate.date' => 'La data ricontatto non è valida.',

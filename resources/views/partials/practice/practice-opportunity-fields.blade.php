@@ -235,7 +235,7 @@
 
     {{-- Notes --}}
     <div class="flex flex-col gap-1.5 col-span-2">
-        <flux:textarea label="Note pratica" resize="none" wire:model="opportunityForm.notes" />
+        <flux:textarea label="Note" resize="none" wire:model="opportunityForm.notes" />
         <flux:error name="opportunityForm.notes" />
     </div>
 </div>

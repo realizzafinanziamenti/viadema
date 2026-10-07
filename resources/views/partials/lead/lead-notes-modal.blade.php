@@ -4,7 +4,7 @@
 
         <div class="flex flex-col gap-1.5 col-span-2">
             <flux:label>Note</flux:label>
-            <x-display-textarea value="{{ $selectedLead?->notes }}" />
+            <x-display-textarea value="{{ $selectedLead?->latestPracticeOpportunity?->notes }}" />
         </div>
 
         {{-- Button --}}
