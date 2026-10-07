@@ -91,6 +91,7 @@
         >
             @include('partials.customer.customer-form-fields', [
                 'context' => 'customer',
+                'showNotes' => false,
                 'search' => 'teamMemberSearch',
                 'form' => 'newCustomerForm',
                 'selectedUserId' => $newCustomerForm->userId,

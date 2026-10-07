@@ -384,7 +384,11 @@ class RolesAndPermissionsSeeder extends Seeder
             // leads permissions
             'access leads',
             'view leads',
+            'create leads',
+            'update leads',
+            'delete leads',
             'import leads',
+            'assign lead to user',
             // document permissions
             'access form documents',
             'create form documents',

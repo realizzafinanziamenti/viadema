@@ -325,7 +325,7 @@
 
                         {{-- Notes --}}
                         <x-table-data>
-                            @if ($lead->notes)
+                            @if ($lead->latestPracticeOpportunity?->notes)
                                 <div
                                     class="relative flex w-full items-center justify-center"
                                 >

@@ -88,6 +88,7 @@ class CustomerPolicy
                 && (
                     $user->id === $customer->user_id
                     || $user->isFloorManager()
+                    || $user->isBackOffice()
                 );
         }
 
@@ -99,7 +100,10 @@ class CustomerPolicy
      */
     public function updateLeadStatus(User $user, Customer $customer): bool
     {
-        return $user->hasPermissionTo('update lead status');
+        return $customer->isLead()
+            && $this->viewAny($user, CustomerStatus::LEAD)
+            && $user->hasPermissionTo('view leads')
+            && $this->view($user, $customer);
     }
 
     /**
@@ -109,12 +113,14 @@ class CustomerPolicy
     {
         // If the customer is a customer, check if the user has permission to delete customers
         if ($customer->isCustomer()) {
-            return $user->hasPermissionTo('delete customers') && $user->id === $customer->user_id;
+            return $user->hasPermissionTo('delete customers')
+                && ($user->id === $customer->user_id || $user->isBackOffice());
         }
 
         // If the customer is a lead, check if the user has permission to delete leads
         if ($customer->isLead()) {
-            return $user->hasPermissionTo('delete leads') && $user->id === $customer->user_id;
+            return $user->hasPermissionTo('delete leads')
+                && ($user->id === $customer->user_id || $user->isBackOffice());
         }
 
         return false;  // Default to false if no conditions are met

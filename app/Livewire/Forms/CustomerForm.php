@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Livewire\Attributes\Locked;
 use Livewire\Form;
 use Masmerise\Toaster\Toaster;
 
@@ -22,6 +23,9 @@ class CustomerForm extends Form
     public ?Customer $customer = null;
 
     public ?int $userId = null;
+
+    #[Locked]
+    public ?int $originalUserId = null;
 
     public ?int $customerTypeId = null;
 
@@ -275,22 +279,11 @@ class CustomerForm extends Form
      */
     protected function userIdRules(): array
     {
-        if (
-            auth()->user()->can(
-                'assign customer to user'
-            )
-        ) {
-            return [
-                'userId' => [
-                    'required',
-                    'exists:users,id',
-                ],
-            ];
-        }
-
         return [
             'userId' => [
                 'nullable',
+                'integer',
+                'exists:users,id',
             ],
         ];
     }
@@ -333,6 +326,7 @@ class CustomerForm extends Form
 
         $this->userId =
             $customer->user_id;
+        $this->originalUserId = $customer->user_id;
 
         $this->customerTypeId =
             $customer->customer_type_id;
@@ -390,6 +384,7 @@ class CustomerForm extends Form
         $this->customer = null;
 
         $this->userId = null;
+        $this->originalUserId = null;
         $this->customerTypeId = null;
 
         $this->firstName = null;
@@ -597,6 +592,29 @@ class CustomerForm extends Form
     }
 
     /**
+     * Only create uses the current user as the default owner.
+     * On update, omit ownership unless an authorized user changed it.
+     */
+    private function userAssignmentData(): array
+    {
+        if (! $this->customer?->exists) {
+            return ['user_id' => $this->userId ?? auth()->id()];
+        }
+
+        $permission = $this->customer->isLead()
+            ? 'assign lead to user'
+            : 'assign customer to user';
+
+        if ($this->userId !== null
+            && $this->userId !== $this->originalUserId
+            && auth()->user()->can($permission)) {
+            return ['user_id' => $this->userId];
+        }
+
+        return [];
+    }
+
+    /**
      * Build persistence payload.
      */
     private function customerData(): array
@@ -606,12 +624,7 @@ class CustomerForm extends Form
             === CustomerStatus::LEAD->value;
 
         return [
-            'user_id' =>
-                auth()->user()->can(
-                    'assign customer to user'
-                )
-                    ? $this->userId
-                    : auth()->id(),
+            ...$this->userAssignmentData(),
 
             'customer_type_id' =>
                 $this->customerTypeId
