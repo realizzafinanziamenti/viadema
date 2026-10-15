@@ -44,6 +44,8 @@ use App\Jobs\FinalizeImportReport;
 use App\Models\ImportReport;
 use App\Models\ImportReportRow;
 use App\Services\Imports\ImportReportService;
+use App\Services\Imports\CrmXlsxReader;
+use App\Services\Imports\XlsxImportPreflight;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -667,6 +669,8 @@ public function importPractices(): void
             'L\'utente selezionato non esiste.',
     ]);
 
+    app(XlsxImportPreflight::class)->inspect($this->importFile->getRealPath());
+
     $initiatedBy = User::query()
         ->findOrFail(Auth::id());
 
@@ -704,7 +708,9 @@ public function importPractices(): void
 
         Excel::queueImport(
             $import,
-            $this->importFile
+            $this->importFile,
+            null,
+            CrmXlsxReader::TYPE,
         )->chain([
             new FinalizeImportReport(
                 importReportId: $report->getKey(),

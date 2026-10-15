@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Services\Imports\CrmXlsxReader;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        IOFactory::registerReader(CrmXlsxReader::TYPE, CrmXlsxReader::class);
+
         Blade::withoutDoubleEncoding();
 
         // Implicitly grant "Super Admin" role all permissions
