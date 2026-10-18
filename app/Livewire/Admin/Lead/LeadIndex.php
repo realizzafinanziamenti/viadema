@@ -915,7 +915,7 @@ $defaultUser = $this->userId !== null
             $this->importFile,
             null,
             CrmXlsxReader::TYPE,
-        )->chain([
+        )->allOnQueue('excel')->chain([
             new FinalizeImportReport(
                 importReportId: $report->getKey(),
                 runUuid: $report->run_uuid,

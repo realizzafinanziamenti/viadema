@@ -24,7 +24,7 @@ class SendLeadFollowUpAlertJob implements ShouldQueue
      */
     public function __construct(public int $leadId)
     {
-        //
+        $this->onQueue('notifications');
     }
 
     /**

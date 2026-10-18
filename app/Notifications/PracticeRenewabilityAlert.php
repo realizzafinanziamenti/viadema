@@ -13,6 +13,18 @@ class PracticeRenewabilityAlert extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public function viaQueues(): array
+    {
+        return ['database' => 'notifications', 'broadcast' => 'notifications'];
+    }
+
+    public function toBroadcast(object $notifiable): \Illuminate\Notifications\Messages\BroadcastMessage
+    {
+        // The broadcast channel dispatches a separate queued event.
+        return (new \Illuminate\Notifications\Messages\BroadcastMessage($this->toArray($notifiable)))
+            ->onQueue('notifications');
+    }
+
     public $url;
 
     /**

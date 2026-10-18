@@ -20,7 +20,7 @@ class SendPracticeRenewabilityAlertJob implements ShouldQueue
      */
     public function __construct(public Practice $practice)
     {
-        //
+        $this->onQueue('notifications');
     }
 
     /**
