@@ -21,7 +21,9 @@ class SendLeadRecontactReminderJob implements ShouldQueue
     public function __construct(
         public int $leadId,
         public string $recontactDate
-    ) {}
+    ) {
+        $this->onQueue('notifications');
+    }
 
     public function backoff(): array
     {

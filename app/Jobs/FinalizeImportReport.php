@@ -21,14 +21,15 @@ final class FinalizeImportReport implements ShouldQueue
     public int $tries = 3;
 
     /**
-     * Maximum execution time in seconds.
+     * Keep below the database connection's 90-second retry_after.
      */
-    public int $timeout = 120;
+    public int $timeout = 60;
 
     public function __construct(
         public readonly int $importReportId,
         public readonly string $runUuid,
     ) {
+        $this->onQueue('excel');
     }
 
     /**

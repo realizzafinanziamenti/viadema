@@ -711,7 +711,7 @@ public function importPractices(): void
             $this->importFile,
             null,
             CrmXlsxReader::TYPE,
-        )->chain([
+        )->allOnQueue('excel')->chain([
             new FinalizeImportReport(
                 importReportId: $report->getKey(),
                 runUuid: $report->run_uuid,

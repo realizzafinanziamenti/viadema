@@ -53,7 +53,7 @@ return [
     */
     'broadcasting' => [
         'messages_queue' => 'messages',
-        'notifications_queue' => 'default',
+        'notifications_queue' => 'notifications',
     ],
 
     /*
