@@ -18,6 +18,7 @@ use App\Models\PracticeOpportunity;
 use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
+use App\Services\PracticeNotifications;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\EnumHelper;
 use App\Traits\HandlesPracticeInstallments;
@@ -556,6 +557,8 @@ public function closeCreateCustomerModal(): void
                             "Token {$this->creationToken} rimosso dalla cache"
                         );
                     }
+
+                    PracticeNotifications::createdManually($practice);
 
                     return $practice;
                 },

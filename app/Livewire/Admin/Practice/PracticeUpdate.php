@@ -192,6 +192,10 @@ public function setNewCustomerTeamMember(
             $this->practiceForm->customerId
         );
 
+        if (auth()->user()->isConsultant() || auth()->user()->isExternal()) {
+            Gate::authorize('update', $customer);
+        }
+
         $this->selectedCustomer = $customer;
 
         $this->customerForm->setCustomer(
@@ -629,7 +633,7 @@ public function setNewCustomerTeamMember(
     {
         Gate::authorize(
             'update',
-            $this->practice
+            $this->practice->fresh()
         );
 
         try {
@@ -879,7 +883,7 @@ public function setNewCustomerTeamMember(
 
         try {
             $attachment =
-                Attachment::findOrFail($id);
+                $this->practice->attachments()->findOrFail($id);
 
             return Storage::download(
                 $attachment->file_path,
@@ -1020,6 +1024,8 @@ public function setNewCustomerTeamMember(
             Customer::filterBySearch(
                 $this->customerSearch
             )
+                ->when(auth()->user()->isConsultant() || auth()->user()->isExternal(),
+                    fn ($query) => $query->where('user_id', auth()->id()))
                 ->orderBy('first_name')
                 ->orderBy('last_name')
                 ->get()
