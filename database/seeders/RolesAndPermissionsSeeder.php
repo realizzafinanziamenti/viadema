@@ -327,7 +327,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view practices',
             'create practices',
             'update practices',
-            'delete practices',
             // simulator permissions
             'access simulator',
             'view simulator',

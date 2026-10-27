@@ -29,8 +29,9 @@ class PracticePolicy
 
     public function update(User $user, Practice $practice): bool
     {
-        if ($this->isReadOnly($user, $practice)) {
-            return false;
+        if ($user->isConsultant() || $user->isExternal()) {
+            return $user->hasPermissionTo('update practices')
+                && $this->view($user, $practice);
         }
 
         if (! $user->hasPermissionTo('update practices')) {

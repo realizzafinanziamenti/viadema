@@ -761,6 +761,11 @@ public function hasDuplicatePractice(): bool
             Gate::authorize('updateStatus', $this->practice);
         }
 
+        if ($user->isConsultant() || $user->isExternal()) {
+            $this->userId = $this->practice->user_id;
+            Gate::authorize('update', Customer::findOrFail($this->customerId));
+        }
+
         $this->validate();
 
         try {
