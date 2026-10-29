@@ -126,14 +126,18 @@ class PracticeShow extends Component
     public function download(int $id): ?StreamedResponse
     {
         Gate::authorize('view', $this->practice);
+        $attachment = $this->practice->attachments()->findOrFail($id);
 
         try {
-            $attachment = Attachment::findOrFail($id);
-            return Storage::download($attachment->file_path, $attachment->file_name);
-        } catch (Exception $e) {
-            Toaster::error('File non trovato o errore: ' . $e->getMessage());
-            return null;
+            return app(\App\Services\PracticeAttachments::class)->download($attachment);
+        } catch (\Illuminate\Contracts\Filesystem\FileNotFoundException $exception) {
+            Toaster::error('File non trovato. Contatta un amministratore.');
+        } catch (Exception $exception) {
+            report($exception);
+            Toaster::error('Errore di accesso al filesystem. Riprova o contatta un amministratore.');
         }
+
+        return null;
     }
 
     /**

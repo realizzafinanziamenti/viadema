@@ -873,30 +873,21 @@ public function setNewCustomerTeamMember(
     /**
      * Download attachment.
      */
-    public function download(
-        int $id
-    ): ?StreamedResponse {
-        Gate::authorize(
-            'view',
-            $this->practice
-        );
+    public function download(int $id): ?StreamedResponse
+    {
+        Gate::authorize('view', $this->practice);
+        $attachment = $this->practice->attachments()->findOrFail($id);
 
         try {
-            $attachment =
-                $this->practice->attachments()->findOrFail($id);
-
-            return Storage::download(
-                $attachment->file_path,
-                $attachment->file_name
-            );
+            return app(\App\Services\PracticeAttachments::class)->download($attachment);
+        } catch (\Illuminate\Contracts\Filesystem\FileNotFoundException $exception) {
+            Toaster::error('File non trovato. Contatta un amministratore.');
         } catch (Exception $exception) {
-            Toaster::error(
-                'File non trovato o errore: '
-                . $exception->getMessage()
-            );
-
-            return null;
+            report($exception);
+            Toaster::error('Errore di accesso al filesystem. Riprova o contatta un amministratore.');
         }
+
+        return null;
     }
 
     /**
