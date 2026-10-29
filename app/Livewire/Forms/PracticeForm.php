@@ -688,22 +688,7 @@ public function hasDuplicatePractice(): bool
                 );
 
                 foreach ($this->attachments as $attachment) {
-                    $practice->attachments()->create([
-                        'file_name' =>
-                            $attachment->getClientOriginalName(),
-
-                        'file_path' =>
-                            $attachment->store(
-                                'practice-attachments',
-                                'public'
-                            ),
-
-                        'mime_type' =>
-                            $attachment->getClientMimeType(),
-
-                        'file_size' =>
-                            $attachment->getSize(),
-                    ]);
+                    app(\App\Services\PracticeAttachments::class)->store($practice, $attachment);
                 }
 
                 if ($practice->user_id) {
@@ -807,24 +792,7 @@ public function hasDuplicatePractice(): bool
                 );
 
                 foreach ($this->attachments as $attachment) {
-                    $this->practice
-                        ->attachments()
-                        ->create([
-                            'file_name' =>
-                                $attachment->getClientOriginalName(),
-
-                            'file_path' =>
-                                $attachment->store(
-                                    'practice-attachments',
-                                    'public'
-                                ),
-
-                            'mime_type' =>
-                                $attachment->getClientMimeType(),
-
-                            'file_size' =>
-                                $attachment->getSize(),
-                        ]);
+                    app(\App\Services\PracticeAttachments::class)->store($this->practice, $attachment);
                 }
 
                 if (
