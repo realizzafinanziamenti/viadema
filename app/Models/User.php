@@ -216,7 +216,7 @@ class User extends Authenticatable
         if ($role === 'superadmin') {
             return 'SuperAdmin';
         } else {
-            return UserDepartment::tryFrom($role)->getLabelText() ?? 'Ruolo non definito';
+            return UserDepartment::tryFrom($role ?? '')?->getLabelText() ?? 'Ruolo non definito';
         }
     }
 

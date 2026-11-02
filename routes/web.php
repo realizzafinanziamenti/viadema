@@ -78,7 +78,7 @@ Route::get('trash', TrashIndex::class)
     ->middleware('can:access trash');
 
     // Document Routes
-    Route::get('form-documents', FormDocumentIndex::class)->name('form-document.index')->middleware('can:access form documents');
+    Route::get('form-documents', FormDocumentIndex::class)->name('form-document.index')->middleware('can:viewAny,App\Models\FormDocument')->withoutMiddleware('verified');
 
     // Settings Routes
     Route::get('settings', SettingIndex::class)->name('setting.index')->middleware('can:access settings');

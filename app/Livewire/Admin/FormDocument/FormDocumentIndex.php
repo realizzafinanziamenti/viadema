@@ -6,6 +6,7 @@ use App\Models\FormDocument;
 use App\Traits\AcceptedFileTypes;
 use App\Traits\HandlesEntityActions;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -13,21 +14,26 @@ use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
-use Livewire\WithFileUploads;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FormDocumentIndex extends Component
 {
-    use WithPagination, WithoutUrlPagination, HandlesEntityActions, AcceptedFileTypes, WithFileUploads;
+    use AcceptedFileTypes, HandlesEntityActions, WithFileUploads, WithoutUrlPagination, WithPagination;
 
     public ?FormDocument $selectedDocument = null;
+
     public string $search = '';
+
     public string $filterDate = '';
+
     public ?string $title = null;
+
     public ?string $description = null;
+
     public ?TemporaryUploadedFile $file = null;
 
     protected function validationAttributes(): array
@@ -44,6 +50,8 @@ class FormDocumentIndex extends Component
      */
     public function openCreateDocumentModal(): void
     {
+        Gate::authorize('create', FormDocument::class);
+
         $this->resetErrorBag();
         $this->reset(['title', 'description', 'file']);
         $this->dispatch('open-modal', 'document-create');
@@ -55,10 +63,12 @@ class FormDocumentIndex extends Component
      */
     public function updatedFile()
     {
+        Gate::authorize('create', FormDocument::class);
+
         // Dopo esser stati caricati, i file vengono validati per assicurarsi che siano del tipo corretto
         $validator = Validator::make(
             ['file' => $this->file],
-            ['file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240']],
+            ['file' => ['required', 'file', 'mimetypes:'.implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'extensions:pdf,doc,docx,xls,xlsm,xlsx,csv', 'max:10240']],
             [
                 'file.required' => 'Il file è obbligatorio.',
                 'file.mimetypes' => 'Formato file non valido. I formati accettati sono: pdf, doc, docx, xls, xlsm, xlsx, csv.',
@@ -70,6 +80,7 @@ class FormDocumentIndex extends Component
         if ($validator->fails()) {
             $this->addError('file', $validator->errors()->first('file'));
             $this->reset('file');
+
             return;
         }
 
@@ -88,31 +99,39 @@ class FormDocumentIndex extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'file' => ['required', 'file', 'mimetypes:' . implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'max:10240'],
+            'file' => ['required', 'file', 'mimetypes:'.implode(',', $this->acceptedFileTypesArray(['documents', 'excel'])), 'extensions:pdf,doc,docx,xls,xlsm,xlsx,csv', 'max:10240'],
         ]);
 
+        $path = null;
         try {
-            $document = FormDocument::create([
-                'title' => $this->title,
-                'description' => $this->description,
-                'user_id' => auth()->id(),
-            ]);
+            $path = $this->file->store('documents', 'public');
+            if (! $path || ! Storage::disk('public')->exists($path)) {
+                throw new \RuntimeException('Salvataggio del file non riuscito.');
+            }
 
-            $attachment = $document->attachment()->create([
-                'file_name' => $this->file->getClientOriginalName(),
-                'file_path' => $this->file->store('documents', 'public'),
-                'mime_type' => $this->file->getClientMimeType(),
-                'file_size' => $this->file->getSize()
-            ]);
-
-            $document->attachment()->save($attachment);
+            DB::transaction(function () use ($path) {
+                $document = FormDocument::create([
+                    'title' => $this->title,
+                    'description' => $this->description,
+                    'user_id' => auth()->id(),
+                ]);
+                $document->attachment()->create([
+                    'file_name' => $this->file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'mime_type' => $this->file->getMimeType(),
+                    'file_size' => $this->file->getSize(),
+                ]);
+            });
 
             Toaster::success('Documento caricato con successo');
             $this->reset(['title', 'description', 'file']);
             $this->dispatch('close-modal', 'document-create');
         } catch (Exception $e) {
-            Log::error('Errore durante il caricamento del documento: ' . $e->getMessage());
-            Toaster::error('Errore durante il caricamento del documento: ' . $e->getMessage());
+            if ($path) {
+                Storage::disk('public')->delete($path);
+            }
+            Log::error('Errore durante il caricamento del documento: '.$e->getMessage());
+            Toaster::error('Caricamento non riuscito. Riprova.');
             $this->dispatch('close-modal', 'document-create');
         }
     }
@@ -123,7 +142,14 @@ class FormDocumentIndex extends Component
      */
     public function edit()
     {
-        Gate::authorize('update', $this->selectedDocument);
+        Gate::authorize('update', FormDocument::class);
+        $this->selectedDocument = $this->selectedDocument
+            ? FormDocument::find($this->selectedDocument->id) : null;
+        if (! $this->selectedDocument) {
+            Toaster::error('Documento non trovato');
+
+            return;
+        }
 
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -140,8 +166,8 @@ class FormDocumentIndex extends Component
             $this->reset(['title', 'description', 'file']);
             $this->dispatch('close-modal', 'document-edit');
         } catch (Exception $e) {
-            Log::error('Errore durante la modifica del documento: ' . $e->getMessage());
-            Toaster::error('Errore durante la modifica del documento: ' . $e->getMessage());
+            Log::error('Errore durante la modifica del documento: '.$e->getMessage());
+            Toaster::error('Errore durante la modifica del documento: '.$e->getMessage());
             $this->dispatch('close-modal', 'document-create');
         }
     }
@@ -150,16 +176,32 @@ class FormDocumentIndex extends Component
      * This method is called when the user clicks the download button.
      * It retrieves the document by ID and returns a streamed response for download.
      */
-    public function download($id): ?StreamedResponse
+    public function download(int $id): ?StreamedResponse
     {
-        try {
-            $document = FormDocument::findOrFail($id);
-            Gate::authorize('download', $document);
+        Gate::authorize('viewAny', FormDocument::class);
+        $document = FormDocument::find($id);
+        if (! $document) {
+            Toaster::error('Documento non trovato');
 
+            return null;
+        }
+        Gate::authorize('download', $document);
+
+        try {
             $attachment = $document->attachment;
+            // Only server-side paths belonging to the Modulistica directory are valid.
+            if (! $attachment || ! preg_match('~^documents/[^/\\\\]+$~D', $attachment->file_path)
+                || ! Storage::disk('public')->exists($attachment->file_path)) {
+                Toaster::error('File non disponibile. Contatta un amministratore.');
+
+                return null;
+            }
+
             return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
         } catch (Exception $e) {
-            Toaster::error('File non trovato o errore: ' . $e->getMessage());
+            Log::warning('Errore download Modulistica: '.$e->getMessage());
+            Toaster::error('File non disponibile. Contatta un amministratore.');
+
             return null;
         }
     }
@@ -169,6 +211,8 @@ class FormDocumentIndex extends Component
      */
     public function deleteTemporaryFile()
     {
+        Gate::authorize('create', FormDocument::class);
+
         $this->reset(['file']);
     }
 
@@ -178,7 +222,10 @@ class FormDocumentIndex extends Component
      */
     public function selectDocumentForUpdate(int $id)
     {
+        Gate::authorize('update', FormDocument::class);
+
         $this->resetErrorBag();
+        $this->selectedDocument = null;
         $this->selectEntityForAction(
             id: $id,
             modelClass: FormDocument::class,
@@ -198,6 +245,9 @@ class FormDocumentIndex extends Component
      */
     public function selectDocumentForDelete(int $id)
     {
+        Gate::authorize('delete', FormDocument::class);
+        $this->selectedDocument = null;
+
         $this->selectEntityForAction(
             id: $id,
             modelClass: FormDocument::class,
@@ -213,8 +263,16 @@ class FormDocumentIndex extends Component
      */
     public function deleteDocument()
     {
-        Gate::authorize('delete', $this->selectedDocument);
+        Gate::authorize('delete', FormDocument::class);
+        $this->selectedDocument = $this->selectedDocument
+            ? FormDocument::find($this->selectedDocument->id) : null;
+        if (! $this->selectedDocument) {
+            Toaster::error('Documento non trovato');
 
+            return;
+        }
+
+        // Preserve the existing soft delete: retain attachment metadata and the physical file.
         $this->deleteSelectedEntity(
             property: 'selectedDocument',
             modalName: 'delete-document',

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\FormDocument;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class FormDocumentPolicy
 {
@@ -13,7 +12,7 @@ class FormDocumentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('access form documents');
+        return true;
     }
 
     /**
@@ -21,7 +20,7 @@ class FormDocumentPolicy
      */
     public function view(User $user, FormDocument $formDocument): bool
     {
-        return $user->hasPermissionTo('view form documents');
+        return true;
     }
 
     /**
@@ -29,7 +28,7 @@ class FormDocumentPolicy
      */
     public function download(User $user, FormDocument $formDocument): bool
     {
-        return $user->hasPermissionTo('download form documents');
+        return true;
     }
 
     /**
@@ -37,23 +36,23 @@ class FormDocumentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create form documents');
+        return $user->isSuperAdmin();
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, FormDocument $formDocument): bool
+    public function update(User $user, ?FormDocument $formDocument = null): bool
     {
-        return $user->hasPermissionTo('update form documents');
+        return $user->isSuperAdmin();
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, FormDocument $formDocument): bool
+    public function delete(User $user, ?FormDocument $formDocument = null): bool
     {
-        return $user->hasPermissionTo('delete form documents');
+        return $user->isSuperAdmin();
     }
 
     /**
