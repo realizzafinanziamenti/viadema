@@ -74,7 +74,7 @@
                     </x-sidebar-item>
                 @endcan
 
-                @can('access form documents')
+                @can('viewAny', \App\Models\FormDocument::class)
                     <x-sidebar-item route="form-document.index" routeIs="form-document" label="Modulistica">
                         <x-icons.icon-akar-clipboard />
                     </x-sidebar-item>

@@ -15,7 +15,7 @@
                 </div>
             </div>
 
-            @can('create form documents')
+            @can('create', \App\Models\FormDocument::class)
                 <x-buttons.create-button wire:click='openCreateDocumentModal' />
             @endcan
         </div>
@@ -53,21 +53,21 @@
                                 </x-slot>
 
                                 <x-slot name="content">
-                                    @can('download form documents')
+                                    @can('download', $document)
                                         <x-dropdown-button class="cursor-pointer rounded-t-md"
                                             wire:click='download({{ $document->id }})'>
                                             Scarica
                                         </x-dropdown-button>
                                     @endcan
 
-                                    @can('update form documents')
+                                    @can('update', $document)
                                         <x-dropdown-button class="cursor-pointer"
                                             wire:click='selectDocumentForUpdate({{ $document->id }})'>
                                             Rinomina
                                         </x-dropdown-button>
                                     @endcan
 
-                                    @can('delete form documents')
+                                    @can('delete', $document)
                                         <x-dropdown-button class="cursor-pointer rounded-b-md"
                                             wire:click='selectDocumentForDelete({{ $document->id }})'>
                                             Elimina
@@ -88,6 +88,7 @@
             </div>
         @endif
 
+        @can('create', \App\Models\FormDocument::class)
         {{-- Create New Document Modal --}}
         <x-modal name="document-create" maxWidth="xl">
             <x-modal-header label="Carica documento" />
@@ -197,9 +198,12 @@
                 </div>
             </form>
         </x-modal>
+        @endcan
     </x-card>
 
+    @can('create', \App\Models\FormDocument::class)
     {{-- Delete Document Modal --}}
     <x-delete-modal name="delete-document" header="Conferma Eliminazione" function="deleteDocument"
         message="Sei sicuro di voler eliminare <strong>{{ $selectedDocument?->title }}</strong>?" />
+    @endcan
 </div>
