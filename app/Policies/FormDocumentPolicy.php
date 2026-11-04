@@ -20,7 +20,7 @@ class FormDocumentPolicy
      */
     public function view(User $user, FormDocument $formDocument): bool
     {
-        return true;
+        return ! $formDocument->trashed() || $user->isSuperAdmin();
     }
 
     /**
@@ -28,7 +28,7 @@ class FormDocumentPolicy
      */
     public function download(User $user, FormDocument $formDocument): bool
     {
-        return true;
+        return ! $formDocument->trashed();
     }
 
     /**
@@ -60,7 +60,7 @@ class FormDocumentPolicy
      */
     public function restore(User $user, FormDocument $formDocument): bool
     {
-        return false;
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -68,6 +68,6 @@ class FormDocumentPolicy
      */
     public function forceDelete(User $user, FormDocument $formDocument): bool
     {
-        return false;
+        return $user->isSuperAdmin();
     }
 }

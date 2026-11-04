@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Customer;
+use App\Models\FormDocument;
 use App\Models\Practice;
+use App\Services\FormDocumentTrash;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -47,6 +49,13 @@ class PurgeTrash extends Command
             failedCount: $failedCount
         );
 
+        $this->purgeModel(
+            modelClass: FormDocument::class,
+            threshold: $threshold,
+            deletedCount: $deletedCount,
+            failedCount: $failedCount
+        );
+
         $this->info(
             "Purge completato: {$deletedCount} eliminati, {$failedCount} errori."
         );
@@ -77,7 +86,11 @@ class PurgeTrash extends Command
                 ): void {
                     foreach ($entities as $entity) {
                         try {
-                            $entity->forceDelete();
+                            if ($entity instanceof FormDocument) {
+                                app(FormDocumentTrash::class)->forceDelete($entity);
+                            } else {
+                                $entity->forceDelete();
+                            }
 
                             $deletedCount++;
                         } catch (Throwable $e) {

@@ -5,10 +5,15 @@ namespace App\Livewire\Admin\Trash;
 use App\Enums\CustomerStatus;
 use App\Enums\PracticeStatus;
 use App\Models\Customer;
+use App\Models\FormDocument;
 use App\Models\Practice;
+use App\Models\User;
+use App\Services\FormDocumentTrash;
 use Carbon\Carbon;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +33,8 @@ class TrashIndex extends Component
     #[Computed]
     public function trashItems(): array
     {
+        Gate::authorize('access trash');
+
         return $this->trashQuery()
             ->get()
             ->map(
@@ -43,6 +50,10 @@ class TrashIndex extends Component
             ->unionAll(
                 $this->practiceTrashQuery()
             );
+
+        if (auth()->user()->isSuperAdmin()) {
+            $union->unionAll($this->formDocumentTrashQuery());
+        }
 
         return DB::query()
             ->fromSub(
@@ -99,6 +110,28 @@ class TrashIndex extends Component
             ->selectRaw(
                 'NULL AS practice_status'
             );
+    }
+
+    private function formDocumentTrashQuery(): QueryBuilder
+    {
+        return DB::table('form_documents as item')
+            ->leftJoin('users as owner', 'owner.id', '=', 'item.user_id')
+            ->leftJoin('users as deleter', function (JoinClause $join): void {
+                $join->where('deleter.id', '=', DB::table(config('activitylog.table_name'))
+                    ->select('causer_id')
+                    ->whereColumn('subject_id', 'item.id')
+                    ->whereColumn('created_at', '>=', 'item.deleted_at')
+                    ->where('subject_type', (new FormDocument)->getMorphClass())
+                    ->where('causer_type', (new User)->getMorphClass())
+                    ->where('event', 'deleted')
+                    ->orderByDesc('id')->limit(1));
+            })
+            ->whereNotNull('item.deleted_at')
+            ->select(['item.id', 'item.deleted_at', 'item.title as first_name'])
+            ->selectRaw('NULL AS last_name, item.description AS tax_id, NULL AS phone')
+            ->addSelect(['owner.first_name as owner_first_name', 'owner.last_name as owner_last_name'])
+            ->addSelect(['deleter.first_name as deleter_first_name', 'deleter.last_name as deleter_last_name'])
+            ->selectRaw('? AS entity_type, NULL AS practice_status', ['form_document']);
     }
 
     private function practiceTrashQuery(): QueryBuilder
@@ -186,6 +219,11 @@ class TrashIndex extends Component
         try {
             DB::transaction(
                 function () use ($entity): void {
+                    if ($entity instanceof FormDocument) {
+                        app(FormDocumentTrash::class)->restore($entity);
+
+                        return;
+                    }
                     $entity->restore();
 
                     $entity
@@ -215,7 +253,9 @@ class TrashIndex extends Component
             );
 
             Toaster::error(
-                'Errore durante il ripristino. Riprova più tardi.'
+                $entity instanceof FormDocument && $e instanceof FileNotFoundException
+                    ? 'File del modulo non disponibile. Ripristino annullato: recuperare il file dal backup.'
+                    : 'Errore durante il ripristino. Riprova più tardi.'
             );
 
             $this->skipRender();
@@ -238,7 +278,9 @@ class TrashIndex extends Component
 
         try {
             DB::transaction(
-                fn () => $entity->forceDelete()
+                fn () => $entity instanceof FormDocument
+                    ? app(FormDocumentTrash::class)->forceDelete($entity)
+                    : $entity->forceDelete()
             );
 
             Toaster::success(
@@ -270,8 +312,13 @@ class TrashIndex extends Component
     private function findTrashedEntity(
         string $type,
         int $id
-    ): Customer|Practice {
+    ): Customer|Practice|FormDocument {
+        if ($type === 'form_document') {
+            abort_unless(auth()->user()?->isSuperAdmin(), 403);
+        }
+
         return match ($type) {
+            'form_document' => FormDocument::onlyTrashed()->findOrFail($id),
             'customer' => Customer::onlyTrashed()
                 ->customers()
                 ->findOrFail($id),
@@ -315,13 +362,14 @@ class TrashIndex extends Component
             'entity_type' => $row->entity_type,
 
             'type_label' => match ($row->entity_type) {
+                'form_document' => 'Modulo',
                 'practice' => 'Pratica',
                 'lead' => 'Lead',
                 default => 'Anagrafica',
             },
 
             'title' => $row->entity_type === 'practice'
-                ? 'P' . str_pad(
+                ? 'P'.str_pad(
                     (string) $row->id,
                     5,
                     '0',
