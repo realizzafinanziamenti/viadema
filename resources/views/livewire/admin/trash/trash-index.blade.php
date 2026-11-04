@@ -218,7 +218,7 @@
                     "
                     class="px-4 py-2 text-sm font-medium border rounded-md transition cursor-pointer whitespace-nowrap"
                 >
-                    Tutto
+                    Tutti
                 </button>
 
                 <button
@@ -259,6 +259,16 @@
                 >
                     Anagrafiche
                 </button>
+                @if (auth()->user()->isSuperAdmin())
+                    <button
+                        type="button"
+                        x-on:click="setFilter('form_document')"
+                        x-bind:class="filter === 'form_document' ? 'bg-azure-custom text-white border-azure-custom' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                        class="px-4 py-2 text-sm font-medium border rounded-md transition cursor-pointer whitespace-nowrap"
+                    >
+                        Moduli
+                    </button>
+                @endif
             </div>
 
             <div class="w-full lg:max-w-sm">
@@ -295,6 +305,8 @@
                                 <span
                                     class="inline-flex px-2.5 py-1 text-xs font-medium rounded-full"
                                     x-bind:class="{
+                                        'bg-green-50 text-green-700':
+                                            item.entity_type === 'form_document',
                                         'bg-blue-50 text-blue-700':
                                             item.entity_type === 'customer',
                                         'bg-orange-50 text-orange-700':
