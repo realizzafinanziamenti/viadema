@@ -8,6 +8,13 @@
         "
     >
         {{-- User --}}
+        <flux:input label="ATC" wire:model="tempAtc" maxlength="255" />
+        <flux:select label="Tipo ATC" wire:model="tempAtcType">
+            <option value="">Tutti</option>
+            @foreach (\App\Enums\AtcType::cases() as $atcOption)
+                <option value="{{ $atcOption->value }}">{{ $atcOption->value }}</option>
+            @endforeach
+        </flux:select>
         <div class="flex flex-col gap-1.5">
             <flux:label>Collaboratore</flux:label>
 

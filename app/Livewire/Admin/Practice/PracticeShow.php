@@ -196,6 +196,13 @@ class PracticeShow extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
+        $this->practice->loadMissing([
+            'user', 'customer', 'attachments',
+            'opportunity.productType', 'opportunity.productSubtype',
+            'opportunity.installment', 'opportunity.customerType',
+            'opportunity.insurance', 'opportunity.financialTable',
+        ]);
+
         return view('livewire.admin.practice.practice-show');
     }
 }

@@ -76,6 +76,10 @@ class PracticeForm extends Form
 
     public $practiceStatus = null;
 
+    public ?string $atc = null;
+
+    public ?string $atcType = null;
+
     public $previousFinance = null;
 
     public bool $isRenewal = false;
@@ -256,6 +260,8 @@ public function hasDuplicatePractice(): bool
     {
         return array_merge(
             [
+                'atc' => ['nullable', 'string', 'max:255'],
+                'atcType' => ['nullable', new Enum(\App\Enums\AtcType::class)],
                 'acquisitionChannel' => [
                     'nullable',
                     'string',
@@ -550,6 +556,8 @@ public function hasDuplicatePractice(): bool
      */
     public function setPractice(Practice $practice): void
     {
+        $this->atc = $practice->atc;
+        $this->atcType = $practice->atc_type?->value;
         $this->practice = $practice;
 
         $practice->loadMissing('opportunity');
@@ -957,6 +965,8 @@ public function hasDuplicatePractice(): bool
     private function practiceData(): array
     {
         return [
+            'atc' => filled($this->atc) ? trim($this->atc) : null,
+            'atc_type' => $this->atcType ?: null,
             'user_id' =>
                 $this->userId ?: Auth::id(),
 

@@ -4,6 +4,18 @@ namespace App\Enums;
 
 enum PracticeStatus: string
 {
+    public static function fromImport(string $value): ?self
+    {
+        $normalize = static fn (string $text): string => mb_strtolower(trim(preg_replace('/\s+/u', ' ', $text)));
+        foreach (self::cases() as $status) {
+            if (in_array($normalize($value), [$normalize($status->value), $normalize($status->getLabelText())], true)) {
+                return $status;
+            }
+        }
+
+        return null;
+    }
+
     case UNDER_REVIEW = 'under_review';
     case REJECTED = 'rejected';
     case APPROVED = 'approved';

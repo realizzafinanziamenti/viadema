@@ -166,8 +166,8 @@ return [
     */
     'attachments' => [
         'storage_folder' => 'attachments',
-        'storage_disk' => 'public',
-        'disk_visibility' => 'public', // Use 'private' to enforce temporary URLs
+        'storage_disk' => 'chat',
+        'disk_visibility' => 'private',
 
         'max_uploads' => 10,
 

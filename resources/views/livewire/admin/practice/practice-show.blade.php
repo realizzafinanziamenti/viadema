@@ -54,6 +54,19 @@
                     </span>
                 </div>
 
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">ATC: </span>
+                    <span>{{ $practice->atc ?? 'N/D' }}</span>
+                </div>
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Tipo ATC: </span>
+                    <span>{{ $practice->atc_type?->value ?? 'N/D' }}</span>
+                </div>
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Data inserimento sistema: </span>
+                    <span>{{ $practice->inserted_at?->format('d/m/Y') ?? 'N/D' }}</span>
+                </div>
+
                 @if ($practice->renewability_date)
                     <div class="text-sm mb-2.5">
                         <span class="text-gray-custom-4">
@@ -153,6 +166,11 @@
                     <span>
                         {{ $practice->customer?->email ?? 'N/D' }}
                     </span>
+                </div>
+
+                <div class="text-sm mb-2.5">
+                    <span class="text-gray-custom-4">Data di nascita: </span>
+                    <span>{{ $practice->customer?->date_of_birth?->format('d/m/Y') ?? 'N/D' }}</span>
                 </div>
 
                 <div class="text-sm mb-2.5">

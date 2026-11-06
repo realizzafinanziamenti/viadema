@@ -22,6 +22,12 @@
 
 {{-- Practice Details --}}
 <div class="grid grid-cols-2 gap-6 mt-6">
+    <div><flux:label>ATC</flux:label><x-display-input :value="$practiceForm->atc" /></div>
+    <div><flux:label>Tipo ATC</flux:label><x-display-input :value="$practiceForm->atcType" /></div>
+    <div>
+        <flux:label>Data di assunzione</flux:label>
+        <x-display-input :value="$practiceForm->employmentStartDate ? \Carbon\Carbon::parse($practiceForm->employmentStartDate)->format('d/m/Y') : null" />
+    </div>
     {{-- Product Type --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Prodotto</flux:label>
@@ -41,13 +47,13 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di inizio</flux:label>
         <x-display-input
-            value="{{ \Carbon\Carbon::parse($practiceForm->firstInstallmentDate)->format('d/m/y') ?? '' }}" />
+            :value="$practiceForm->firstInstallmentDate ? \Carbon\Carbon::parse($practiceForm->firstInstallmentDate)->format('d/m/Y') : null" />
     </div>
     {{-- Paid At Date --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Data di fine</flux:label>
         <x-display-input
-            value="{{ \Carbon\Carbon::parse($practiceForm->lastInstallmentDate)->format('d/m/y') ?? '' }}" />
+            :value="$practiceForm->lastInstallmentDate ? \Carbon\Carbon::parse($practiceForm->lastInstallmentDate)->format('d/m/Y') : null" />
     </div>
     {{-- Amount Disbursed --}}
     <div class="flex flex-col gap-1.5">
@@ -91,8 +97,8 @@
     </div>
     {{-- Renewed --}}
     <div class="flex flex-col gap-1.5">
-        <flux:label>Rinnovo</flux:label>
-        <x-display-input value="{{ \Carbon\Carbon::parse($practiceForm->renewabilityDate)->format('d/m/y') ?? '' }}" />
+        <flux:label>Data rinnovabilità</flux:label>
+        <x-display-input :value="$practiceForm->renewabilityDate ? \Carbon\Carbon::parse($practiceForm->renewabilityDate)->format('d/m/Y') : null" />
     </div>
     {{-- Customer Type --}}
     <div class="flex flex-col gap-1.5">
@@ -110,6 +116,13 @@
         <x-display-input :value="$financialTables[$practiceForm->financialTableId] ?? null" />
     </div>
     {{-- Notes --}}
+    <div><flux:label>Canale di acquisizione</flux:label><x-display-input :value="$leadSources[$practiceForm->acquisitionChannel] ?? null" /></div>
+    <div><flux:label>Produzione</flux:label><x-display-input :value="$productionTypes[$practiceForm->productionType] ?? null" /></div>
+    <div><flux:label>Rinnovo</flux:label><x-display-input :value="$practiceForm->isRenewal ? 'Sì' : 'No'" /></div>
+    <div><flux:label>Ente erogante</flux:label><x-display-input :value="$practiceForm->disbursingInstitution" /></div>
+    <div><flux:label>Istituto finanziario</flux:label><x-display-input :value="$practiceForm->financialInstitution" /></div>
+    <div><flux:label>Finanziaria estinta</flux:label><x-display-input :value="$practiceForm->previousFinance" /></div>
+    <div><flux:label>Teg fisso</flux:label><x-display-input :value="$practiceForm->teg" /></div>
     <div class="flex flex-col gap-1.5 col-span-2">
         <flux:label>Note</flux:label>
         <x-display-textarea value="{{ $practiceForm->notes }}" />

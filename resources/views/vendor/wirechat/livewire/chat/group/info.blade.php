@@ -250,6 +250,7 @@
 
         @if ($authIsOwner)
             {{-- Delete group --}}
+            @if (auth()->user()->hasRole('superadmin'))
             <button wire:confirm="{{ __('wirechat::chat.group.info.actions.delete_group.confirmation_message') }}"
                 wire:click="deleteGroup"
                 class="cursor-pointer w-full py-5 px-8 hover:bg-[var(--wc-light-secondary)] dark:hover:bg-[var(--wc-dark-secondary)] transition text-start space-y-2   gap-3   text-red-500">
@@ -266,6 +267,7 @@
                 <p class="dark:text-white/60 text-sm text-gray-600/80">@lang('wirechat::chat.group.info.actions.delete_group.helper_text')</p>
             </button>
             {{-- Permissions --}}
+            @endif
             <div>
 
                 <x-wirechat::actions.open-chat-drawer component='wirechat.chat.group.permissions'

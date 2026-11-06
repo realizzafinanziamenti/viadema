@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\Livewire\Mechanisms\ComponentRegistry::class, \App\Livewire\Chat\ComponentRegistry::class);
     }
 
     /**
@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->booted(function () {
+            \Livewire\Livewire::component('wirechat.chat', \App\Livewire\Chat\Chat::class);
+            \Livewire\Livewire::component('wirechat.chat.info', \App\Livewire\Chat\Info::class);
+            \Livewire\Livewire::component('wirechat.chat.group.info', \App\Livewire\Chat\GroupInfo::class);
+        });
         IOFactory::registerReader(CrmXlsxReader::TYPE, CrmXlsxReader::class);
 
         Blade::withoutDoubleEncoding();

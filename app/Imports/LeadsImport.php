@@ -8,8 +8,6 @@ use App\Enums\LeadStatus;
 use App\Models\Customer;
 use App\Models\CustomerType;
 use App\Models\User;
-use Carbon\Carbon;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -18,7 +16,6 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Validators\Failure;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use App\Enums\ProductionType;
 use App\Models\FinancialTable;
 use App\Models\Installment;
@@ -580,6 +577,7 @@ public function handleImportFailed(ImportFailed $event): void
     /* Prepara i dati per la validazione */
     public function prepareForValidation(array $row)
     {
+        $row = \App\Services\Imports\ImportHeadings::normalize($row);
         // Assicurati che le colonne opzionali esistano sempre nell'array
         $row['data_nascita'] = $row['data_nascita'] ?? null;
         $row['data_di_nascita'] = $row['data_di_nascita'] ?? null;
@@ -694,27 +692,7 @@ public function handleImportFailed(ImportFailed $event): void
      */
     protected function parseDate($value)
     {
-        if (!$value) return null;
-
-        try {
-            // Se è un numero seriale di Excel
-            if (is_numeric($value)) {
-                return Date::excelToDateTimeObject($value)->format('Y-m-d');
-            }
-
-            // Prova formati italiani espliciti (DD-MM-YYYY, DD/MM/YYYY)
-            if (preg_match('/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/', $value, $matches)) {
-                $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
-                $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
-                $year = $matches[3];
-                return Carbon::createFromFormat('d-m-Y', "$day-$month-$year")->format('Y-m-d');
-            }
-
-            // Fallback a Carbon::parse per altri formati
-            return Carbon::parse($value)->format('Y-m-d');
-        } catch (Exception $e) {
-            return null;
-        }
+        return \App\Services\Imports\ImportDate::parse($value);
     }
 
     /**
