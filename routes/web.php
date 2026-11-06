@@ -27,6 +27,9 @@ use App\Livewire\Admin\User\UserIndex;
 use App\Livewire\Admin\User\UserShow;
 use App\Livewire\Admin\User\UserUpdate;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/chat-documents/{id}', fn (int $id) => app(\App\Services\Chat\AttachmentService::class)->download($id))
+    ->middleware('auth')->name('chat-documents.download');
 use App\Livewire\Admin\Trash\TrashIndex;
 use Livewire\Volt\Volt;
 

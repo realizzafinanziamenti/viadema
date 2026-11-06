@@ -112,7 +112,7 @@
 
 
                         {{-- Only show delete and clear if conversation is NOT group --}}
-                        @if (!$conversation->isGroup())
+                        @if (!$conversation->isGroup() && auth()->user()->hasRole('superadmin'))
                             <button class="w-full" wire:click="clearConversation"
                                 wire:confirm="{{ __('wirechat::chat.actions.clear_chat.confirmation_message') }}">
 

@@ -1,4 +1,11 @@
 <div class="grid grid-cols-2 gap-6">
+    <flux:input label="ATC" wire:model="practiceForm.atc" maxlength="255" />
+    <flux:select label="Tipo ATC" wire:model="practiceForm.atcType">
+        <option value="">Seleziona tipo ATC</option>
+        @foreach (\App\Enums\AtcType::cases() as $atcOption)
+            <option value="{{ $atcOption->value }}">{{ $atcOption->value }}</option>
+        @endforeach
+    </flux:select>
     {{-- Disbursing Institution --}}
     <div class="flex flex-col gap-1.5">
         <flux:label>Ente erogante</flux:label>
@@ -127,10 +134,18 @@
     <div class="flex flex-col gap-1.5">
         <flux:label>Tan fisso </flux:label>
         <div class="flex flex-col gap-0.5">
-            <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
+            <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".001" size="sm"
                 wire:model="practiceForm.tan" symbol="%" />
             <flux:error name="practiceForm.tan" />
         </div>
+    </div>
+
+    {{-- TEG --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Teg fisso</flux:label>
+        <x-forms.input-with-symbol type="number" min="0.00" max="10000.00" step=".01" size="sm"
+            wire:model="practiceForm.teg" symbol="%" />
+        <flux:error name="practiceForm.teg" />
     </div>
 
     {{-- Total Amount --}}
@@ -203,10 +218,10 @@
     <flux:input
         size="sm"
         type="date"
-        wire:model="opportunityForm.employmentStartDate"
+        wire:model="practiceForm.employmentStartDate"
     />
 
-    <flux:error name="opportunityForm.employmentStartDate" />
+    <flux:error name="practiceForm.employmentStartDate" />
 </div>
 
     {{-- Financial Table --}}
@@ -227,6 +242,13 @@
             <flux:input size="sm" wire:model='practiceForm.financialInstitution' />
             <flux:error name="practiceForm.financialInstitution" />
         </div>
+    </div>
+
+    {{-- Previous Finance --}}
+    <div class="flex flex-col gap-1.5">
+        <flux:label>Finanziaria estinta</flux:label>
+        <flux:input size="sm" wire:model="practiceForm.previousFinance" />
+        <flux:error name="practiceForm.previousFinance" />
     </div>
 
     {{-- Notes --}}

@@ -16,7 +16,6 @@ use App\Models\ProductSubtype;
 use App\Models\ProductType;
 use App\Models\User;
 use App\Services\Imports\ImportReportService;
-use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +29,6 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\ImportFailed;
 use Maatwebsite\Excel\Validators\Failure;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Throwable;
 use Illuminate\Validation\ValidationException;
 
@@ -153,6 +151,18 @@ class PracticesImport implements
                 $acquisitionChannel =
                     $this->getAcquisitionChannel($row);
 
+                $productionType = null;
+                if (filled($row['produzione'] ?? null)) {
+                    foreach (\App\Enums\ProductionType::cases() as $case) {
+                        if (in_array(mb_strtolower(trim($row['produzione'])), [mb_strtolower($case->value), mb_strtolower($case->getLabelText())], true)) {
+                            $productionType = $case->value;
+                        }
+                    }
+                    if ($productionType === null) {
+                        throw ValidationException::withMessages(['produzione' => 'Produzione non riconosciuta: '.$row['produzione']]);
+                    }
+                }
+
                 $opportunity = PracticeOpportunity::create([
                     'customer_id' => $customer->getKey(),
                     'acquisition_channel' =>
@@ -161,11 +171,16 @@ class PracticesImport implements
                     'product_type_id' => $product?->getKey(),
                     'product_subtype_id' =>
                         $productSubtype?->getKey(),
-                    'financial_table_id' => null,
+                    'financial_table_id' => filled($row['tabella_provvigionale'] ?? $row['tabella_finanziaria'] ?? null)
+                        ? \App\Models\FinancialTable::where('percentage', $this->nullableNumber($row['tabella_provvigionale'] ?? $row['tabella_finanziaria']))->value('id') : null,
                     'insurance_id' => $insurance?->getKey(),
                     'installment_id' => $installment?->getKey(),
                     'customer_type_id' =>
                         $customerType?->getKey(),
+
+                    'employment_start_date' => $this->parseDate(
+                        $this->value($row, 'data_di_assunzione')
+                    ),
 
                     'amount_disbursed' => $this->nullableNumber(
                         $this->value($row, 'finanziato')
@@ -194,20 +209,26 @@ class PracticesImport implements
                     ),
 
                     'renewability_percentage' =>
-                        $installmentProductDefault
+                        $this->nullableNumber($row['percentuale_rinnovabilita'] ?? null) ?? $installmentProductDefault
                             ?->renewability_percentage
                         ?? 40.00,
 
                     'percentage_alert' =>
-                        $installmentProductDefault
+                        $this->nullableNumber($row['percentuale_alert'] ?? null) ?? $installmentProductDefault
                             ?->percentage_alert
                         ?? 35.00,
 
                     'is_renewal' => $isRenewal,
-                    'notes' => null,
+                    'production_type' => $productionType,
+                    'notes' => $this->value($row, 'note_pratica'),
+                    'disbursing_institution' => $this->value($row, 'ente_erogante'),
+                    'financial_institution' => $this->value($row, 'istituto_finanziario'),
+                    'previous_finance' => $this->value($row, 'finanziaria_estinta'),
                 ]);
 
                 $practice = Practice::create([
+                    'atc' => $this->value($row, 'atc'),
+                    'atc_type' => $this->value($row, 'tipo_atc'),
                     'user_id' => $user->getKey(),
                     'customer_id' => $customer->getKey(),
                     'practice_opportunity_id' =>
@@ -433,6 +454,7 @@ $message = $errors !== []
 
     public function prepareForValidation(array $row): array
     {
+        $row = \App\Services\Imports\ImportHeadings::normalize($row, practices: true);
         foreach (
             ['recapito_cell', 'numero_di_tel', 'cf_cl']
             as $key
@@ -463,6 +485,29 @@ $message = $errors !== []
     public function rules(): array
     {
         return [
+            'data_di_assunzione' => ['nullable', function ($attribute, $value, $fail) {
+                try {
+                    \App\Services\Imports\ImportDate::parse($value);
+                } catch (ValidationException) {
+                    $fail('Data di Assunzione non valida: '.(string) $value);
+                }
+            }],
+            'atc' => ['nullable', 'string', 'max:255'],
+            'tipo_atc' => ['nullable', Rule::enum(\App\Enums\AtcType::class)],
+            'email' => ['nullable', 'email', 'max:255'],
+            'note_pratica' => ['nullable', 'string', 'max:1000'],
+            'produzione' => ['nullable', 'string', 'max:100'],
+            'percentuale_rinnovabilita' => ['nullable', 'numeric', 'between:0,100'],
+            'percentuale_alert' => ['nullable', 'numeric', 'between:0,100'],
+            'ente_erogante' => ['nullable', 'string', 'max:255'],
+            'istituto_finanziario' => ['nullable', 'string', 'max:255'],
+            'finanziaria_estinta' => ['nullable', 'string', 'max:255'],
+            'tabella_provvigionale' => ['nullable', 'numeric'],
+            'tabella_finanziaria' => ['nullable', 'numeric'],
+            'indirizzo' => ['nullable', 'string', 'max:255'],
+            'citta' => ['nullable', 'string', 'max:100'],
+            'provincia' => ['nullable', 'string', 'max:100'],
+            'cap' => ['nullable', 'string', 'max:20'],
             'canale_acquisizione' => ['nullable', 'string', 'max:100'],
             'provenienza_lead' => ['nullable', 'string', 'max:100'],
             'cognome_nome_cliente' => [
@@ -645,7 +690,10 @@ $message = $errors !== []
         $status = $this->value($row, 'stato_pratica');
 
         if ($status) {
-            return (string) $status;
+            return PracticeStatus::fromImport((string) $status)?->value
+                ?? throw ValidationException::withMessages([
+                    'stato_pratica' => "Stato pratica non riconosciuto: {$status}",
+                ]);
         }
 
         return $this->getLastInstallmentDate($row)
@@ -655,19 +703,7 @@ $message = $errors !== []
 
     protected function parseDate(mixed $value): ?string
     {
-        if (!$value) {
-            return null;
-        }
-
-        try {
-            if (is_numeric($value)) {
-                return Date::excelToDateTimeObject($value)->format('Y-m-d');
-            }
-
-            return Carbon::parse($value)->format('Y-m-d');
-        } catch (Throwable) {
-            return null;
-        }
+        return \App\Services\Imports\ImportDate::parse($value);
     }
 
     protected function getUser(array $row): User
@@ -798,6 +834,11 @@ $message = $errors !== []
          */
         return Customer::create([
             'user_id' => $user->getKey(),
+            'email' => $this->value($row, 'email'),
+            'address' => $this->value($row, 'indirizzo'),
+            'city' => $this->value($row, 'citta'),
+            'state' => $this->value($row, 'provincia'),
+            'postal_code' => $this->value($row, 'cap'),
             'first_name' => $nameParts['first_name'],
             'last_name' => $nameParts['last_name'],
             'phone' => $phone,
@@ -835,7 +876,8 @@ $message = $errors !== []
             'prestito personale' => ProductType::query()
                 ->where('slug', 'prestiti')
                 ->first(),
-            default => null,
+            default => ProductType::query()->whereRaw('LOWER(name) = ?', [$value])
+                ->orWhereRaw('LOWER(slug) = ?', [$value])->first(),
         };
     }
 

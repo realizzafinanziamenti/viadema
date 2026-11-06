@@ -53,6 +53,11 @@ use App\Traits\AcceptedFileTypes;
 use Illuminate\Database\Eloquent\Builder;
 class PracticeIndex extends Component
 {
+    public ?string $atc = null;
+    public ?string $atcType = null;
+    public ?string $tempAtc = null;
+    public ?string $tempAtcType = null;
+
     use WithPagination;
     use WithoutUrlPagination;
     use HandlesEntityActions;
@@ -1108,6 +1113,12 @@ public function importPractices(): void
      */
     public function filter(): void
     {
+        $this->validate([
+            'tempAtc' => ['nullable', 'string', 'max:255'],
+            'tempAtcType' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\AtcType::class)],
+        ]);
+        $this->atc = $this->tempAtc;
+        $this->atcType = $this->tempAtcType;
         $this->validate();
 
         $this->selectedTeamMemberForFilter = $this->tempSelectedTeamMemberForFilter;
@@ -1150,6 +1161,7 @@ public function importPractices(): void
      */
     public function resetFilter(): void
     {
+        $this->reset(['atc', 'atcType', 'tempAtc', 'tempAtcType']);
         $this->reset([
             'selectedTeamMemberForFilter',
             'tempSelectedTeamMemberForFilter',
@@ -1223,6 +1235,8 @@ public function importPractices(): void
      */
     public function applyFilters($query)
     {
+        $query->when(filled($this->atc), fn ($q) => $q->where('atc', 'like', '%'.trim($this->atc).'%'))
+            ->when(filled($this->atcType), fn ($q) => $q->where('atc_type', $this->atcType));
         if ($this->selectedPracticeStatusForFilter && $this->expired === false) {
             $query->where('practice_status', $this->selectedPracticeStatusForFilter);
         }

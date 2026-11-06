@@ -22,6 +22,8 @@ class Practice extends Model
     use SoftDeletes, HasFactory, LogsActivity;
 
     protected $fillable = [
+        'atc',
+        'atc_type',
         'user_id',
         'deleted_by',
         'customer_id',
@@ -39,6 +41,7 @@ class Practice extends Model
     ];
 
     protected $casts = [
+        'atc_type' => \App\Enums\AtcType::class,
         'inserted_at' => 'date',
         'early_settlement_date' => 'date',
         'disbursement_date' => 'date',
@@ -59,6 +62,8 @@ class Practice extends Model
 {
     return LogOptions::defaults()
         ->logOnly([
+            'atc',
+            'atc_type',
             'user_id',
             'customer_id',
             'practice_opportunity_id',
@@ -96,6 +101,8 @@ class Practice extends Model
 
         $activity->properties = $activity->properties->merge([
             'field_translations' => [
+                'atc' => 'ATC',
+                'atc_type' => 'Tipo ATC',
                 'user_id' => 'Collaboratore',
                 'customer_id' => 'Cliente',
                 'practice_opportunity_id' => 'Opportunità pratica',

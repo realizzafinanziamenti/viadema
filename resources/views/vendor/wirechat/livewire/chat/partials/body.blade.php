@@ -212,7 +212,7 @@
                                             </x-slot>
                                             <x-slot name="content">
 
-                                                @if ($message->ownedBy($this->auth) || ($authParticipant->isAdmin() && $isGroup))
+                                                @if (auth()->user()?->hasRole('superadmin') && ($message->ownedBy($this->auth) || ($authParticipant->isAdmin() && $isGroup)))
                                                     <button dusk="delete_message_for_everyone"
                                                         wire:click="deleteForEveryone('{{ encrypt($message->id) }}')"
                                                         wire:confirm="{{ __('wirechat::chat.actions.delete_for_everyone.confirmation_message') }}"
@@ -225,7 +225,7 @@
 
 
                                                 {{-- Dont show delete for me if is group --}}
-                                                @if (!$isGroup)
+                                                @if (auth()->user()?->hasRole('superadmin') && !$isGroup)
                                                     <button dusk="delete_message_for_me"
                                                         wire:click="deleteForMe('{{ encrypt($message->id) }}')"
                                                         wire:confirm="{{ __('wirechat::chat.actions.delete_for_me.confirmation_message') }}"
@@ -271,7 +271,7 @@
                                             </div>
                                         @endif
                                         {{-- Attachemnt is Application/ --}}
-                                        @if (str()->startsWith($attachment->mime_type, 'application/'))
+                                        @if (!str()->startsWith($attachment->mime_type, ['image/', 'video/']))
                                             @include('wirechat::livewire.chat.partials.file', [
                                                 'attachment' => $attachment,
                                             ])
@@ -293,6 +293,8 @@
                                                 'attachment' => $attachment,
                                             ])
                                         @endif
+                                    @elseif ($message->isAttachment())
+                                        <span class="text-sm text-gray-500">Allegato rimosso</span>
                                     @endif
 
                                     {{-- if message is emoji then don't show the styled messagebody layout --}}

@@ -29,6 +29,13 @@ return [
     */
 
     'disks' => [
+        'chat' => [
+            'driver' => 'local',
+            'root' => storage_path('app/chat-private'),
+            'visibility' => 'private',
+            'serve' => true,
+            'throw' => true,
+        ],
 
         'local' => [
             'driver' => 'local',
