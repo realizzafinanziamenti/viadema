@@ -238,6 +238,19 @@ private function filteredLeadQuery(): Builder
 }
 
 /**
+ * Download the latest finished report belonging to the current user.
+ */
+public function downloadLatestImportReport(): ?\Symfony\Component\HttpFoundation\StreamedResponse
+{
+    $response = app(\App\Services\Imports\ImportReportDownload::class)
+        ->download(ImportReportType::LEADS);
+    if ($response === null) {
+        Toaster::error('Nessun report concluso disponibile da scaricare.');
+    }
+    return $response;
+}
+
+/**
  * Open the latest lead import report belonging to the current user.
  */
 public function openLatestImportReport(
@@ -413,7 +426,7 @@ public function importReportRows()
             'run_uuid',
             $report->run_uuid
         )
-        ->orderBy('row_number');
+        ->orderBy('sheet_index')->orderBy('source_sheet')->orderBy('row_number');
 
     if ($this->importReportFilter === 'imported') {
         $query->where(
@@ -423,10 +436,7 @@ public function importReportRows()
     }
 
     if ($this->importReportFilter === 'failed') {
-        $query->where(
-            'status',
-            ImportReportRowStatus::FAILED->value
-        );
+        $query->whereIn('status', [ImportReportRowStatus::FAILED->value, ImportReportRowStatus::DUPLICATE->value]);
     }
 
     return $query->paginate(
