@@ -328,7 +328,20 @@ public function initializeImportReportState(
 }
 
 /**
- * Open the latest practice import report.
+ * Download the latest finished report belonging to the current user.
+ */
+public function downloadLatestImportReport(): ?\Symfony\Component\HttpFoundation\StreamedResponse
+{
+    $response = app(\App\Services\Imports\ImportReportDownload::class)
+        ->download(ImportReportType::PRACTICES);
+    if ($response === null) {
+        Toaster::error('Nessun report concluso disponibile da scaricare.');
+    }
+    return $response;
+}
+
+/**
+ * Open the latest practice import report belonging to the current user.
  */
 public function openLatestImportReport(
     ImportReportService $reportService
@@ -511,7 +524,7 @@ public function checkImportStatus(
                 'run_uuid',
                 $report->run_uuid
             )
-            ->orderBy('row_number');
+            ->orderBy('sheet_index')->orderBy('source_sheet')->orderBy('row_number');
 
         if ($this->importReportFilter === 'imported') {
             $query->where(
@@ -521,10 +534,7 @@ public function checkImportStatus(
         }
 
         if ($this->importReportFilter === 'failed') {
-            $query->where(
-                'status',
-                ImportReportRowStatus::FAILED->value
-            );
+            $query->whereIn('status', [ImportReportRowStatus::FAILED->value, ImportReportRowStatus::DUPLICATE->value]);
         }
 
         return $query->paginate(

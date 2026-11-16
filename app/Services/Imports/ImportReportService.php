@@ -51,6 +51,7 @@ final class ImportReportService
             }
 
             $report->fill([
+                'detail_version' => null,
                 'run_uuid' => Str::uuid()->toString(),
                 'file_name' => Str::limit(
                     basename($fileName),
@@ -109,7 +110,10 @@ final class ImportReportService
         array $rawData,
         ?string $entityType = null,
         ?int $entityId = null,
-        string $message = 'Importato correttamente'
+        string $message = 'Importato correttamente',
+        string $sourceSheet = '',
+        ?int $sheetIndex = null,
+        ?array $sourceData = null,
     ): bool {
         return $this->recordRow(
             reportId: $reportId,
@@ -122,6 +126,9 @@ final class ImportReportService
             errors: null,
             entityType: $entityType,
             entityId: $entityId,
+            sourceSheet: $sourceSheet,
+            sheetIndex: $sheetIndex,
+            sourceData: $sourceData,
         );
     }
 
@@ -136,16 +143,23 @@ final class ImportReportService
         string $message,
         array $rawData,
         array $errors,
+        string $sourceSheet = '',
+        ?int $sheetIndex = null,
+        ?array $sourceData = null,
+        bool $duplicate = false,
     ): bool {
         return $this->recordRow(
             reportId: $reportId,
             runUuid: $runUuid,
             rowNumber: $rowNumber,
-            status: ImportReportRowStatus::FAILED,
+            status: $duplicate ? ImportReportRowStatus::DUPLICATE : ImportReportRowStatus::FAILED,
             label: $label,
             message: $message,
             rawData: $rawData,
             errors: $errors,
+            sourceSheet: $sourceSheet,
+            sheetIndex: $sheetIndex,
+            sourceData: $sourceData,
         );
     }
 
@@ -165,7 +179,7 @@ final class ImportReportService
                 $runUuid
             );
 
-            if ($report === null) {
+            if ($report === null || ! $report->isRunning()) {
                 return null;
             }
 
@@ -266,6 +280,9 @@ final class ImportReportService
         ?array $errors = null,
         ?string $entityType = null,
         ?int $entityId = null,
+        string $sourceSheet = '',
+        ?int $sheetIndex = null,
+        ?array $sourceData = null,
     ): bool {
         return DB::transaction(function () use (
             $reportId,
@@ -277,7 +294,10 @@ final class ImportReportService
             $rawData,
             $errors,
             $entityType,
-            $entityId
+            $entityId,
+            $sourceSheet,
+            $sheetIndex,
+            $sourceData
         ): bool {
             $report = $this->lockCurrentReport(
                 $reportId,
@@ -297,11 +317,12 @@ final class ImportReportService
                 ]);
             }
 
-            ImportReportRow::query()->updateOrCreate(
+            ImportReportRow::query()->firstOrCreate(
                 [
                     'import_report_id' => $report->getKey(),
                     'run_uuid' => $runUuid,
                     'row_number' => $rowNumber,
+                    'source_sheet' => $sourceSheet,
                 ],
                 [
                     'status' => $status,
@@ -311,6 +332,8 @@ final class ImportReportService
                     'message' => $message,
                     'errors' => $errors,
                     'raw_data' => $rawData,
+                    'sheet_index' => $sheetIndex,
+                    'source_data' => $sourceData,
                 ]
             );
 
@@ -351,10 +374,12 @@ final class ImportReportService
             )
             ->count();
 
+        // Keep the existing counter meaning: all rows that were not imported,
+        // including duplicates. Their distinct outcome is retained on each row.
         $failed = (clone $rows)
-            ->where(
+            ->whereIn(
                 'status',
-                ImportReportRowStatus::FAILED->value
+                [ImportReportRowStatus::FAILED->value, ImportReportRowStatus::DUPLICATE->value]
             )
             ->count();
 

@@ -33,6 +33,7 @@ use Maatwebsite\Excel\Events\ImportFailed;
 class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueue, WithChunkReading, WithValidation, WithEvents
 {
     use RemembersRowNumber;
+    use \App\Imports\Concerns\TracksImportSource;
 
     protected ?int $defaultUserId;
 
@@ -251,6 +252,9 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
     public function model(array $row): ?Customer
     {
         $rowNumber = $this->getRowNumber();
+        if (! $this->shouldProcessSourceRow($rowNumber)) {
+            return null;
+        }
         $label = $this->buildRowLabel($row, $rowNumber);
 
         try {
@@ -291,8 +295,12 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                     rowNumber: $rowNumber,
                     label: $label,
                     message: $errors[0],
-                    rawData: $row,
+                    rawData: $this->originalRow($rowNumber, $row),
+                    sourceSheet: $this->sourceSheet,
+                    sheetIndex: $this->sourceSheetIndex,
+                    sourceData: $this->sourceData($rowNumber),
                     errors: $errors,
+                    duplicate: true,
                 );
 
                 $this->createActivityLog(
@@ -323,7 +331,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
          * We do not want a lead without its related opportunity when one
          * of the two operations fails.
          */
-        $lead = DB::transaction(function () use ($row): Customer {
+        $lead = DB::transaction(function () use ($row, $rowNumber): Customer {
             $user = $this->getUser($row);
             $customerType = $this->getCustomerType($row);
 
@@ -393,10 +401,25 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
                 $customerType
             );
 
+            $this->reportService()->recordImportedRow(
+                reportId: $this->importReportId,
+                runUuid: $this->runUuid,
+                rowNumber: $rowNumber,
+                label: $lead->full_name,
+                rawData: $this->originalRow($rowNumber, $row),
+                sourceSheet: $this->sourceSheet,
+                sheetIndex: $this->sourceSheetIndex,
+                sourceData: $this->sourceData($rowNumber),
+                entityType: Customer::class,
+                entityId: $lead->getKey(),
+                message: 'Lead creato correttamente.',
+            );
+
             return $lead;
         }, 3);
     } catch (Throwable $exception) {
-        $errors = [$exception->getMessage()];
+        $errors = $exception instanceof \Illuminate\Validation\ValidationException
+            ? $exception->errors() : ['Salvataggio non riuscito. Contattare un amministratore con il riferimento della riga.'];
 
         $this->reportService()->recordFailedRow(
             reportId: $this->importReportId,
@@ -404,7 +427,10 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
             rowNumber: $rowNumber,
             label: $label,
             message: 'Errore durante l\'importazione del lead.',
-            rawData: $row,
+            rawData: $this->originalRow($rowNumber, $row),
+            sourceSheet: $this->sourceSheet,
+            sheetIndex: $this->sourceSheetIndex,
+            sourceData: $this->sourceData($rowNumber),
             errors: $errors,
         );
 
@@ -440,21 +466,6 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
         ? 'creato'
         : 'aggiornato';
 
-    /*
-     * Questa scrittura è idempotente grazie alla chiave:
-     * report_id + run_uuid + row_number.
-     */
-    $this->reportService()->recordImportedRow(
-        reportId: $this->importReportId,
-        runUuid: $this->runUuid,
-        rowNumber: $rowNumber,
-        label: $lead->full_name,
-        rawData: $row,
-        entityType: Customer::class,
-        entityId: $lead->getKey(),
-        message: "Lead {$action} correttamente.",
-    );
-
     $this->createActivityLog(
         lead: $lead,
         logName: 'import_success',
@@ -471,6 +482,7 @@ class LeadsImport implements ToModel, WithHeadingRow, SkipsOnFailure, ShouldQueu
 public function registerEvents(): array
 {
     return [
+        \Maatwebsite\Excel\Events\BeforeSheet::class => [$this, 'trackSourceSheet'],
         ImportFailed::class => [
             $this,
             'handleImportFailed',
@@ -514,19 +526,14 @@ public function handleImportFailed(ImportFailed $event): void
         );
 
     foreach ($failuresByRow as $rowNumber => $failureGroup) {
-        $errors = $failureGroup
-            ->flatMap(
-                static fn (Failure $failure): array =>
-                    $failure->errors()
-            )
-            ->filter()
-            ->unique()
-            ->values()
+        if (! $this->shouldProcessSourceRow((int) $rowNumber)) {
+            continue;
+        }
+        $errors = $failureGroup->groupBy(fn (Failure $failure) => $failure->attribute())
+            ->map(fn ($group) => $group->flatMap(fn (Failure $failure) => $failure->errors())->unique()->values()->all())
             ->all();
 
-        $rowValues = $failureGroup
-            ->first()
-            ->values();
+        $rowValues = $failureGroup->first()->values();
 
         $rowNumber = (int) $rowNumber;
         $label = $this->buildRowLabel(
@@ -535,7 +542,7 @@ public function handleImportFailed(ImportFailed $event): void
         );
 
         $message = $errors !== []
-            ? implode(' | ', $errors)
+            ? implode(' | ', \Illuminate\Support\Arr::flatten($errors))
             : 'La riga non ha superato la validazione.';
 
         $this->reportService()->recordFailedRow(
@@ -544,7 +551,10 @@ public function handleImportFailed(ImportFailed $event): void
             rowNumber: $rowNumber,
             label: $label,
             message: $message,
-            rawData: $rowValues,
+            rawData: $this->originalRow($rowNumber, $rowValues),
+            sourceSheet: $this->sourceSheet,
+            sheetIndex: $this->sourceSheetIndex,
+            sourceData: $this->sourceData($rowNumber),
             errors: $errors,
         );
 
@@ -575,8 +585,11 @@ public function handleImportFailed(ImportFailed $event): void
     }
 
     /* Prepara i dati per la validazione */
-    public function prepareForValidation(array $row)
+    public function prepareForValidation(array $row, ?int $rowNumber = null)
     {
+        if ($rowNumber !== null) {
+            $this->originalRows[$rowNumber] = $row;
+        }
         $row = \App\Services\Imports\ImportHeadings::normalize($row);
         // Assicurati che le colonne opzionali esistano sempre nell'array
         $row['data_nascita'] = $row['data_nascita'] ?? null;

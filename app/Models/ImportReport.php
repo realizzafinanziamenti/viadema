@@ -15,6 +15,7 @@ class ImportReport extends Model
     use HasFactory;
 
     protected $fillable = [
+        'detail_version',
         'user_id',
         'type',
         'run_uuid',
@@ -30,6 +31,7 @@ class ImportReport extends Model
     ];
 
     protected $casts = [
+        'detail_version' => 'integer',
         'type' => ImportReportType::class,
         'status' => ImportReportStatus::class,
 

@@ -6,4 +6,5 @@ enum ImportReportRowStatus: string
 {
     case IMPORTED = 'imported';
     case FAILED = 'failed';
+    case DUPLICATE = 'duplicate';
 }

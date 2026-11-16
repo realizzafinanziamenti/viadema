@@ -13,6 +13,9 @@ class ImportReportRow extends Model
     use HasFactory;
 
     protected $fillable = [
+        'source_sheet',
+        'sheet_index',
+        'source_data',
         'import_report_id',
         'run_uuid',
         'row_number',
@@ -26,6 +29,8 @@ class ImportReportRow extends Model
     ];
 
     protected $casts = [
+        'sheet_index' => 'integer',
+        'source_data' => 'array',
         'status' => ImportReportRowStatus::class,
         'row_number' => 'integer',
         'entity_id' => 'integer',

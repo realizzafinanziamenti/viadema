@@ -151,7 +151,7 @@
 
                 <div class="rounded-lg border border-red-200 bg-red-50 p-4">
                     <div class="text-sm text-red-700">
-                        Fallite
+                        Non importate
                     </div>
 
                     <div class="mt-1 text-2xl font-bold text-red-700">
@@ -192,7 +192,7 @@
                     :variant="$importReportFilter === 'failed' ? 'primary' : 'ghost'"
                     wire:click="setImportReportFilter('failed')"
                 >
-                    Fallite
+                    Non importate
                     <span class="ms-1 text-xs opacity-75">
                         {{ $report->failed_rows }}
                     </span>
@@ -244,6 +244,9 @@
                                     <tr wire:key="import-report-row-{{ $row->id }}">
                                         <td class="px-4 py-3 align-top font-medium text-black-custom">
                                             {{ $row->row_number }}
+                                            @if ($row->source_sheet)
+                                                <div class="text-xs font-normal">{{ $row->source_sheet }}</div>
+                                            @endif
                                         </td>
 
                                         <td class="px-4 py-3 align-top">
@@ -259,6 +262,8 @@
                                                 >
                                                     Importata
                                                 </span>
+                                            @elseif ($rowStatus === 'duplicate')
+                                                <span class="text-amber-800">Duplicata — non importata</span>
                                             @else
                                                 <span
                                                     class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-600/20"

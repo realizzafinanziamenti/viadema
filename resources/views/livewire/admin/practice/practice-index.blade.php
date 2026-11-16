@@ -169,6 +169,13 @@
                                 >
                                     Ultimo report
                                 </flux:menu.item>
+                                <flux:menu.item
+                                    icon="arrow-down-tray"
+                                    wire:click="downloadLatestImportReport"
+                                    :disabled="!$this->latestPracticeImportReport?->isFinished() || $this->latestPracticeImportReport?->completed_at === null"
+                                >
+                                    Scarica ultimo report
+                                </flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
                     @endcan

@@ -42,6 +42,7 @@ class PracticesImport implements
     WithEvents
 {
     use RemembersRowNumber;
+    use \App\Imports\Concerns\TracksImportSource;
 
     protected ?int $defaultUserId;
 
@@ -65,6 +66,9 @@ class PracticesImport implements
     public function model(array $row): ?Practice
     {
         $rowNumber = $this->getRowNumber();
+        if (! $this->shouldProcessSourceRow($rowNumber)) {
+            return null;
+        }
         $label = $this->buildRowLabel($row, $rowNumber);
 
         try {
@@ -104,7 +108,7 @@ class PracticesImport implements
                         )
                         ->exists()
                 ) {
-                    throw ValidationException::withMessages([
+                    throw \App\Services\Imports\DuplicateImportRecord::withMessages([
                         'applicazione' =>
                             'Il cliente possiede già una pratica per questo prodotto.',
                     ]);
@@ -266,7 +270,10 @@ class PracticesImport implements
                     rowNumber: $rowNumber,
                     label: $customer->full_name
                         ?: $this->buildRowLabel($row, $rowNumber),
-                    rawData: $row,
+                    rawData: $this->originalRow($rowNumber, $row),
+                    sourceSheet: $this->sourceSheet,
+                    sheetIndex: $this->sourceSheetIndex,
+                    sourceData: $this->sourceData($rowNumber),
                     entityType: Practice::class,
                     entityId: $practice->getKey(),
                     message: $message,
@@ -276,16 +283,12 @@ class PracticesImport implements
             }, 3);
         } catch (Throwable $exception) {
             $errors = $exception instanceof ValidationException
-    ? collect($exception->errors())
-        ->flatten()
-        ->filter()
-        ->values()
-        ->all()
-    : [$exception->getMessage()];
+                ? $exception->errors()
+                : ['Salvataggio non riuscito. Contattare un amministratore con il riferimento della riga.'];
 
-$message = $errors !== []
-    ? implode(' | ', $errors)
-    : 'Errore durante l\'importazione della pratica.';;
+            $message = $errors !== []
+                ? implode(' | ', \Illuminate\Support\Arr::flatten($errors))
+                : 'Errore durante l\'importazione della pratica.';
 
             $this->reportService()->recordFailedRow(
                 reportId: $this->importReportId,
@@ -293,8 +296,12 @@ $message = $errors !== []
                 rowNumber: $rowNumber,
                 label: $label,
                 message: $message,
-                rawData: $row,
+                rawData: $this->originalRow($rowNumber, $row),
+                sourceSheet: $this->sourceSheet,
+                sheetIndex: $this->sourceSheetIndex,
+                sourceData: $this->sourceData($rowNumber),
                 errors: $errors,
+                duplicate: $exception instanceof \App\Services\Imports\DuplicateImportRecord,
             );
 
             $this->createActivityLog(
@@ -347,14 +354,11 @@ $message = $errors !== []
             );
 
         foreach ($failuresByRow as $rowNumber => $failureGroup) {
-            $errors = $failureGroup
-                ->flatMap(
-                    static fn (Failure $failure): array =>
-                        $failure->errors()
-                )
-                ->filter()
-                ->unique()
-                ->values()
+            if (! $this->shouldProcessSourceRow((int) $rowNumber)) {
+                continue;
+            }
+            $errors = $failureGroup->groupBy(fn (Failure $failure) => $failure->attribute())
+                ->map(fn ($group) => $group->flatMap(fn (Failure $failure) => $failure->errors())->unique()->values()->all())
                 ->all();
 
             $rowValues = $failureGroup
@@ -368,7 +372,7 @@ $message = $errors !== []
             );
 
             $message = $errors !== []
-                ? implode(' | ', $errors)
+                ? implode(' | ', \Illuminate\Support\Arr::flatten($errors))
                 : 'La riga non ha superato la validazione.';
 
             $this->reportService()->recordFailedRow(
@@ -377,7 +381,10 @@ $message = $errors !== []
                 rowNumber: $rowNumber,
                 label: $label,
                 message: $message,
-                rawData: $rowValues,
+                rawData: $this->originalRow($rowNumber, $rowValues),
+                sourceSheet: $this->sourceSheet,
+                sheetIndex: $this->sourceSheetIndex,
+                sourceData: $this->sourceData($rowNumber),
                 errors: $errors,
             );
 
@@ -407,6 +414,7 @@ $message = $errors !== []
     public function registerEvents(): array
     {
         return [
+            \Maatwebsite\Excel\Events\BeforeSheet::class => [$this, 'trackSourceSheet'],
             ImportFailed::class => [
                 $this,
                 'handleImportFailed',
@@ -452,8 +460,11 @@ $message = $errors !== []
         return 100;
     }
 
-    public function prepareForValidation(array $row): array
+    public function prepareForValidation(array $row, ?int $rowNumber = null): array
     {
+        if ($rowNumber !== null) {
+            $this->originalRows[$rowNumber] = $row;
+        }
         $row = \App\Services\Imports\ImportHeadings::normalize($row, practices: true);
         foreach (
             ['recapito_cell', 'numero_di_tel', 'cf_cl']
