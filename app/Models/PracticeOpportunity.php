@@ -68,6 +68,11 @@ class PracticeOpportunity extends Model
         return $this->hasMany(Practice::class);
     }
 
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
+
     public function productType(): BelongsTo
     {
         return $this->belongsTo(ProductType::class);

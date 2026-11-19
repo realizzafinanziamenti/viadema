@@ -26,6 +26,7 @@ use App\Models\Insurance;
 class LeadCreate extends Component
 {
     use InteractsWithDropdowns, EnumHelper;
+    use \App\Traits\HandlesLeadAttachments;
     public PracticeOpportunityForm $opportunityForm;
 
     public array $productTypes = [];
@@ -124,13 +125,34 @@ public function setOpportunityAcquisitionChannel(?string $value = null): void
 {
     Gate::authorize('create', [Customer::class, CustomerStatus::LEAD]);
 
-    $lead = DB::transaction(function () {
-        $lead = $this->form->store();
-
-        $this->opportunityForm->store($lead);
-
-        return $lead;
-    });
+    $this->validateAttachments('attachments');
+    $stored = [];
+    try {
+        $lead = DB::transaction(function () use (&$stored) {
+            $this->opportunityForm->validate();
+            $lead = $this->form->store();
+            if (! $lead) {
+                throw new \RuntimeException('Salvataggio del lead non riuscito.');
+            }
+            $opportunity = $this->opportunityForm->store($lead);
+            foreach ($this->attachments as $file) {
+                $stored[] = app(\App\Services\PracticeAttachments::class)->store($opportunity, $file)->file_path;
+            }
+            return $lead;
+        });
+    } catch (\Throwable $exception) {
+        foreach ($stored as $path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+        }
+        if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            throw $exception;
+        }
+        report($exception);
+        \Masmerise\Toaster\Toaster::error('Errore durante il salvataggio del lead e degli allegati. Riprova.');
+        return;
+    }
+    $this->attachments = [];
+    $this->temporaryFiles = [];
 
     $this->redirectRoute('lead.show', ['id' => $lead->id], navigate: true);
 }

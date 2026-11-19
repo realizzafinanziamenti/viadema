@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attachment;
 use App\Models\Practice;
+use App\Models\PracticeOpportunity;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class PracticeAttachments
     // Existing records contain paths relative to this disk, not the default disk.
     public const DISK = 'public';
 
-    public function store(Practice $practice, UploadedFile $file): Attachment
+    public function store(Practice|PracticeOpportunity $practice, UploadedFile $file): Attachment
     {
         $path = 'practice-attachments/'.$file->hashName();
         $stream = $file instanceof TemporaryUploadedFile
@@ -39,12 +40,17 @@ class PracticeAttachments
             }
         }
 
-        return $practice->attachments()->create([
-            'file_name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
-        ]);
+        try {
+            return $practice->attachments()->create([
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+            ]);
+        } catch (\Throwable $exception) {
+            Storage::disk(self::DISK)->delete($path);
+            throw $exception;
+        }
     }
 
     public function download(Attachment $attachment): StreamedResponse

@@ -125,7 +125,7 @@ class PracticeShow extends Component
      */
     public function download(int $id): ?StreamedResponse
     {
-        Gate::authorize('view', $this->practice);
+        Gate::authorize('view', $this->practice->fresh());
         $attachment = $this->practice->attachments()->findOrFail($id);
 
         try {
@@ -146,7 +146,7 @@ class PracticeShow extends Component
      */
     public function selectAttachmentForDelete(int $id): void
     {
-        Gate::authorize('delete', $this->practice);
+        Gate::authorize('delete', $this->practice->fresh());
         $this->selectedAttachment = $this->practice->attachments()->findOrFail($id);
         $this->dispatch('open-modal', 'delete-attachment');
     }
@@ -157,7 +157,7 @@ class PracticeShow extends Component
      */
     public function deleteAttachment(): void
     {
-        Gate::authorize('delete', $this->practice);
+        Gate::authorize('delete', $this->practice->fresh());
 
         $this->selectedAttachment = $this->practice->attachments()
             ->findOrFail($this->selectedAttachment?->getKey());
@@ -183,7 +183,7 @@ class PracticeShow extends Component
             return $this->redirectRoute('practice.index', navigate: true);
         }
 
-        Gate::authorize('view', $this->practice);
+        Gate::authorize('view', $this->practice->fresh());
 
         $this->initializePracticeStatuses();
         $this->setPracticeStatus($this->practice->practice_status?->value);
@@ -196,6 +196,8 @@ class PracticeShow extends Component
     #[Layout('components.layouts.app')]
     public function render()
     {
+        Gate::authorize('view', $this->practice->fresh());
+        $this->practice->load('attachments');
         $this->practice->loadMissing([
             'user', 'customer', 'attachments',
             'opportunity.productType', 'opportunity.productSubtype',
