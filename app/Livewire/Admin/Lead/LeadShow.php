@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 class LeadShow extends Component
 {
     use HandlesEntityActions, InteractsWithDropdowns, EnumHelper;
+    use \App\Traits\HandlesLeadAttachments;
 
     public Customer $lead;
     public array $leadStatuses = [];
@@ -89,7 +90,8 @@ class LeadShow extends Component
     {
         Gate::authorize('create', Practice::class);
 
-        $opportunity = $this->lead->latestPracticeOpportunity()->first();
+        Gate::authorize('view', $this->lead->fresh());
+        $opportunity = $this->attachmentOpportunity();
         if (! $opportunity) {
             Toaster::error('Non è presente nessuna opportunità pratica associata a questo lead.');
             return;
@@ -132,14 +134,61 @@ class LeadShow extends Component
         ])->findOrFail($id);
         Gate::authorize('view', $this->lead);
 
+        $this->attachmentOpportunityId = $this->lead->latestPracticeOpportunity?->id;
         $this->initializeLeadStatuses();
         $this->setLeadStatus($this->lead->lead_status?->value);
         $this->selectedLeadRecontactDate = $this->lead->recontact_date?->format('Y-m-d');
     }
 
+    public function saveAttachments(): void
+    {
+        $this->authorizeAttachmentUpload();
+        $this->validateAttachments('attachments');
+        if ($this->attachments === []) {
+            return;
+        }
+        $stored = [];
+        try {
+            $opportunity = \Illuminate\Support\Facades\DB::transaction(function () use (&$stored) {
+                $lead = Customer::leads()->lockForUpdate()->findOrFail($this->lead->id);
+                Gate::authorize('update', $lead);
+                $opportunity = $this->attachmentOpportunity();
+                if (! $opportunity) {
+                    abort_if($lead->practiceOpportunities()->exists(), 409);
+                    $opportunity = $lead->practiceOpportunities()->create([]);
+                }
+                foreach ($this->attachments as $file) {
+                    $stored[] = app(\App\Services\PracticeAttachments::class)->store($opportunity, $file)->file_path;
+                }
+                return $opportunity;
+            });
+        } catch (\Throwable $exception) {
+            foreach ($stored as $path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            }
+            if ($exception instanceof \Illuminate\Auth\Access\AuthorizationException
+                || $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+                || $exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                throw $exception;
+            }
+            report($exception);
+            Toaster::error('Errore durante il salvataggio degli allegati. Riprova.');
+            return;
+        }
+        $this->attachmentOpportunityId = $opportunity->id;
+        $this->lead->unsetRelation('latestPracticeOpportunity');
+        $this->attachments = [];
+        $this->temporaryFiles = [];
+        Toaster::success('Allegati salvati con successo');
+    }
+
     #[Layout('components.layouts.app')]
     public function render()
     {
-        return view('livewire.admin.lead.lead-show');
+        $this->lead->refresh();
+        Gate::authorize('view', $this->lead);
+        return view('livewire.admin.lead.lead-show', [
+            'existingAttachments' => $this->attachmentOpportunity()?->attachments()->get() ?? collect(),
+        ]);
     }
 }

@@ -30,6 +30,15 @@
                 'selectedProductionType' => $opportunityForm->productionType,
             ])
 
+            <div class="mt-6">
+                @include('partials.practice.attachment-fields', [
+                    'existingAttachments' => collect(),
+                    'attachmentOwner' => null,
+                    'pendingAttachments' => $attachments,
+                    'attachmentField' => 'attachments',
+                ])
+            </div>
+
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
                 <a href="{{ route('lead.index') }}" wire:navigate>

@@ -22,9 +22,20 @@ use App\Models\ProductType;
 use App\Models\ProductSubtype;
 use App\Models\Installment;
 use App\Models\Insurance;
+use App\Services\PracticeAttachments;
+use Masmerise\Toaster\Toaster;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Auth\Access\AuthorizationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
+use Throwable;
+
 class LeadUpdate extends Component
 {
     use InteractsWithDropdowns, EnumHelper;
+    use \App\Traits\HandlesLeadAttachments;
+
     public PracticeOpportunityForm $opportunityForm;
 
     public Customer $lead;
@@ -102,15 +113,45 @@ public function setOpportunityAcquisitionChannel(?string $value = null): void
      */
     public function save(): void
     {
-        Gate::authorize('update', $this->lead);
+        Gate::authorize('update', $this->lead->fresh());
+        $this->validateAttachments('attachments');
+        $stored = [];
 
-        $lead = DB::transaction(function () {
-            $lead = $this->form->update();
-
-            $this->opportunityForm->updateOrCreate($lead);
-
-            return $lead;
-        });
+        try {
+            $lead = DB::transaction(function () use (&$stored) {
+                $lead = Customer::lockForUpdate()->findOrFail($this->lead->id);
+                Gate::authorize('update', $lead);
+                abort_unless($lead->isLead(), 404);
+                // Reject a stale editor rather than attach to a newly selected opportunity.
+                abort_unless($lead->latestPracticeOpportunity()->value('id') === $this->attachmentOpportunityId, 409);
+                $this->opportunityForm->opportunity = $this->attachmentOpportunity();
+                $this->form->customer = $lead;
+                $lead = $this->form->update();
+                if (! $lead) {
+                    throw new RuntimeException('Salvataggio del lead non riuscito.');
+                }
+                $opportunity = $this->opportunityForm->updateOrCreate($lead);
+                foreach ($this->attachments as $file) {
+                    $stored[] = app(PracticeAttachments::class)->store($opportunity, $file)->file_path;
+                }
+                return $lead;
+            });
+        } catch (Throwable $exception) {
+            foreach ($stored as $path) {
+                Storage::disk('public')->delete($path);
+            }
+            if ($exception instanceof ValidationException
+                || $exception instanceof AuthorizationException
+                || $exception instanceof HttpException) {
+                throw $exception;
+            }
+            report($exception);
+            Toaster::error('Errore durante il salvataggio del lead e degli allegati. Riprova.');
+            return;
+        }
+        $this->attachments = [];
+        $this->temporaryFiles = [];
+        $this->attachmentOpportunityId = $lead->latestPracticeOpportunity()->value('id');
 
         $this->redirectRoute('lead.show', ['id' => $lead->id], navigate: true);
     }
@@ -154,19 +195,21 @@ public function setOpportunityAcquisitionChannel(?string $value = null): void
 
     public function mount($id)
     {
-        $this->lead = Customer::findOrFail($id);
+        $this->lead = Customer::leads()->findOrFail($id);
         Gate::authorize('update', $this->lead);
 
         $this->form->setCustomer($this->lead);
         $this->opportunityForm->setOpportunity(
             $this->lead->latestPracticeOpportunity
         );
+        $this->attachmentOpportunityId = $this->opportunityForm->opportunity?->id;
         $this->initializeLists();
     }
 
     #[Layout('components.layouts.app')]
     public function render()
     {
+        Gate::authorize('view', $this->lead->fresh());
         $this->teamMembers = User::assignableUsers()
             ->filterBySearch($this->search)
             ->orderBy('first_name')
@@ -176,6 +219,7 @@ public function setOpportunityAcquisitionChannel(?string $value = null): void
             ->toArray();
 
         return view('livewire.admin.lead.lead-update', [
+            'existingAttachments' => $this->attachmentOpportunity()?->attachments()->get() ?? collect(),
             'teamMembers' => $this->teamMembers,
             'selectedUserId' => $this->form->userId,
 

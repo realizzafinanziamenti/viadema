@@ -676,6 +676,10 @@ public function hasDuplicatePractice(): bool
                 $opportunity = $this->opportunity;
 
                 if ($opportunity) {
+                    // Resolve the selected opportunity under the customer's lock.
+                    // Never move documents from a different customer's opportunity.
+                    $opportunity = PracticeOpportunity::where('customer_id', $this->customerId)
+                        ->lockForUpdate()->findOrFail($opportunity->getKey());
                     $opportunity->update(
                         $this->opportunityData()
                     );
@@ -694,6 +698,13 @@ public function hasDuplicatePractice(): bool
                         ]
                     )
                 );
+
+                // Transfer ownership only: retain IDs and physical file paths.
+                // A later practice using this opportunity must not inherit these files.
+                $opportunity->attachments()->update([
+                    'attachable_type' => $practice->getMorphClass(),
+                    'attachable_id' => $practice->getKey(),
+                ]);
 
                 foreach ($this->attachments as $attachment) {
                     app(\App\Services\PracticeAttachments::class)->store($practice, $attachment);

@@ -135,6 +135,8 @@ class PracticeCreate extends Component
             'practiceForm'
         );
 
+        $this->practiceForm->opportunity = null;
+
         $this->resetValidation(
             'practiceForm.customerId'
         );
@@ -158,8 +160,14 @@ class PracticeCreate extends Component
             return;
         }
 
-        $this->shouldConvertLead =
-            $this->selectedCustomer->isLead();
+        Gate::authorize('view', $this->selectedCustomer);
+        $this->shouldConvertLead = $this->selectedCustomer->isLead();
+        if ($this->shouldConvertLead) {
+            $opportunities = $this->selectedCustomer->practiceOpportunities()->get();
+            if ($opportunities->count() === 1) {
+                $this->practiceForm->setOpportunity($opportunities->sole());
+            }
+        }
 
         $this->customerForm->setCustomer(
             $this->selectedCustomer
@@ -178,6 +186,42 @@ class PracticeCreate extends Component
          */
         if ($this->practiceForm->productTypeId) {
             $this->validatePracticeProductUniqueness();
+        }
+    }
+
+    public function setPracticeOpportunity($id = null): void
+    {
+        $customer = Customer::findOrFail($this->practiceForm->customerId);
+        Gate::authorize('view', $customer);
+        abort_unless($customer->isLead(), 422);
+        $this->practiceForm->opportunity = null;
+        if (filled($id)) {
+            $this->practiceForm->setOpportunity($customer->practiceOpportunities()->findOrFail($id));
+        }
+        $this->resetValidation('practiceForm.opportunity');
+    }
+
+    private function sourceOpportunity(): ?PracticeOpportunity
+    {
+        if (! $this->practiceForm->opportunity) {
+            return null;
+        }
+        $customer = Customer::findOrFail($this->practiceForm->customerId);
+        Gate::authorize('view', $customer);
+        return $customer->practiceOpportunities()->findOrFail($this->practiceForm->opportunity->id);
+    }
+
+    public function download(int $id): ?\Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $opportunity = $this->sourceOpportunity();
+        abort_unless($opportunity, 404);
+        $attachment = $opportunity->attachments()->findOrFail($id);
+        try {
+            return app(\App\Services\PracticeAttachments::class)->download($attachment);
+        } catch (\Exception $exception) {
+            report($exception);
+            Toaster::error('Impossibile scaricare il file. Riprova o contatta un amministratore.');
+            return null;
         }
     }
 
@@ -505,6 +549,13 @@ public function closeCreateCustomerModal(): void
 
                     $wasLead =
                         $customer->isLead();
+                    if ($wasLead && $customer->practiceOpportunities()->exists()
+                        && ! $this->practiceForm->opportunity) {
+                        throw ValidationException::withMessages([
+                            'practiceForm.opportunity' => 'Seleziona l\'opportunità da convertire.',
+                        ]);
+                    }
+
 
                     /*
                      * Do not call setCustomer() here because
@@ -605,7 +656,7 @@ public function closeCreateCustomerModal(): void
             );
 
             Toaster::error(
-                'Si è verificato un errore durante la creazione della pratica: '
+                'Si Ã¨ verificato un errore durante la creazione della pratica: '
                 . $exception->getMessage()
             );
         }
@@ -642,6 +693,7 @@ public function closeCreateCustomerModal(): void
                         )
                         || $field
                             === 'practiceForm.customerId'
+                        || $field === 'practiceForm.opportunity'
                 );
 
         if ($hasCustomerError) {
@@ -702,7 +754,7 @@ public function closeCreateCustomerModal(): void
                     'Puoi caricare al massimo 10 file.',
 
                 'temporaryFiles.*.max' =>
-                    'Ogni file non può superare i 10MB.',
+                    'Ogni file non puÃ² superare i 10MB.',
 
                 'temporaryFiles.*.mimetypes' =>
                     'Formato file non valido.',
@@ -960,6 +1012,9 @@ public function render()
         [
             'teamMembers' => $teamMembers,
             'customers' => $customers,
+            'existingAttachments' => $this->sourceOpportunity()?->attachments()->get() ?? collect(),
+            'sourceOpportunities' => $this->selectedCustomer?->isLead()
+                ? $this->selectedCustomer->practiceOpportunities()->with('productType')->get() : collect(),
         ]
     );
 }

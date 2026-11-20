@@ -139,6 +139,25 @@
     </x-card>
 @endif
 
+    <x-card class="max-w-3xl mx-auto mt-4">
+        <form wire:submit.prevent="saveAttachments">
+            @include('partials.practice.attachment-fields', [
+                'attachmentOwner' => $lead,
+                'pendingAttachments' => $attachments,
+                'attachmentField' => 'attachments',
+                'canUploadAttachments' => Gate::allows('update', $lead),
+            ])
+            @can('update', $lead)
+                <div class="flex justify-end mt-6">
+                    <flux:button type="submit" variant="primary" size="sm" wire:loading.attr="disabled" wire:target="temporaryFiles,saveAttachments">Salva allegati</flux:button>
+                </div>
+            @endcan
+        </form>
+    </x-card>
+    <x-delete-modal name="delete-attachment" header="Conferma Eliminazione Allegato"
+        function="deleteAttachment"
+        message="Sei sicuro di voler eliminare l'allegato <strong>{{ $selectedAttachment?->file_name }}</strong>?" />
+
     {{-- Update Lead Status Modal --}}
     @include('partials.customer.update-lead-status-modal')
 </div>

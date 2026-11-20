@@ -30,6 +30,14 @@
                 'selectedProductionType' => $opportunityForm->productionType,
             ])
 
+            <div class="mt-6">
+                @include('partials.practice.attachment-fields', [
+                    'attachmentOwner' => $lead,
+                    'pendingAttachments' => $attachments,
+                    'attachmentField' => 'attachments',
+                ])
+            </div>
+
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-end gap-x-3 mt-18">
                 <a href="{{ route('lead.index') }}" wire:navigate>
@@ -46,4 +54,10 @@
             </div>
         </form>
     </x-card>
+    <x-delete-modal
+        name="delete-attachment"
+        header="Conferma Eliminazione Allegato"
+        function="deleteAttachment"
+        message="Sei sicuro di voler eliminare l'allegato <strong>{{ $selectedAttachment?->file_name }}</strong>?"
+    />
 </div>

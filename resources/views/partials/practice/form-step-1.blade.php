@@ -53,68 +53,28 @@
         error-name="practiceForm.acquisitionChannel"
     />
 
-    {{-- Attachments --}}
-    <div class="flex flex-col gap-6 col-span-2">
-
-        {{-- Existing Attachments --}}
-        @if (!empty($practice?->attachments) && $practice->attachments->isNotEmpty())
-            <div class="flex flex-col gap-1.5">
-                <flux:label>
-                    Allegati esistenti
-                </flux:label>
-
-                @foreach ($practice->attachments as $attachment)
-                    <x-display-file
-                        :attachment="$attachment"
-                        :can-delete="Gate::allows('delete', $practice)"
-                        value="{{ $attachment->file_name }}"
-                    />
+    @if (isset($sourceOpportunities) && $sourceOpportunities->count() > 1)
+        <div class="flex flex-col gap-1.5 col-span-2">
+            <flux:label>Opportunità da convertire</flux:label>
+            <select wire:change="setPracticeOpportunity($event.target.value)" class="border border-zinc-200 rounded-md text-sm p-2">
+                <option value="">Seleziona opportunità</option>
+                @foreach ($sourceOpportunities as $source)
+                    <option value="{{ $source->id }}" @selected($practiceForm->opportunity?->id === $source->id)>
+                        #{{ $source->id }} - {{ $source->productType?->name ?? 'Senza prodotto' }}
+                    </option>
                 @endforeach
-            </div>
-        @endif
-
-        {{-- Temporary Attachments --}}
-        <div class="flex flex-col gap-1.5">
-            <flux:label>
-                Allegati
-            </flux:label>
-
-            <x-upload-files-container
-                model="temporaryFiles"
-                :has-error="$errors->has('temporaryFiles.*')"
-                multiple
-            />
-
-            <flux:error name="temporaryFiles" />
-
-            <div class="text-xs text-gray-custom-4">
-                <div>- Max 10MB per file</div>
-                <div>- Max 10 file per volta</div>
-                <div>
-                    - Formati accettati:
-                    jpg, png, pdf, doc, docx, xls, xlsm, xlsx, csv
-                </div>
-            </div>
+            </select>
+            <flux:error name="practiceForm.opportunity" />
         </div>
+    @endif
 
-        {{-- Temporary Attachments Preview --}}
-        @if (!empty($practiceForm->attachments))
-            <div class="flex flex-col gap-1.5">
-                <flux:label class="font-semibold">
-                    Allegati temporanei caricati
-                    {{ count($practiceForm->attachments) }}/{{ count($practiceForm->attachments) }}
-                </flux:label>
-
-                @foreach ($practiceForm->attachments as $index => $attachment)
-                    <x-display-preview-file
-                        :attachment="$attachment"
-                        :index="$index"
-                    />
-                @endforeach
-            </div>
-        @endif
-
-    </div>
+    @include('partials.practice.attachment-fields', [
+        'existingAttachments' => isset($practice) ? $practice->attachments : ($existingAttachments ?? collect()),
+        'attachmentOwner' => $practice ?? null,
+        'canDeleteAttachments' => isset($practice) && Gate::allows('delete', $practice),
+        'pendingAttachments' => $practiceForm->attachments,
+        'attachmentField' => 'practiceForm.attachments',
+    ])
 </div>
 
 {{-- Next Step Buttons --}}
